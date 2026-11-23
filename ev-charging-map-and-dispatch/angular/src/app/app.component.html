@@ -1,0 +1,362 @@
+<div class="dispatch-shell">
+  <header class="dispatch-header">
+    <div class="brand-block">
+      <div class="brand-badge" aria-hidden="true">⚡</div>
+      <div class="brand-text">
+        <h1>Seattle EV &amp; Roadside Dispatch</h1>
+        <p>Live charger availability, auto repair &amp; ETA dispatch</p>
+      </div>
+    </div>
+
+    <div class="header-controls">
+      <div class="search-group">
+        <div
+          #autocompleteContainer
+          id="autocomplete-container"
+          class="autocomplete-host"
+          aria-label="Search breakdown or pickup address"
+        ></div>
+        <button
+          id="use-map-center-btn"
+          type="button"
+          class="btn btn-secondary"
+          (click)="useCurrentMapCenter()"
+          [disabled]="!mapsReady"
+          title="Move breakdown pin to current map center"
+        >
+          Use Map Center
+        </button>
+      </div>
+
+      <div id="driver-address-badge" class="driver-address-pill" [title]="driverAddress">
+        <span class="pin-dot" aria-hidden="true"></span>
+        <span class="address-text">{{ driverAddress }}</span>
+      </div>
+
+      <div class="filter-toolbar">
+        <div class="pill-group" role="group" aria-label="Service category filter">
+          <button
+            id="category-filter-all"
+            type="button"
+            class="pill-btn"
+            [class.active]="categoryFilter === 'all'"
+            (click)="setCategoryFilter('all')"
+          >
+            All ({{ providers.length }})
+          </button>
+          <button
+            id="category-filter-ev"
+            type="button"
+            class="pill-btn pill-ev"
+            [class.active]="categoryFilter === 'ev'"
+            (click)="setCategoryFilter('ev')"
+          >
+            EV Fast Charging ({{ evCount }})
+          </button>
+          <button
+            id="category-filter-repair"
+            type="button"
+            class="pill-btn pill-repair"
+            [class.active]="categoryFilter === 'repair'"
+            (click)="setCategoryFilter('repair')"
+          >
+            Auto Repair ({{ repairCount }})
+          </button>
+        </div>
+
+        <div class="radius-group">
+          <label for="radius-select" class="sr-only">Search radius</label>
+          <select
+            id="radius-select"
+            class="radius-select"
+            [ngModel]="radiusKm"
+            (ngModelChange)="onRadiusChange($event)"
+            [disabled]="!mapsReady"
+          >
+            <option [ngValue]="5">5 km radius</option>
+            <option [ngValue]="10">10 km radius</option>
+            <option [ngValue]="15">15 km radius</option>
+          </select>
+
+          <div class="pill-group radius-pills" role="group" aria-label="Search radius presets">
+            <button
+              id="radius-5km"
+              type="button"
+              class="pill-btn"
+              [class.active]="radiusKm === 5"
+              (click)="onRadiusChange(5)"
+              [disabled]="!mapsReady"
+            >
+              5 km
+            </button>
+            <button
+              id="radius-10km"
+              type="button"
+              class="pill-btn"
+              [class.active]="radiusKm === 10"
+              (click)="onRadiusChange(10)"
+              [disabled]="!mapsReady"
+            >
+              10 km
+            </button>
+            <button
+              id="radius-15km"
+              type="button"
+              class="pill-btn"
+              [class.active]="radiusKm === 15"
+              (click)="onRadiusChange(15)"
+              [disabled]="!mapsReady"
+            >
+              15 km
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="dispatch-main">
+    <aside class="dispatch-sidebar" aria-label="Nearby EV stations and repair providers">
+      <div class="sidebar-status-bar">
+        <div>
+          <strong>{{ filteredProviders.length }}</strong> nearby options within
+          <strong>{{ radiusKm }} km</strong>
+        </div>
+        <span class="eta-tag">Sorted by driving ETA</span>
+      </div>
+
+      <div *ngIf="statusError" class="alert-banner alert-warning" role="status">
+        {{ statusError }}
+      </div>
+
+      <section
+        *ngIf="activeRoute"
+        id="route-summary-panel"
+        class="route-summary-panel"
+        aria-label="Active dispatch route summary"
+      >
+        <div class="route-summary-header">
+          <div>
+            <span
+              class="category-badge"
+              [class.badge-ev]="activeRoute.provider.category === 'ev'"
+              [class.badge-repair]="activeRoute.provider.category === 'repair'"
+            >
+              {{ activeRoute.provider.category === 'ev' ? 'EV Dispatch Route' : 'Roadside Route' }}
+            </span>
+            <h2>{{ activeRoute.provider.name }}</h2>
+          </div>
+          <button
+            id="clear-route-btn"
+            type="button"
+            class="btn btn-ghost"
+            (click)="clearRoute()"
+          >
+            Clear Route
+          </button>
+        </div>
+
+        <div class="route-metrics">
+          <div class="metric-chip">
+            <span class="metric-label">Drive ETA</span>
+            <strong>{{ activeRoute.durationText }}</strong>
+          </div>
+          <div class="metric-chip">
+            <span class="metric-label">Distance</span>
+            <strong>{{ activeRoute.distanceText }}</strong>
+          </div>
+          <button
+            type="button"
+            class="btn btn-steps-toggle"
+            (click)="toggleSteps()"
+            [attr.aria-expanded]="stepsExpanded"
+          >
+            {{ stepsExpanded ? 'Hide Steps' : 'Show Steps' }} ({{ activeRoute.steps.length }})
+          </button>
+        </div>
+
+        <ol
+          *ngIf="stepsExpanded"
+          id="turn-by-turn-steps"
+          class="turn-by-turn-steps"
+        >
+          <li *ngFor="let step of activeRoute.steps" class="step-item">
+            <span class="step-index">{{ step.index }}</span>
+            <div class="step-body">
+              <div class="step-instruction">{{ step.instruction }}</div>
+              <div class="step-meta">{{ step.distanceText }} · {{ step.durationText }}</div>
+            </div>
+          </li>
+        </ol>
+      </section>
+
+      <div *ngIf="loadingProviders && providers.length === 0" class="loading-state">
+        Searching Seattle EV chargers &amp; roadside mechanics…
+      </div>
+
+      <div id="provider-list" class="provider-list">
+        <article
+          *ngFor="let provider of filteredProviders; let i = index; trackBy: trackByProviderId"
+          [id]="'provider-card-' + i"
+          class="provider-card"
+          [class.selected]="provider.id === selectedProviderId"
+          (click)="selectProvider(provider)"
+        >
+          <div class="card-top">
+            <span
+              class="category-badge"
+              [class.badge-ev]="provider.category === 'ev'"
+              [class.badge-repair]="provider.category === 'repair'"
+            >
+              {{ provider.category === 'ev' ? 'EV Fast Charging' : 'Auto Repair' }}
+            </span>
+            <span
+              class="availability-badge"
+              [class.positive]="provider.isAvailableBadgePositive"
+            >
+              {{ provider.availabilityLabel }}
+            </span>
+          </div>
+
+          <h3 class="provider-name">{{ provider.name }}</h3>
+          <p class="provider-address">{{ provider.address }}</p>
+
+          <div *ngIf="provider.evConnectors.length > 0" class="connector-pills">
+            <span
+              *ngFor="let conn of provider.evConnectors"
+              class="connector-pill"
+            >
+              {{ conn.typeLabel }} ×{{ conn.count }}
+              <ng-container *ngIf="conn.maxChargeRateKw > 0">
+                · {{ conn.maxChargeRateKw }} kW
+              </ng-container>
+            </span>
+          </div>
+
+          <div class="card-metrics">
+            <div class="rating-block">
+              <span *ngIf="provider.rating !== null; else noRating">
+                <span class="star-icon" aria-hidden="true">★</span>
+                <strong>{{ provider.rating | number: '1.1-1' }}</strong>
+                <span class="review-count">({{ provider.userRatingCount ?? 0 }})</span>
+              </span>
+              <ng-template #noRating>
+                <span class="review-count">No rating</span>
+              </ng-template>
+            </div>
+
+            <div class="eta-block">
+              <span class="distance-text">{{ provider.distanceText }}</span>
+              <span class="eta-pill">{{ provider.etaText }}</span>
+            </div>
+          </div>
+
+          <div class="card-actions">
+            <button
+              [attr.id]="i === 0 ? 'dispatch-route-btn' : null"
+              type="button"
+              class="btn btn-primary btn-route"
+              (click)="selectProvider(provider); $event.stopPropagation()"
+              [disabled]="loadingRoute && selectedProviderId === provider.id"
+            >
+              {{
+                loadingRoute && selectedProviderId === provider.id
+                  ? 'Computing Route…'
+                  : selectedProviderId === provider.id && activeRoute
+                    ? 'Route Active'
+                    : 'Route Here'
+              }}
+            </button>
+            <a
+              *ngIf="provider.googleMapsUri"
+              [href]="provider.googleMapsUri"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn btn-link"
+              (click)="$event.stopPropagation()"
+            >
+              Maps
+            </a>
+          </div>
+        </article>
+
+        <div
+          *ngIf="!loadingProviders && filteredProviders.length === 0 && mapsReady"
+          class="empty-state"
+        >
+          No matching stations or repair shops found inside {{ radiusKm }} km. Try increasing the
+          radius or relocating the driver pin.
+        </div>
+      </div>
+    </aside>
+
+    <section id="map-container" class="map-pane" aria-label="Interactive Seattle dispatch map">
+      <div *ngIf="missingKey" class="setup-overlay">
+        <div class="setup-card">
+          <h2>Google Maps API Key Required</h2>
+          <p>
+            Configure <code>GOOGLE_MAPS_API_KEY</code> in your local <code>.env</code> file to
+            activate the interactive Seattle EV &amp; Roadside Dispatch map.
+          </p>
+          <p>
+            Need a free prototyping key without billing setup? Get a
+            <a
+              href="https://mapsplatform.google.com/maps-demo-key?utm_campaign=gmp_git_agentsamples_v1.0.0"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Google Maps Demo Key
+            </a>
+            and copy <code>.env.example</code> to <code>.env</code>.
+          </p>
+        </div>
+      </div>
+
+      <div *ngIf="initError" class="setup-overlay">
+        <div class="setup-card">
+          <h2>Maps Initialization Error</h2>
+          <p>{{ initError }}</p>
+        </div>
+      </div>
+
+      <google-map
+        *ngIf="mapsReady"
+        #googleMapComponent
+        height="100%"
+        width="100%"
+        [center]="mapCenter"
+        [zoom]="mapZoom"
+        [options]="mapOptions"
+        (mapInitialized)="onMapInitialized($event)"
+        (mapClick)="onMapClick($event)"
+      >
+        <map-advanced-marker
+          [position]="driverLocation"
+          [content]="driverPin"
+          [gmpDraggable]="true"
+          [zIndex]="1000"
+          title="Driver breakdown location (drag or click map to move)"
+          (markerInitialized)="onDriverMarkerInitialized($event)"
+          (mapDragend)="onDriverMarkerDragEnd($event)"
+        ></map-advanced-marker>
+
+        <map-advanced-marker
+          *ngFor="let provider of filteredProviders; trackBy: trackByProviderId"
+          [position]="provider.location"
+          [content]="getPinForProvider(provider)"
+          [title]="provider.name"
+          [zIndex]="provider.id === selectedProviderId ? 500 : 100"
+          (markerInitialized)="onProviderMarkerInitialized(provider.id, $event)"
+          (mapClick)="selectProvider(provider)"
+        ></map-advanced-marker>
+      </google-map>
+
+      <div *ngIf="mapsReady" class="map-legend">
+        <span class="legend-item"><i class="dot dot-driver"></i> Breakdown Pin (Draggable)</span>
+        <span class="legend-item"><i class="dot dot-ev"></i> EV Fast Charging</span>
+        <span class="legend-item"><i class="dot dot-repair"></i> Auto Repair</span>
+        <span class="legend-item"><i class="ring-swatch"></i> {{ radiusKm }} km Ring</span>
+      </div>
+    </section>
+  </main>
+</div>

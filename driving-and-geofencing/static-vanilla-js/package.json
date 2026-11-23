@@ -1,0 +1,16 @@
+{
+  "name": "driving-and-geofencing-static-vanilla-js",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Field Workforce Geofenced Attendance & Site Audit Router built with Static HTML, Vanilla JavaScript (ES Modules), Google Maps Platform, and Terra Draw.",
+  "scripts": {
+    "start": "node server.mjs --host 127.0.0.1 --port 4173",
+    "build": "node --check app.js && node --check server.mjs && node -e \"import('node:fs').then(fs=>{for(const f of ['index.html','app.js','styles.css','server.mjs'])if(!fs.existsSync(f))throw new Error('Missing '+f);console.log('Build verification passed.');})\""
+  },
+  "dependencies": {
+    "@googlemaps/js-api-loader": "^2.0.2",
+    "terra-draw": "^1.19.0",
+    "terra-draw-google-maps-adapter": "^1.4.0"
+  }
+}

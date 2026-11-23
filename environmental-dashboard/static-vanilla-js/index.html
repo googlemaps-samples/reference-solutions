@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EcoPulse — Hyperlocal Weather, Air Quality, Pollen &amp; Solar Dashboard</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230f766e'/%3E%3Ccircle cx='32' cy='32' r='14' fill='%23fbbf24'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "@googlemaps/js-api-loader": "/node_modules/@googlemaps/js-api-loader/dist/index.js"
+        }
+      }
+    </script>
+    <script src="/env-config.js"></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="top-bar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">☀</span>
+          <div class="brand-copy">
+            <h1 class="brand-title">EcoPulse Phoenix</h1>
+            <p class="brand-subtitle">Weather · AQI · Pollen · Solar</p>
+          </div>
+        </div>
+
+        <div
+          class="autocomplete-slot"
+          data-testid="places-autocomplete-container"
+          aria-label="Search address or city"
+        ></div>
+
+        <div class="header-controls">
+          <div
+            class="location-pill"
+            data-testid="active-location-badge"
+            title="Active inspection coordinates"
+          >
+            <span class="pill-dot" aria-hidden="true"></span>
+            <span class="pill-text" id="active-location-badge-text">
+              Phoenix City Hall · 33.4484, -112.0740
+            </span>
+          </div>
+
+          <button
+            type="button"
+            class="control-btn"
+            data-testid="reset-phoenix-btn"
+            title="Reset to Phoenix City Hall"
+          >
+            Phoenix Reset
+          </button>
+
+          <button
+            type="button"
+            class="control-btn"
+            data-testid="units-toggle-btn"
+            aria-pressed="false"
+            title="Toggle Imperial and Metric units"
+          >
+            °F · Imperial
+          </button>
+
+          <button
+            type="button"
+            class="control-btn"
+            data-testid="aqi-layer-toggle"
+            aria-pressed="false"
+            title="Toggle US AQI raster heatmap overlay"
+          >
+            AQI Tiles: Off
+          </button>
+
+          <button
+            type="button"
+            class="control-btn"
+            data-testid="map-type-toggle"
+            aria-pressed="false"
+            title="Switch between Roadmap and Hybrid satellite imagery"
+          >
+            Map: Roadmap
+          </button>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <aside
+          class="sidebar"
+          data-testid="environmental-sidebar"
+          aria-label="Environmental intelligence panel"
+        >
+          <div id="api-key-banner" class="banner banner-warning hidden" role="status"></div>
+
+          <section class="intel-card location-card" data-testid="selected-location-card">
+            <div class="card-header">
+              <span class="card-kicker">Active Inspection Target</span>
+              <span class="chip chip-neutral" id="location-source-chip">Seeded</span>
+            </div>
+            <h2 class="location-title" id="location-name">Phoenix City Hall</h2>
+            <p class="location-address" id="location-address">
+              200 W Washington St, Phoenix, AZ 85003, USA
+            </p>
+            <div class="location-meta-row">
+              <span class="coord-readout" id="location-coords">33.44840, -112.07400</span>
+              <span class="click-hint">Click any building on the map to inspect</span>
+            </div>
+          </section>
+
+          <section class="intel-card" data-testid="weather-card">
+            <div class="card-header">
+              <div>
+                <span class="card-kicker">Meteorology</span>
+                <h2 class="card-title">Current Weather</h2>
+              </div>
+              <span class="chip chip-sky" id="weather-time-chip">Loading…</span>
+            </div>
+            <div id="weather-current-body" class="card-body">
+              <p class="loading-copy">Fetching live Weather API conditions…</p>
+            </div>
+            <div class="subsection">
+              <h3 class="subsection-title">5-Day Daily Forecast</h3>
+              <div
+                class="forecast-grid"
+                data-testid="weather-forecast-list"
+                id="weather-forecast-list"
+              >
+                <p class="loading-copy">Loading forecast…</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="intel-card" data-testid="air-quality-card">
+            <div class="card-header">
+              <div>
+                <span class="card-kicker">Atmosphere</span>
+                <h2 class="card-title">Air Quality Index</h2>
+              </div>
+              <span class="chip chip-emerald" id="aqi-region-chip">US</span>
+            </div>
+            <div id="air-quality-body" class="card-body">
+              <p class="loading-copy">Fetching Air Quality API metrics…</p>
+            </div>
+          </section>
+
+          <section class="intel-card" data-testid="pollen-card">
+            <div class="card-header">
+              <div>
+                <span class="card-kicker">Allergens</span>
+                <h2 class="card-title">Pollen Forecast</h2>
+              </div>
+              <span class="chip chip-amber" id="pollen-date-chip">Today</span>
+            </div>
+            <div id="pollen-body" class="card-body">
+              <p class="loading-copy">Fetching Pollen API forecast…</p>
+            </div>
+          </section>
+
+          <section class="intel-card" data-testid="solar-card">
+            <div class="card-header">
+              <div>
+                <span class="card-kicker">Rooftop Sustainability</span>
+                <h2 class="card-title">Solar Building Insights</h2>
+              </div>
+              <span class="chip chip-solar" id="solar-quality-chip">Building</span>
+            </div>
+            <div id="solar-body" class="card-body">
+              <p class="loading-copy">Fetching Solar API building insights…</p>
+            </div>
+          </section>
+        </aside>
+
+        <section class="map-stage" aria-label="Interactive environmental map">
+          <div
+            id="map"
+            class="map-canvas"
+            data-testid="map-container"
+          ></div>
+          <div class="map-overlay-legend" id="aqi-legend" hidden>
+            <span class="legend-title">US AQI Overlay</span>
+            <div class="legend-scale">
+              <span class="legend-swatch swatch-good">Good</span>
+              <span class="legend-swatch swatch-mod">Moderate</span>
+              <span class="legend-swatch swatch-usg">USG</span>
+              <span class="legend-swatch swatch-unhealthy">Unhealthy</span>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

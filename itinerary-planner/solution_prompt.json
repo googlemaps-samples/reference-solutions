@@ -1,0 +1,42 @@
+{
+  "solution_id": "itinerary-planner",
+  "id": "itinerary-planner",
+  "title": "Multi-Day Trip Itinerary Planner, Hotels & Time Zone Hub",
+  "name": "Multi-Day Trip Itinerary Planner, Hotels & Time Zone Hub",
+  "category": "Travel, Navigation & Itineraries",
+  "user_prompt": "Build an interactive multi-day city trip planner and hotel/attraction discovery app pre-seeded for Tokyo. Allow travelers to search a destination city or landmark, discover real top-rated attractions, restaurants, and nearby hotels via Places API (New) (showing live ratings, photos, and opening hours), and organize stops into Day 1 and Day 2 itinerary tabs. Display local destination time and UTC offset using the Time Zone API, draw numbered day-colored Advanced Markers and optimized multi-stop route polylines between each day's stops via the Routes API, and offer an embedded Street View preview panel for inspecting selected landmarks or hotels.",
+  "prompt": "Build an interactive multi-day city trip planner and hotel/attraction discovery app pre-seeded for Tokyo. Allow travelers to search a destination city or landmark, discover real top-rated attractions, restaurants, and nearby hotels via Places API (New) (showing live ratings, photos, and opening hours), and organize stops into Day 1 and Day 2 itinerary tabs. Display local destination time and UTC offset using the Time Zone API, draw numbered day-colored Advanced Markers and optimized multi-stop route polylines between each day's stops via the Routes API, and offer an embedded Street View preview panel for inspecting selected landmarks or hotels.",
+  "expectations": [
+    "Destination search and multi-day itinerary tabs are visible and pre-seeded with real Tokyo places",
+    "Local time and timezone offset from the Time Zone API are displayed",
+    "Numbered Advanced Markers and multi-stop route polylines render for the selected itinerary day",
+    "Hotel and attraction cards show live Places details with a working Street View preview",
+    "No console errors"
+  ],
+  "test_interactions": [
+    {
+      "description": "Destination search and multi-day itinerary tabs are visible and pre-seeded with real Tokyo places",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Local time and timezone offset from the Time Zone API are displayed",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Numbered Advanced Markers and multi-stop route polylines render for the selected itinerary day",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Hotel and attraction cards show live Places details with a working Street View preview",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    }
+  ]
+}

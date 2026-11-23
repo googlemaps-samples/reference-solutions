@@ -1,0 +1,30 @@
+{
+  "name": "ridesharing-and-tracker-nextjs",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Los Angeles Rideshare Booking, Eco-Friendly Fare Estimator & Live Driver Dispatch sample built with Next.js App Router, @vis.gl/react-google-maps, Places API (New), and Routes API v2.",
+  "scripts": {
+    "dev": "next dev --hostname 127.0.0.1 --port 3000",
+    "build": "next build",
+    "start": "next start --hostname 127.0.0.1 --port 3000",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@vis.gl/react-google-maps": "^1.10.2",
+    "lucide-react": "^0.511.0",
+    "next": "^15.5.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@types/google.maps": "^3.66.10",
+    "@types/node": "^22.15.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.8.3"
+  }
+}

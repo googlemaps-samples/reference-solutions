@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WindyCity Fresh · On-Demand Delivery Checkout & Live Tracker</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-brand">
+        <div class="brand-mark" aria-hidden="true">WF</div>
+        <div>
+          <h1 class="brand-title">WindyCity Fresh · Live Delivery</h1>
+          <p class="brand-subtitle">Chicago Restaurant &amp; Grocery Checkout · Zone &amp; Route Tracker</p>
+        </div>
+      </div>
+
+      <div class="topbar-meta">
+        <span class="hub-badge">
+          <span class="hub-dot" aria-hidden="true"></span>
+          Fulton Market Kitchen Hub (41.8868, -87.6486)
+        </span>
+        <span id="header-status-pill" class="status-pill status-neutral">Initializing…</span>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <aside class="sidebar" aria-label="Checkout and live order controls">
+        <div id="api-key-banner" class="alert-banner hidden" role="status"></div>
+
+        <!-- Card 1: Checkout Address Autocomplete & Validation -->
+        <section class="card" aria-labelledby="card-checkout-heading">
+          <div class="card-header">
+            <span class="step-badge">1</span>
+            <div>
+              <h2 id="card-checkout-heading">Delivery Address &amp; Zone Check</h2>
+              <p class="card-caption">Places API (New) · Address Validation · Polygon &amp; 8 km Cap</p>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="checkout-address-autocomplete">Search Chicago Address (Places Autocomplete)</label>
+            <div id="autocomplete-mount" class="autocomplete-mount"></div>
+          </div>
+
+          <div class="field-row">
+            <div class="field-group grow">
+              <label class="field-label" for="address-line-input">Selected Street Address</label>
+              <input
+                id="address-line-input"
+                type="text"
+                class="text-input"
+                value="401 N Michigan Ave, Chicago, IL 60611"
+                placeholder="401 N Michigan Ave, Chicago, IL 60611"
+                autocomplete="street-address"
+              />
+            </div>
+            <div class="field-group apt-field">
+              <label class="field-label" for="apt-input">Apt / Suite</label>
+              <input
+                id="apt-input"
+                type="text"
+                class="text-input"
+                placeholder="Suite 1200"
+              />
+            </div>
+          </div>
+
+          <div class="preset-row">
+            <button id="preset-address-in-zone-btn" type="button" class="btn btn-chip">
+              In-Zone: 401 N Michigan Ave
+            </button>
+            <button id="preset-address-out-of-zone-btn" type="button" class="btn btn-chip">
+              Out-of-Zone: 1525 E 53rd St
+            </button>
+          </div>
+
+          <button id="validate-address-btn" type="button" class="btn btn-primary btn-full">
+            Validate Address &amp; Compute Route
+          </button>
+
+          <div id="zone-eligibility-badge" class="eligibility-badge eligibility-pending">
+            Awaiting address validation…
+          </div>
+
+          <div id="validation-status-panel" class="validation-panel">
+            <p class="muted-text">Address Validation API verdict, USPS CASS/DPV, and metadata will appear here.</p>
+          </div>
+        </section>
+
+        <!-- Card 2: Tiered Delivery Fee, ETA & Live Courier Dispatch -->
+        <section class="card" aria-labelledby="card-dispatch-heading">
+          <div class="card-header">
+            <span class="step-badge">2</span>
+            <div>
+              <h2 id="card-dispatch-heading">Tiered Fee, ETA &amp; Courier Dispatch</h2>
+              <p class="card-caption">Routes API v2 (Traffic-Aware) · Live Polyline Animation</p>
+            </div>
+          </div>
+
+          <div id="delivery-fee-eta-summary" class="fee-summary">
+            <p class="muted-text">Compute a validated route to calculate tiered delivery fee and traffic-aware ETA.</p>
+          </div>
+
+          <div class="tier-legend">
+            <span><strong>≤ 3.0 km:</strong> $2.99</span>
+            <span><strong>≤ 5.5 km:</strong> $4.99</span>
+            <span><strong>≤ 8.0 km:</strong> $6.99</span>
+          </div>
+
+          <div class="action-row">
+            <button id="place-order-btn" type="button" class="btn btn-accent" disabled>
+              Place Order &amp; Dispatch Courier
+            </button>
+            <button id="courier-simulation-toggle-btn" type="button" class="btn btn-secondary" disabled>
+              Pause Courier
+            </button>
+          </div>
+
+          <div id="courier-progress-panel" class="courier-panel">
+            <p class="muted-text">Courier dispatch telemetry will activate once an order is placed.</p>
+          </div>
+        </section>
+
+        <!-- Card 3: Itemized Order Receipt & Maps Static API Preview -->
+        <section id="order-receipt-card" class="card" aria-labelledby="card-receipt-heading">
+          <div class="card-header">
+            <span class="step-badge">3</span>
+            <div>
+              <h2 id="card-receipt-heading">Order Receipt &amp; Route Preview</h2>
+              <p class="card-caption">Itemized Basket · Maps Static API Route Snapshot</p>
+            </div>
+          </div>
+
+          <div id="receipt-details" class="receipt-details">
+            <p class="muted-text">Order receipt details will populate from your validated checkout.</p>
+          </div>
+
+          <div class="static-map-frame">
+            <img
+              id="static-receipt-map-img"
+              class="static-receipt-img hidden"
+              alt="Static route summary map from Fulton Market Kitchen Hub to customer delivery address"
+            />
+            <div id="static-map-placeholder" class="static-map-placeholder">
+              Route snapshot from Maps Static API appears here once route is computed.
+            </div>
+          </div>
+        </section>
+      </aside>
+
+      <section class="map-stage" aria-label="Interactive Chicago delivery tracking map">
+        <div id="live-tracking-map" class="map-canvas"></div>
+
+        <div id="map-floating-eta" class="map-floating-card">
+          <div class="floating-title">Chicago Delivery Zone</div>
+          <div id="map-floating-metrics" class="floating-metrics">
+            Fulton Market Hub · 8.0 km max road distance
+          </div>
+        </div>
+
+        <div class="map-legend" aria-label="Map legend">
+          <div class="legend-item">
+            <span class="legend-swatch swatch-kitchen"></span>
+            <span>Kitchen Hub</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-swatch swatch-customer"></span>
+            <span>Customer Drop-off</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-swatch swatch-courier"></span>
+            <span>Live Courier</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-swatch swatch-zone"></span>
+            <span>Delivery Zone</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-swatch swatch-route"></span>
+            <span>Active Route</span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="/static/app.js"></script>
+  </body>
+</html>

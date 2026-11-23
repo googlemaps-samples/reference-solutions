@@ -1,0 +1,80 @@
+{
+  "solution_id": "logistics-and-routing",
+  "solution_title": "Fleet Telematics, Road-Snapped GPS & Dispatch Dashboard",
+  "summary": "A cohesive Dallas fleet telematics, road-snapping, and multi-stop dispatch dashboard built strictly on modern zero-deprecation Google Maps Platform APIs. On load, it initializes a distraction-free vector map (mapId with clickableIcons disabled and optional TrafficLayer), discovers real Dallas logistics hubs via Places API (New), renders status-coded fleet vehicles (En Route, Delayed, Idle) using AdvancedMarkerElement, snaps noisy raw vehicle GPS breadcrumbs to Dallas road corridors via Roads API (snapToRoads), and computes multi-stop dispatch polylines and hub-to-stop ETA/distance matrices via Routes API (Route.computeRoutes / RouteMatrix.computeRouteMatrix on pure client stacks; BFF REST proxies with explicit X-Goog-FieldMask on Next.js, FastAPI, and Node.js Express).",
+  "gmp_products_used": [
+    "Maps JavaScript API (Vector Map, AdvancedMarkerElement, PinElement, InfoWindow, Polyline, TrafficLayer)",
+    "Routes API (Route.computeRoutes / computeRoutes & RouteMatrix.computeRouteMatrix / computeRouteMatrix)",
+    "Roads API (Snap to Roads - v1/snapToRoads)",
+    "Places API (New) (Place.searchByText / places:searchText & PlaceAutocompleteElement)",
+    "Maps JavaScript API Geometry Library (encoding.decodePath)"
+  ],
+  "js_libraries_to_import": [
+    "core",
+    "maps",
+    "marker",
+    "places",
+    "routes",
+    "geometry"
+  ],
+  "matched_sub_skills": [
+    "maps-javascript-api-javascript",
+    "routes-api-web-api",
+    "roads-api-web-api",
+    "places-api-web-api",
+    "gmp-framework-react",
+    "gmp-common-api-keys",
+    "compliance-review"
+  ],
+  "uses_3d_map": false,
+  "initial_center_lat": 32.7767,
+  "initial_center_lng": -96.797,
+  "initial_zoom": 12,
+  "seed_search_query": "distribution center logistics hub Dallas TX",
+  "ui_layout_summary": "Full-viewport split-screen dispatch console: (1) Compact top command bar (56px) with app title, live fleet status counts, status filter pills (All, En Route, Delayed, Idle), traffic overlay toggle, and a PlaceAutocompleteElement hub search box; (2) Left telemetry & dispatch sidebar (400px desktop width, responsive drawer/stack on mobile) featuring three synchronized sections: Active Fleet Telemetry Cards (speed, next stop, live ETA, status badge), GPS Trace & Roads API Inspector (raw vs. road-snapped polyline toggle, point counts, road segment count, mean snap offset), and Multi-Stop Dispatch & Route Matrix Panel (depot, stop sequence, optimize-order toggle, Compute Dispatch button, and hub-to-stop ETA/distance table); (3) Right primary interactive map canvas (flex-1, min-height: 520px, height: calc(100vh - 56px)) displaying status-coded vehicle AdvancedMarkerElements, numbered depot/hub markers, dashed raw GPS trace vs. solid road-snapped polyline, multi-stop corridor polyline, and an interactive legend + vehicle InfoWindow.",
+  "interactive_controls": [
+    "data-testid=\"map-container\"",
+    "data-testid=\"status-filter-all\"",
+    "data-testid=\"status-filter-en-route\"",
+    "data-testid=\"status-filter-delayed\"",
+    "data-testid=\"status-filter-idle\"",
+    "data-testid=\"fleet-vehicle-list\"",
+    "data-testid=\"snap-to-roads-toggle\"",
+    "data-testid=\"raw-vs-snapped-panel\"",
+    "data-testid=\"calculate-dispatch-route-btn\"",
+    "data-testid=\"optimize-waypoints-toggle\"",
+    "data-testid=\"dispatch-matrix-panel\"",
+    "data-testid=\"traffic-layer-toggle\"",
+    "data-testid=\"place-autocomplete-container\""
+  ],
+  "backend_proxy_endpoints": [
+    {
+      "method": "POST",
+      "path": "/api/routes/compute",
+      "upstream_gmp_service": "routes.googleapis.com/directions/v2:computeRoutes",
+      "field_mask": "routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline,routes.legs.duration,routes.legs.distanceMeters,routes.legs.startLocation,routes.legs.endLocation,routes.optimizedIntermediateWaypointIndex",
+      "purpose": "Server-side BFF proxy for calculating multi-stop dispatch corridor routes, leg ETAs, optional waypoint order optimization, and encoded polylines between the Dallas central depot and drop-off hubs."
+    },
+    {
+      "method": "POST",
+      "path": "/api/routes/matrix",
+      "upstream_gmp_service": "routes.googleapis.com/distanceMatrix/v2:computeRouteMatrix",
+      "field_mask": "originIndex,destinationIndex,duration,distanceMeters,status,condition",
+      "purpose": "Server-side BFF proxy for computing travel-time and distance matrices from the central depot (and active vehicles) to all selected Dallas drop-off hubs."
+    },
+    {
+      "method": "POST",
+      "path": "/api/roads/snap",
+      "upstream_gmp_service": "roads.googleapis.com/v1/snapToRoads",
+      "field_mask": "snappedPoints.location,snappedPoints.originalIndex,snappedPoints.placeId,warningMessage",
+      "purpose": "Server-side BFF proxy forwarding noisy raw GPS breadcrumb coordinates to Roads API Snap to Roads (with interpolate=true and X-Goog-Maps-Solution-ID: gmp_git_agentsamples_v1.0.0) to return road-snapped path coordinates and road segment Place IDs."
+    },
+    {
+      "method": "POST",
+      "path": "/api/places/search",
+      "upstream_gmp_service": "places.googleapis.com/v1/places:searchText",
+      "field_mask": "places.id,places.displayName,places.formattedAddress,places.location",
+      "purpose": "Server-side BFF proxy for executing live Places API (New) text searches on load to discover real Dallas logistics hubs and drop-off facilities without client-side CORS exposure."
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "solution_id": "travel-route-comparator",
+  "solution_title": "Multi-Modal Commute Comparator & Trail Elevation Tracker",
+  "summary": "Unified zero-deprecation architecture for a Denver-to-Boulder Multi-Modal Commute Comparator & Trail Elevation Tracker across all 8 web stacks. On initial load, the app resolves the seeded endpoints ('Denver Union Station, Denver, CO' and 'Chautauqua Park, Boulder, CO') live via Places API (New) (Place.searchByText on client-only stacks; /api/places/search BFF on full-stack apps), populates origin/destination displays alongside PlaceAutocompleteElement inputs (listening to 'gmp-select' -> event.placePrediction.toPlace() -> place.fetchFields()), and immediately computes live routes across Driving, Cycling, Walking, and Transit using the modern Routes API (Route.computeRoutes on client stacks; /api/routes/compute BFF on Next.js, FastAPI, and Node.js Express). Cycling (BICYCLING) is initialized as the active map & elevation mode on load so that comparative multi-modal ETA/distance cards, color-coded route polylines, AdvancedMarkerElement pins (on mapId='DEMO_MAP_ID' with internalUsageAttributionIds=['gmp_git_agentsamples_v1.0.0']), and the interactive Elevation API profile chart (ElevationService.getElevationAlongPath / /api/elevation/profile with 64 samples) all render immediately on load with zero console errors. Users can switch travel modes, toggle Avoid Tolls, Avoid Highways, and Eco-Friendly (FUEL_EFFICIENT reference route + alternative routes) at any time—recomputing live Routes API responses and updating route comparison cards and polylines—and hover along the SVG elevation & slope profile chart to scrub a synchronized AdvancedMarkerElement indicator along the active route on the map. Walking and cycling routes surface the required beta path advisory, and all stacks strictly forbid legacy Marker, DirectionsService, DistanceMatrixService, Autocomplete, PlacesService, innerHTML, and direct browser fetch() to googleapis.com.",
+  "gmp_products_used": [
+    "Maps JavaScript API (2D Vector Map, AdvancedMarkerElement, PinElement, Polyline, BicyclingLayer)",
+    "Places API (New) (PlaceAutocompleteElement with gmp-select, Place.searchByText, and places:searchText / places:autocomplete REST on BFF)",
+    "Routes API (Route.computeRoutes via importLibrary('routes') on client; computeRoutes v2 REST with X-Goog-FieldMask on BFF)",
+    "Elevation API (ElevationService.getElevationAlongPath via importLibrary('elevation') on client; maps/api/elevation/json on BFF)"
+  ],
+  "js_libraries_to_import": [
+    "core",
+    "maps",
+    "marker",
+    "places",
+    "routes",
+    "elevation"
+  ],
+  "matched_sub_skills": [
+    "google-maps-platform",
+    "compliance-review",
+    "gmp-common-api-keys",
+    "maps-javascript-api-javascript",
+    "gmp-framework-react",
+    "places-api-web-api",
+    "routes-api-web-api",
+    "elevation-api-web-api"
+  ],
+  "uses_3d_map": false,
+  "initial_center_lat": 39.884,
+  "initial_center_lng": -105.135,
+  "initial_zoom": 11,
+  "seed_search_query": "Denver Union Station, Denver, CO to Chautauqua Park, Boulder, CO",
+  "ui_layout_summary": "Responsive split-screen geospatial workspace: (1) Top 64px header bar displaying app title, Denver-Boulder corridor badge, active route KPI pills (ETA, distance, elevation gain), and beta trail-safety notice when Walking/Cycling is active; (2) Left 410px scrollable control & comparison sidebar containing pre-seeded Origin and Destination PlaceAutocompleteElement pickers with active place chips and a Swap button, a 4-mode selector bar (Driving, Cycling, Walking, Transit) showing comparative travel times, interactive Route Modifier toggles (Avoid Tolls, Avoid Highways, Eco-Friendly), and clickable Comparative Route Cards color-matched to map polylines with toll/fuel/label badges; (3) Right flex-1 workspace stacking an explicit-height 2D Vector Map (min-height: 520px, mapId: 'DEMO_MAP_ID') with AdvancedMarkerElement origin/destination/hover pins and interactive route Polylines above a 210px bottom Elevation & Slope Profile panel displaying cumulative elevation gain, min/max altitude, max grade %, and an interactive SVG elevation area chart synchronized bidirectionally with the map hover marker.",
+  "interactive_controls": [
+    "origin-autocomplete-input",
+    "destination-autocomplete-input",
+    "swap-locations-btn",
+    "mode-drive-btn",
+    "mode-bicycle-btn",
+    "mode-walk-btn",
+    "mode-transit-btn",
+    "avoid-tolls-toggle",
+    "avoid-highways-toggle",
+    "eco-friendly-toggle",
+    "route-cards-list",
+    "route-card-0",
+    "elevation-profile-chart",
+    "elevation-hover-readout",
+    "map-canvas"
+  ],
+  "backend_proxy_endpoints": [
+    {
+      "method": "POST",
+      "path": "/api/places/search",
+      "upstream_gmp_service": "places.googleapis.com/v1/places:searchText",
+      "field_mask": "places.id,places.displayName,places.formattedAddress,places.location",
+      "purpose": "Server-side BFF proxy to Places API (New) searchText for resolving seeded and user-entered Denver/Boulder origin and destination places with explicit X-Goog-Api-Key and X-Goog-FieldMask headers."
+    },
+    {
+      "method": "POST",
+      "path": "/api/places/autocomplete",
+      "upstream_gmp_service": "places.googleapis.com/v1/places:autocomplete",
+      "field_mask": "suggestions.placePrediction.placeId,suggestions.placePrediction.text,suggestions.placePrediction.structuredFormat",
+      "purpose": "Server-side BFF proxy to Places API (New) autocomplete biased to the Denver-Boulder Front Range corridor, supporting sessionToken and locationBias."
+    },
+    {
+      "method": "POST",
+      "path": "/api/routes/compute",
+      "upstream_gmp_service": "routes.googleapis.com/directions/v2:computeRoutes",
+      "field_mask": "routes.routeLabels,routes.distanceMeters,routes.duration,routes.staticDuration,routes.polyline.encodedPolyline,routes.legs.distanceMeters,routes.legs.duration,routes.travelAdvisory.tollInfo,routes.travelAdvisory.fuelConsumptionMicroliters,routes.warnings,routes.localizedValues",
+      "purpose": "Server-side BFF proxy to Routes API v2 computeRoutes supporting travelMode (DRIVE, BICYCLE, WALK, TRANSIT), routeModifiers (avoidTolls, avoidHighways), computeAlternativeRoutes, and FUEL_EFFICIENT eco-friendly reference routing."
+    },
+    {
+      "method": "POST",
+      "path": "/api/elevation/profile",
+      "upstream_gmp_service": "maps.googleapis.com/maps/api/elevation/json",
+      "field_mask": "N/A (Elevation API uses query params path=enc:<encodedPolyline>&samples=64&key=<API_KEY>; server returns trimmed results[{elevation,location,resolution}])",
+      "purpose": "Server-side BFF proxy to Elevation API to sample equidistant elevation points along the active cycling or walking route polyline for elevation gain, slope grade %, and synchronized hover marker coordinates."
+    }
+  ]
+}

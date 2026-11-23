@@ -1,0 +1,49 @@
+{
+  "solution_id": "store-locator",
+  "id": "store-locator",
+  "title": "Multi-Branch Store, ATM & Inventory Locator",
+  "name": "Multi-Branch Store, ATM & Inventory Locator",
+  "category": "Local Discovery & Storefronts",
+  "user_prompt": "Build a split-screen multi-branch store, ATM, and food-kiosk locator for a retail chain across New York City with a dense network of locations. Render an interactive Google Map using Advanced Markers and Marker Clustering so zoomed-out views group nearby branches cleanly and zoomed-in views show distinct custom markers by location type. Let customers search their starting location with Places Autocomplete, filter branches by type (Flagship Store, Express Kiosk, 24/7 ATM) and product/service availability, and calculate real road travel times and distances from the customer's location to candidate branches using the Routes API route matrix to highlight and route to the fastest nearby branch.",
+  "prompt": "Build a split-screen multi-branch store, ATM, and food-kiosk locator for a retail chain across New York City with a dense network of locations. Render an interactive Google Map using Advanced Markers and Marker Clustering so zoomed-out views group nearby branches cleanly and zoomed-in views show distinct custom markers by location type. Let customers search their starting location with Places Autocomplete, filter branches by type (Flagship Store, Express Kiosk, 24/7 ATM) and product/service availability, and calculate real road travel times and distances from the customer's location to candidate branches using the Routes API route matrix to highlight and route to the fastest nearby branch.",
+  "expectations": [
+    "Split-screen sidebar list and interactive map with Marker Clustering are visible",
+    "Custom Advanced Markers distinguish branch types when zoomed in",
+    "Location search input and type/product filter controls are functional",
+    "Road travel distances and ETAs from the user origin are calculated and displayed",
+    "Selecting a branch highlights it and draws the route polyline on the map",
+    "No console errors"
+  ],
+  "test_interactions": [
+    {
+      "description": "Split-screen sidebar list and interactive map with Marker Clustering are visible",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Custom Advanced Markers distinguish branch types when zoomed in",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Location search input and type/product filter controls are functional",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Road travel distances and ETAs from the user origin are calculated and displayed",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Selecting a branch highlights it and draws the route polyline on the map",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    }
+  ]
+}

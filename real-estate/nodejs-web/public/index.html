@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BayParcel SF — Real Estate, Parcel &amp; Commute Explorer</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231a56db'/%3E%3Ctext x='16' y='21' text-anchor='middle' font-family='sans-serif' font-size='14' font-weight='800' fill='white'%3ESF%3C/text%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="top-bar">
+        <div class="brand">
+          <span class="brand-badge" aria-hidden="true">SF</span>
+          <div class="brand-text">
+            <span class="brand-title">BayParcel</span>
+            <span class="brand-subtitle">San Francisco Homes &amp; Parcels</span>
+          </div>
+        </div>
+
+        <div class="search-controls">
+          <div
+            id="location-search-input"
+            class="location-search-host"
+            data-testid="location-search-input"
+          >
+            <input
+              id="fallback-location-input"
+              type="text"
+              class="fallback-search-input"
+              placeholder="Search San Francisco neighborhood or address..."
+              aria-label="Search San Francisco neighborhood or address"
+            />
+          </div>
+
+          <label class="filter-field">
+            <span class="sr-only">Max Price</span>
+            <select id="filter-max-price" aria-label="Max Price">
+              <option value="any">Any Price</option>
+              <option value="1500000">Up to $1.5M</option>
+              <option value="2250000">Up to $2.25M</option>
+              <option value="3000000">Up to $3.0M</option>
+              <option value="4000000">Up to $4.0M</option>
+            </select>
+          </label>
+
+          <label class="filter-field">
+            <span class="sr-only">Min Beds</span>
+            <select id="filter-min-beds" aria-label="Min Beds">
+              <option value="0">Any Beds</option>
+              <option value="2">2+ Beds</option>
+              <option value="3">3+ Beds</option>
+              <option value="4">4+ Beds</option>
+            </select>
+          </label>
+
+          <label class="filter-field">
+            <span class="sr-only">Property Type</span>
+            <select id="filter-property-type" aria-label="Property Type">
+              <option value="all">All Types</option>
+              <option value="Single Family">Single Family</option>
+              <option value="Condo">Condo</option>
+              <option value="Townhouse">Townhouse</option>
+              <option value="Multi-Family">Multi-Family</option>
+            </select>
+          </label>
+
+          <button id="reset-filters-btn" type="button" class="btn-ghost">Reset</button>
+        </div>
+
+        <div class="top-meta">
+          <span id="results-count" class="results-badge">14 homes</span>
+        </div>
+      </header>
+
+      <main class="split-workspace">
+        <section class="map-pane" aria-label="Interactive property map">
+          <div id="map-container" class="map-container"></div>
+
+          <div class="map-toolbar">
+            <button id="draw-area-btn" type="button" class="map-ctrl-btn">
+              Draw Search Area
+            </button>
+            <button id="clear-area-btn" type="button" class="map-ctrl-btn" disabled>
+              Clear Area
+            </button>
+            <button id="map-type-toggle" type="button" class="map-ctrl-btn">
+              Satellite
+            </button>
+          </div>
+
+          <div id="draw-status-banner" class="draw-status-banner hidden" role="status"></div>
+
+          <div class="map-legend" aria-label="Map overlay legend">
+            <span class="legend-item">
+              <span class="legend-swatch swatch-parcel"></span>
+              Parcel Boundary
+            </span>
+            <span class="legend-item">
+              <span class="legend-swatch swatch-area"></span>
+              Search Area
+            </span>
+            <span class="legend-item">
+              <span class="legend-swatch swatch-route"></span>
+              Commute Route
+            </span>
+          </div>
+        </section>
+
+        <aside class="left-column" aria-label="Property listings and parcel inspector">
+          <section class="listings-section">
+            <div class="section-header">
+              <h1 class="section-title">San Francisco Listings</h1>
+              <span id="active-filter-chip" class="filter-status-chip hidden">Area filtered</span>
+            </div>
+            <div id="property-list" class="property-list" role="list"></div>
+          </section>
+
+          <section
+            id="listing-detail-panel"
+            class="detail-panel"
+            aria-label="Selected property details"
+          >
+            <div id="detail-header" class="detail-header"></div>
+
+            <div class="detail-tabs-section">
+              <h2 class="subsection-title">Street View Neighborhood Preview</h2>
+              <div id="street-view-container" class="street-view-box">
+                <div class="empty-state-msg">Select a listing to load Street View.</div>
+              </div>
+            </div>
+
+            <section id="nearby-amenities-panel" class="amenities-section">
+              <div class="subsection-row">
+                <h2 class="subsection-title">Nearby Within 5 km</h2>
+                <span class="source-pill">Places API (New)</span>
+              </div>
+              <div class="amenity-tabs" role="tablist" aria-label="Nearby amenity categories">
+                <button
+                  id="amenity-tab-all"
+                  type="button"
+                  class="tab-btn is-active"
+                  data-category="all"
+                >
+                  All
+                </button>
+                <button
+                  id="amenity-tab-schools"
+                  type="button"
+                  class="tab-btn"
+                  data-category="schools"
+                >
+                  Schools
+                </button>
+                <button
+                  id="amenity-tab-groceries"
+                  type="button"
+                  class="tab-btn"
+                  data-category="groceries"
+                >
+                  Groceries
+                </button>
+                <button
+                  id="amenity-tab-transit"
+                  type="button"
+                  class="tab-btn"
+                  data-category="transit"
+                >
+                  Transit
+                </button>
+              </div>
+              <div id="nearby-amenities-list" class="amenities-list">
+                <div class="empty-state-msg">Loading nearby places...</div>
+              </div>
+            </section>
+
+            <section id="commute-calculator-panel" class="commute-section">
+              <div class="subsection-row">
+                <h2 class="subsection-title">Commute Time Calculator</h2>
+                <span class="source-pill">Routes API</span>
+              </div>
+              <form id="commute-form" class="commute-form">
+                <input
+                  id="workplace-input"
+                  type="text"
+                  class="workplace-input"
+                  value="Salesforce Tower, San Francisco, CA"
+                  placeholder="Enter workplace address or landmark..."
+                  aria-label="Workplace destination"
+                />
+                <button id="calculate-commute-btn" type="submit" class="btn-primary">
+                  Calculate
+                </button>
+              </form>
+              <div class="workplace-presets" aria-label="Quick San Francisco hubs">
+                <button
+                  type="button"
+                  class="preset-chip"
+                  data-workplace="Salesforce Tower, San Francisco, CA"
+                >
+                  Financial District
+                </button>
+                <button
+                  type="button"
+                  class="preset-chip"
+                  data-workplace="UCSF Medical Center Mission Bay, San Francisco, CA"
+                >
+                  Mission Bay
+                </button>
+                <button
+                  type="button"
+                  class="preset-chip"
+                  data-workplace="Ferry Building, San Francisco, CA"
+                >
+                  Embarcadero
+                </button>
+              </div>
+              <div id="commute-destination-label" class="commute-destination-label"></div>
+              <div class="commute-results-grid">
+                <div class="commute-card">
+                  <span class="commute-mode-label">Driving (Traffic-Aware)</span>
+                  <div id="commute-drive-eta" class="commute-eta-value">—</div>
+                </div>
+                <div class="commute-card">
+                  <span class="commute-mode-label">Public Transit</span>
+                  <div id="commute-transit-eta" class="commute-eta-value">—</div>
+                </div>
+              </div>
+            </section>
+          </section>
+        </aside>
+      </main>
+    </div>
+
+    <script src="/vendor/markerclusterer.umd.js"></script>
+    <script src="/vendor/terra-draw.umd.js"></script>
+    <script src="/vendor/terra-draw-google-maps-adapter.umd.js"></script>
+    <script src="/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,42 @@
+{
+  "solution_id": "ridesharing-and-tracker",
+  "id": "ridesharing-and-tracker",
+  "title": "Rideshare Booking, Fare Estimator & Live Driver Tracking",
+  "name": "Rideshare Booking, Fare Estimator & Live Driver Tracking",
+  "category": "Logistics, Dispatch & Tracking",
+  "user_prompt": "Build a rideshare passenger booking and live driver-dispatch web app in Los Angeles. Pre-seed pickup and drop-off locations with Places Autocomplete inputs so a trip renders immediately on load. Use the Routes API to compute and compare both the fastest traffic-aware route and the Eco-Friendly route on the map, calculating transparent Economy, Comfort, and Green fare estimates from real trip duration and distance while highlighting fuel/energy savings. Simulate dispatching the closest driver from nearby candidate vehicles and smoothly animate the driver's custom Advanced Marker along the pickup and trip polyline with live ETA updates.",
+  "prompt": "Build a rideshare passenger booking and live driver-dispatch web app in Los Angeles. Pre-seed pickup and drop-off locations with Places Autocomplete inputs so a trip renders immediately on load. Use the Routes API to compute and compare both the fastest traffic-aware route and the Eco-Friendly route on the map, calculating transparent Economy, Comfort, and Green fare estimates from real trip duration and distance while highlighting fuel/energy savings. Simulate dispatching the closest driver from nearby candidate vehicles and smoothly animate the driver's custom Advanced Marker along the pickup and trip polyline with live ETA updates.",
+  "expectations": [
+    "Pickup and drop-off Places Autocomplete inputs are present and pre-seeded",
+    "Standard fastest route and Eco-Friendly route polylines and travel metrics are displayed",
+    "Tiered ride fare estimates and eco fuel/energy savings are shown",
+    "Simulated driver Advanced Marker moves smoothly along the route with live ETA",
+    "No console errors"
+  ],
+  "test_interactions": [
+    {
+      "description": "Pickup and drop-off Places Autocomplete inputs are present and pre-seeded",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Standard fastest route and Eco-Friendly route polylines and travel metrics are displayed",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Tiered ride fare estimates and eco fuel/energy savings are shown",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Simulated driver Advanced Marker moves smoothly along the route with live ETA",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    }
+  ]
+}

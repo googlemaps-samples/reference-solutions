@@ -1,0 +1,16 @@
+{
+  "name": "live-order-tracking-static-vanilla-js",
+  "version": "1.0.0",
+  "private": true,
+  "description": "On-Demand Delivery Checkout, Zone Validation & Live Tracker using Static HTML + Vanilla JavaScript (ES Modules) and modern Google Maps Platform APIs.",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs --host 127.0.0.1 --port 3000",
+    "dev": "node server.mjs --host 127.0.0.1 --port 3000",
+    "typecheck": "node --check app.js && node --check server.mjs",
+    "build": "node --check app.js && node --check server.mjs && node -e \"import('node:fs').then(fs => { const required = ['index.html', 'app.js', 'styles.css', 'server.mjs']; for (const file of required) { if (!fs.existsSync(file)) throw new Error('Missing required asset: ' + file); } console.log('Verified static-vanilla-js build assets.'); })\""
+  },
+  "dependencies": {
+    "@googlemaps/js-api-loader": "^2.0.2"
+  }
+}

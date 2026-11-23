@@ -1,0 +1,75 @@
+{
+  "solution_id": "driving-and-geofencing",
+  "solution_title": "Field Workforce Geofenced Attendance & Site Audit Router",
+  "summary": "Cohesive split-screen Austin field workforce attendance and multi-site store audit planning application across all 8 web frameworks. On load, it initializes a 2D Google Map centered on Austin (30.2672, -97.7431, zoom 12) with mapId=\"DEMO_MAP_ID\" and internalUsageAttributionIds=[\"gmp_git_agentsamples_v1.0.0\"], renders 3 pre-seeded Austin client site geofence polygons, mounts a Terra Draw polygon drawing toolbar (terra-draw + terra-draw-google-maps-adapter) so supervisors can draw/edit new polygon geofence zones, evaluates simulated worker GPS presets (inside vs. outside polygons) via google.maps.geometry.poly.containsLocation to unlock or lock the Verified Clock-In badge, reverse-geocodes the worker's coordinates into a street address via Geocoder (client stacks) or /api/geocode/reverse (BFF stacks), discovers live Austin audit sites via Place.searchByText(\"retail stores in Austin, TX\") or /api/places/search, and computes/renders an optimized multi-stop driving route with numbered AdvancedMarkerElement pins via Route.computeRoutes (optimizeWaypointOrder: true) or /api/routes/compute. Zero deprecated APIs (no google.maps.Marker, PlacesService, DirectionsService, or google.maps.drawing).",
+  "gmp_products_used": [
+    "Maps JavaScript API (maps, marker, places, routes, geocoding, geometry libraries)",
+    "Places API (New) — Text Search",
+    "Routes API (v2) — Compute Routes with Waypoint Optimization",
+    "Geocoding API (v4) — Reverse Geocoding"
+  ],
+  "js_libraries_to_import": [
+    "maps",
+    "marker",
+    "places",
+    "routes",
+    "geocoding",
+    "geometry"
+  ],
+  "matched_sub_skills": [
+    "google-maps-platform",
+    "maps-javascript-api-javascript",
+    "gmp-framework-react",
+    "places-api-web-api",
+    "routes-api-web-api",
+    "gmp-common-api-keys",
+    "compliance-review"
+  ],
+  "uses_3d_map": false,
+  "initial_center_lat": 30.2672,
+  "initial_center_lng": -97.7431,
+  "initial_zoom": 12,
+  "seed_search_query": "retail stores in Austin, TX",
+  "ui_layout_summary": "Top header bar (56px) displaying title, Austin district badge, active geofence count, clock-in eligibility pill, and route ETA/distance summary. Below header, a responsive split-screen workspace: left Operations Sidebar (380px width) with 3 cards—(1) Worker GPS & Geofenced Attendance (preset selector with inside/outside Austin coordinates, geofence entry/exit status pill, live reverse-geocoded street address, and Verified Clock-In badge/button), (2) Geofence Zones & Terra Draw Controls (Draw Polygon, Select/Edit, Clear Drawn buttons synced with map overlay toolbar, plus zone list showing pre-seeded and newly drawn polygons), and (3) Multi-Stop Audit Router (live Places Text Search input, Optimize Route button, ordered audit stops list reflecting optimized waypoint indices, and route totals); right Map Canvas (flex: 1, min-height: 520px) featuring a top-left floating Terra Draw toolbar, pre-seeded + supervisor-drawn geofence polygons, simulated worker AdvancedMarkerElement, numbered audit stop AdvancedMarkerElements with InfoWindows, and the optimized driving route polyline.",
+  "interactive_controls": [
+    "map-container",
+    "terra-draw-toolbar",
+    "draw-polygon-btn",
+    "select-mode-btn",
+    "clear-drawn-btn",
+    "worker-preset-select",
+    "geofence-status-badge",
+    "worker-address",
+    "verified-clockin-badge",
+    "clockin-action-btn",
+    "geofence-list",
+    "site-search-input",
+    "site-search-btn",
+    "optimize-route-btn",
+    "audit-stops-list",
+    "route-summary"
+  ],
+  "backend_proxy_endpoints": [
+    {
+      "method": "POST",
+      "path": "/api/places/search",
+      "upstream_gmp_service": "places.googleapis.com/v1/places:searchText",
+      "field_mask": "places.id,places.displayName,places.formattedAddress,places.location,places.primaryTypeDisplayName",
+      "purpose": "Server-side Places API (New) Text Search proxy to fetch live Austin audit site candidates on initial load and supervisor searches with explicit X-Goog-Api-Key and X-Goog-FieldMask headers."
+    },
+    {
+      "method": "POST",
+      "path": "/api/routes/compute",
+      "upstream_gmp_service": "routes.googleapis.com/directions/v2:computeRoutes",
+      "field_mask": "routes.optimizedIntermediateWaypointIndex,routes.distanceMeters,routes.duration,routes.polyline.encodedPolyline,routes.legs.distanceMeters,routes.legs.duration,routes.legs.startLocation,routes.legs.endLocation",
+      "purpose": "Server-side Routes API v2 computeRoutes proxy with optimizeWaypointOrder=true and TRAFFIC_AWARE routingPreference to compute the optimized multi-stop audit itinerary, leg metrics, and encoded polyline."
+    },
+    {
+      "method": "GET",
+      "path": "/api/geocode/reverse",
+      "upstream_gmp_service": "geocode.googleapis.com/v4/geocode/location/{lat},{lng}",
+      "field_mask": "results.formattedAddress,results.placeId,results.location",
+      "purpose": "Server-side Geocoding API v4 reverse geocoding proxy converting simulated worker lat/lng coordinates into a human-readable Austin street address."
+    }
+  ]
+}

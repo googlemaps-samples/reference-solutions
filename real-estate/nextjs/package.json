@@ -1,0 +1,31 @@
+{
+  "name": "sf-real-estate-explorer-nextjs",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Split-screen San Francisco real estate search, cadastral parcel polygon, and neighborhood commute explorer built with Next.js App Router, @vis.gl/react-google-maps, Terra Draw, Places API (New), and Routes API.",
+  "scripts": {
+    "dev": "next dev --hostname 127.0.0.1 --port 3000",
+    "build": "next build",
+    "start": "next start --hostname 127.0.0.1 --port 3000",
+    "typecheck": "tsc --noEmit",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@googlemaps/js-api-loader": "^2.0.0",
+    "@googlemaps/markerclusterer": "^2.6.2",
+    "@vis.gl/react-google-maps": "^1.10.2",
+    "lucide-react": "^0.511.0",
+    "next": "^15.5.12",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "terra-draw": "^1.40.0",
+    "terra-draw-google-maps-adapter": "^1.7.0"
+  },
+  "devDependencies": {
+    "@types/google.maps": "^3.58.1",
+    "@types/node": "^22.15.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "typescript": "^5.8.3"
+  }
+}

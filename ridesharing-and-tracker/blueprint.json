@@ -1,0 +1,74 @@
+{
+  "solution_id": "ridesharing-and-tracker",
+  "solution_title": "Rideshare Booking, Fare Estimator & Live Driver Tracking",
+  "summary": "Cross-framework Los Angeles rideshare booking, transparent fare estimation, eco-friendly route comparison, and live driver-dispatch simulation blueprint built exclusively with modern, zero-deprecation Google Maps Platform APIs (Maps JS API, AdvancedMarkerElement, PlaceAutocompleteElement, Place.searchByText, and Routes API v2 with TRAFFIC_AWARE_OPTIMAL, FUEL_EFFICIENT, and FUEL_CONSUMPTION). On initial load, pre-seeded Los Angeles pickup and drop-off locations resolve live via Places API (New), trigger dual fastest vs. eco-friendly route computation, render transparent Economy/Comfort/Green fares and fuel/CO2 savings, dispatch the closest simulated candidate vehicle, and smoothly animate its custom AdvancedMarkerElement along the pickup and trip polylines with live ETA updates.",
+  "gmp_products_used": [
+    "Maps JavaScript API (2D Vector Map with mapId DEMO_MAP_ID & AdvancedMarkerElement)",
+    "Places API (New) (PlaceAutocompleteElement with gmp-select, Place.searchByText, and places:searchText)",
+    "Routes API (Route.computeRoutes, directions/v2:computeRoutes with FUEL_EFFICIENT & FUEL_CONSUMPTION, and distanceMatrix/v2:computeRouteMatrix)",
+    "Maps JavaScript API Geometry Library (encoding.decodePath & spherical heading/distance interpolation)"
+  ],
+  "js_libraries_to_import": [
+    "core",
+    "maps",
+    "marker",
+    "places",
+    "routes",
+    "geometry"
+  ],
+  "matched_sub_skills": [
+    "google-maps-platform",
+    "compliance-review",
+    "gmp-common-api-keys",
+    "maps-javascript-api-javascript",
+    "gmp-framework-react",
+    "places-api-web-api",
+    "routes-api-web-api"
+  ],
+  "uses_3d_map": false,
+  "initial_center_lat": 34.0328,
+  "initial_center_lng": -118.3669,
+  "initial_zoom": 12,
+  "seed_search_query": "Union Station, Los Angeles, CA to Santa Monica Pier, Santa Monica, CA",
+  "ui_layout_summary": "Full-viewport split-screen layout with a 56px top header (branding, active LA trip summary, and live dispatch status badge), a scrollable 400px left control & telemetry sidebar (Trip Planner with pre-seeded pickup/drop-off PlaceAutocompleteElement inputs and swap button; Fastest vs. Eco-Friendly Route Comparison cards with fuel/CO2 savings banner and emission type selector; Economy/Comfort/Green Fare Estimator cards; and Live Driver Dispatch & ETA tracker with simulation controls), and a flex-1 right interactive Google Map canvas (explicit min-height: 560px / height: calc(100vh - 56px)) displaying both route polylines, pickup/drop-off/candidate-vehicle AdvancedMarkerElements, animated driver marker, and a floating route legend.",
+  "interactive_controls": [
+    "data-testid=\"pickup-autocomplete\" (PlaceAutocompleteElement container pre-seeded with Los Angeles Union Station)",
+    "data-testid=\"dropoff-autocomplete\" (PlaceAutocompleteElement container pre-seeded with Santa Monica Pier)",
+    "data-testid=\"swap-locations-btn\" (Swaps pickup and drop-off locations and recomputes routes)",
+    "data-testid=\"route-option-fastest\" (Selects and highlights the TRAFFIC_AWARE_OPTIMAL fastest route)",
+    "data-testid=\"route-option-eco\" (Selects and highlights the FUEL_EFFICIENT eco-friendly route)",
+    "data-testid=\"eco-savings-banner\" (Displays live fuel/energy and CO2 savings between fastest and eco routes)",
+    "data-testid=\"emission-type-select\" (Switches vehicleInfo.emissionType between GASOLINE, HYBRID, and ELECTRIC)",
+    "data-testid=\"fare-tier-economy\" (Economy ride tier card with live distance/duration fare breakdown)",
+    "data-testid=\"fare-tier-comfort\" (Comfort ride tier card with live distance/duration fare breakdown)",
+    "data-testid=\"fare-tier-green\" (Green EV/Hybrid ride tier card with eco savings callout)",
+    "data-testid=\"dispatch-driver-btn\" (Dispatches or restarts simulation of the closest candidate driver along pickup + trip polylines)",
+    "data-testid=\"toggle-simulation-btn\" (Pauses or resumes live driver marker animation and ETA countdown)",
+    "data-testid=\"driver-live-eta\" (Displays live driver status, remaining ETA, and distance to pickup/drop-off)",
+    "data-testid=\"rideshare-map\" (Primary interactive Google Map container with explicit non-zero height >= 560px)",
+    "data-testid=\"map-route-legend\" (Floating map legend distinguishing fastest route, eco route, pins, and live driver)"
+  ],
+  "backend_proxy_endpoints": [
+    {
+      "method": "POST",
+      "path": "/api/routes/compute",
+      "upstream_gmp_service": "routes.googleapis.com/directions/v2:computeRoutes",
+      "field_mask": "routes.distanceMeters,routes.duration,routes.staticDuration,routes.polyline.encodedPolyline,routes.routeLabels,routes.travelAdvisory.fuelConsumptionMicroliters,routes.localizedValues",
+      "purpose": "Computes traffic-aware fastest (DEFAULT_ROUTE) and eco-friendly (FUEL_EFFICIENT) driving routes with FUEL_CONSUMPTION extra computation, plus driver-to-pickup approach polylines."
+    },
+    {
+      "method": "POST",
+      "path": "/api/routes/matrix",
+      "upstream_gmp_service": "routes.googleapis.com/distanceMatrix/v2:computeRouteMatrix",
+      "field_mask": "originIndex,destinationIndex,duration,distanceMeters,status,condition",
+      "purpose": "Evaluates live driving ETA and distance from nearby candidate drivers to the passenger pickup location to dispatch the closest driver."
+    },
+    {
+      "method": "POST",
+      "path": "/api/places/search",
+      "upstream_gmp_service": "places.googleapis.com/v1/places:searchText",
+      "field_mask": "places.id,places.displayName,places.formattedAddress,places.location",
+      "purpose": "Resolves pre-seeded or text-entered Los Angeles pickup and drop-off locations via Places API (New) Text Search on initial load and search fallback."
+    }
+  ]
+}

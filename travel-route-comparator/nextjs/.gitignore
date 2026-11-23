@@ -1,0 +1,9 @@
+node_modules/
+dist/
+build/
+.next/
+.svelte-kit/
+.venv/
+.env
+.env.local
+next-env.d.ts

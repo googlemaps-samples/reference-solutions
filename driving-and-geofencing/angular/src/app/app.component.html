@@ -1,0 +1,401 @@
+<div class="app-shell">
+  <!-- Top Operations Header Bar (56px) -->
+  <header class="top-header">
+    <div class="header-left">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2L4 7v10l8 5 8-5V7l-8-5z" />
+          <circle cx="12" cy="12" r="3" />
+        </svg>
+      </div>
+      <div class="title-group">
+        <h1>Field Workforce Geofenced Attendance &amp; Site Audit Router</h1>
+        <span class="district-badge">Austin Metro District</span>
+      </div>
+    </div>
+
+    <div class="header-metrics">
+      <span class="header-pill neutral">
+        {{ allGeofences().length }} Active Zones
+      </span>
+      <span
+        class="header-pill"
+        [class.eligible]="isInsideGeofence()"
+        [class.locked]="!isInsideGeofence()"
+      >
+        {{ isInsideGeofence() ? 'Clock-In Eligible' : 'Clock-In Locked' }}
+      </span>
+      <span class="header-pill route-pill">
+        Route: {{ formattedRouteDistance() }} &middot; {{ formattedRouteDuration() }}
+      </span>
+    </div>
+  </header>
+
+  <!-- Split-Screen Workspace -->
+  <main class="workspace">
+    <!-- Left Operations Sidebar (380px) -->
+    <aside class="operations-sidebar">
+      <!-- Card 1: Worker GPS & Geofenced Attendance -->
+      <section class="ops-card">
+        <div class="card-header">
+          <h2>1. Worker GPS &amp; Geofenced Attendance</h2>
+          <span class="sub-tag">Geometry + Geocoding</span>
+        </div>
+
+        <label class="field-label" for="worker-preset-select">
+          Simulated Worker GPS Position
+        </label>
+        <select
+          id="worker-preset-select"
+          class="select-input"
+          [ngModel]="selectedPresetId()"
+          (ngModelChange)="onWorkerPresetChange($event)"
+        >
+          @for (preset of workerPresets; track preset.id) {
+            <option [value]="preset.id">{{ preset.label }}</option>
+          }
+        </select>
+
+        <div class="status-row">
+          <span
+            id="geofence-status-badge"
+            class="status-pill"
+            [class.inside]="isInsideGeofence()"
+            [class.outside]="!isInsideGeofence()"
+          >
+            @if (matchedGeofence(); as zone) {
+              INSIDE GEOFENCE: {{ zone.name }}
+            } @else {
+              OUTSIDE ALL GEOFENCES
+            }
+          </span>
+        </div>
+
+        <div class="address-box">
+          <div class="address-label">Reverse-Geocoded Site Address</div>
+          <div id="worker-address" class="address-value">
+            @if (isGeocoding()) {
+              Resolving street address...
+            } @else {
+              {{ workerAddress() }}
+            }
+          </div>
+          <div class="coords-meta">
+            GPS: {{ workerPosition().lat.toFixed(5) }}, {{ workerPosition().lng.toFixed(5) }}
+          </div>
+        </div>
+
+        <div class="clockin-panel">
+          <div
+            id="verified-clockin-badge"
+            class="clockin-badge"
+            [class.unlocked]="isInsideGeofence()"
+            [class.locked]="!isInsideGeofence()"
+          >
+            @if (isInsideGeofence()) {
+              <span>Verified Clock-In Unlocked</span>
+            } @else {
+              <span>Clock-In Locked &mdash; Move Inside Geofence</span>
+            }
+          </div>
+
+          <button
+            id="clockin-action-btn"
+            type="button"
+            class="primary-btn emerald"
+            [disabled]="!isInsideGeofence() || !mapsReady()"
+            (click)="recordVerifiedClockIn()"
+          >
+            {{ isInsideGeofence() ? 'Record Verified Clock-In' : 'Clock-In Disabled (Outside Zone)' }}
+          </button>
+        </div>
+
+        @if (attendanceLogs().length > 0) {
+          <div class="attendance-log">
+            <div class="log-title">Recent Verified Check-Ins</div>
+            @for (log of attendanceLogs(); track log.id) {
+              <div class="log-item">
+                <div class="log-zone">{{ log.zoneName }} &middot; {{ log.timestamp }}</div>
+                <div class="log-addr">{{ log.address }}</div>
+              </div>
+            }
+          </div>
+        }
+      </section>
+
+      <!-- Card 2: Geofence Zones & Terra Draw Controls -->
+      <section class="ops-card">
+        <div class="card-header">
+          <h2>2. Geofence Zones &amp; Terra Draw</h2>
+          <span class="sub-tag">{{ allGeofences().length }} Zones</span>
+        </div>
+
+        <div class="draw-btn-group">
+          <button
+            type="button"
+            class="tool-btn"
+            [class.active]="drawMode() === 'polygon'"
+            [disabled]="!mapsReady()"
+            (click)="setDrawMode('polygon')"
+          >
+            Draw Polygon
+          </button>
+          <button
+            type="button"
+            class="tool-btn"
+            [class.active]="drawMode() === 'select'"
+            [disabled]="!mapsReady()"
+            (click)="setDrawMode('select')"
+          >
+            Select / Edit
+          </button>
+          <button
+            type="button"
+            class="tool-btn danger"
+            [disabled]="!mapsReady() || drawnGeofences().length === 0"
+            (click)="clearDrawnGeofences()"
+          >
+            Clear Drawn
+          </button>
+        </div>
+
+        <p class="helper-text">
+          Draw a new polygon around any Austin site (e.g., Zilker Park) to create a live geofence and unlock attendance check-in.
+        </p>
+
+        <ul id="geofence-list" class="zone-list">
+          @for (zone of allGeofences(); track zone.id) {
+            <li
+              class="zone-item"
+              [class.active-match]="matchedGeofence()?.id === zone.id"
+              (click)="focusGeofence(zone)"
+            >
+              <span class="zone-swatch" [style.backgroundColor]="zone.color"></span>
+              <div class="zone-info">
+                <div class="zone-name">{{ zone.name }}</div>
+                <div class="zone-meta">
+                  {{ zone.source === 'pre-seeded' ? 'Pre-seeded' : 'Supervisor Drawn' }}
+                  &middot; {{ zone.vertexCount }} vertices
+                </div>
+              </div>
+              @if (matchedGeofence()?.id === zone.id) {
+                <span class="zone-match-tag">Worker Inside</span>
+              }
+            </li>
+          }
+        </ul>
+      </section>
+
+      <!-- Card 3: Multi-Stop Audit Router -->
+      <section class="ops-card">
+        <div class="card-header">
+          <h2>3. Multi-Stop Audit Router</h2>
+          <span class="sub-tag">Places + Routes v2</span>
+        </div>
+
+        <form class="search-row" (ngSubmit)="onSearchAuditSites()">
+          <input
+            id="site-search-input"
+            type="text"
+            class="text-input"
+            name="siteSearch"
+            [(ngModel)]="searchQuery"
+            placeholder="Search Austin audit sites..."
+            aria-label="Search Austin audit sites"
+          />
+          <button
+            id="site-search-btn"
+            type="submit"
+            class="secondary-btn"
+            [disabled]="!mapsReady() || isSearchingSites()"
+          >
+            {{ isSearchingSites() ? 'Searching...' : 'Search' }}
+          </button>
+        </form>
+
+        <div class="route-actions">
+          <button
+            id="optimize-route-btn"
+            type="button"
+            class="primary-btn"
+            [disabled]="!mapsReady() || isComputingRoute() || auditStops().length === 0"
+            (click)="onOptimizeRoute()"
+          >
+            {{ isComputingRoute() ? 'Optimizing Route...' : 'Optimize Multi-Stop Route' }}
+          </button>
+        </div>
+
+        <div id="route-summary" class="route-summary-box">
+          <div>
+            <span class="metric-label">Distance</span>
+            <span class="metric-value">{{ formattedRouteDistance() }}</span>
+          </div>
+          <div>
+            <span class="metric-label">Traffic ETA</span>
+            <span class="metric-value">{{ formattedRouteDuration() }}</span>
+          </div>
+          <div>
+            <span class="metric-label">Audit Stops</span>
+            <span class="metric-value">{{ auditStops().length }}</span>
+          </div>
+        </div>
+
+        <ol id="audit-stops-list" class="stops-list">
+          @for (stop of auditStops(); track trackByStopId($index, stop)) {
+            <li
+              class="stop-item"
+              [class.selected]="selectedStop()?.id === stop.id"
+              (click)="focusAuditStop(stop)"
+            >
+              <span class="stop-badge">{{ stop.orderIndex }}</span>
+              <div class="stop-details">
+                <div class="stop-name">{{ stop.name }}</div>
+                <div class="stop-address">{{ stop.formattedAddress }}</div>
+                @if (formatLegMetrics(stop)) {
+                  <div class="stop-leg">{{ formatLegMetrics(stop) }}</div>
+                }
+              </div>
+            </li>
+          } @empty {
+            <li class="stop-empty">
+              {{ apiKeyMissing() ? 'Configure GOOGLE_MAPS_API_KEY in .env to discover live Austin audit stops.' : 'Loading Austin audit stops via Places API (New)...' }}
+            </li>
+          }
+        </ol>
+      </section>
+    </aside>
+
+    <!-- Right Map Canvas -->
+    <section class="map-section">
+      <div id="map-container" class="map-container">
+        <!-- Floating Terra Draw Toolbar -->
+        <div id="terra-draw-toolbar" class="terra-draw-toolbar" role="toolbar" aria-label="Geofence Drawing Toolbar">
+          <span class="toolbar-title">Geofence Draw</span>
+          <button
+            id="draw-polygon-btn"
+            type="button"
+            class="toolbar-btn"
+            [class.active]="drawMode() === 'polygon'"
+            [disabled]="!mapsReady()"
+            (click)="setDrawMode('polygon')"
+          >
+            Draw Polygon
+          </button>
+          <button
+            id="select-mode-btn"
+            type="button"
+            class="toolbar-btn"
+            [class.active]="drawMode() === 'select'"
+            [disabled]="!mapsReady()"
+            (click)="setDrawMode('select')"
+          >
+            Select / Edit
+          </button>
+          <button
+            id="clear-drawn-btn"
+            type="button"
+            class="toolbar-btn danger"
+            [disabled]="!mapsReady() || drawnGeofences().length === 0"
+            (click)="clearDrawnGeofences()"
+          >
+            Clear Drawn
+          </button>
+        </div>
+
+        @if (drawMode() === 'polygon') {
+          <div class="draw-hint-banner">
+            Click points on the map to outline a new geofence polygon. Click the starting vertex or double-click to finish.
+          </div>
+        }
+
+        @if (statusMessage()) {
+          <div class="status-toast" role="status">
+            {{ statusMessage() }}
+          </div>
+        }
+
+        @if (apiKeyMissing()) {
+          <div class="missing-key-overlay">
+            <div class="missing-key-card">
+              <h3>Google Maps Platform API Key Required</h3>
+              <p>
+                Set <code>GOOGLE_MAPS_API_KEY</code> in your local <code>.env</code> file to render the interactive Austin map, geofence evaluation, live reverse geocoding, Places Text Search, and Routes API waypoint optimization.
+              </p>
+              <p class="demo-key-hint">
+                Need a free prototyping key without billing? Generate a
+                <a
+                  href="https://mapsplatform.google.com/maps-demo-key?utm_campaign=gmp_git_agentsamples_v1.0.0"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >Maps Demo Key</a>
+                and restart <code>node serve-dist.mjs</code>.
+              </p>
+            </div>
+          </div>
+        }
+
+        @if (mapsReady()) {
+          <google-map
+            width="100%"
+            height="100%"
+            [center]="initialCenter"
+            [zoom]="initialZoom"
+            [options]="mapOptions"
+            (mapInitialized)="onMapInitialized($event)"
+          >
+            <!-- Pre-seeded Austin Site Geofence Polygons -->
+            @for (zone of preSeededGeofences; track zone.id) {
+              <map-polygon
+                [paths]="zone.paths"
+                [options]="getPolygonOptions(zone)"
+                (polygonClick)="focusGeofence(zone)"
+              />
+            }
+
+            <!-- Optimized Multi-Stop Driving Route Polyline -->
+            @if (routePolylinePath().length > 1) {
+              <map-polyline
+                [path]="routePolylinePath()"
+                [options]="routePolylineOptions"
+              />
+            }
+
+            <!-- Simulated Field Worker AdvancedMarkerElement -->
+            <map-advanced-marker
+              [position]="workerPosition()"
+              [content]="workerPinContent()"
+              [zIndex]="100"
+              title="Simulated Field Worker GPS Position"
+            />
+
+            <!-- Numbered Audit Stop AdvancedMarkerElements -->
+            @for (stop of auditStops(); track trackByStopId($index, stop)) {
+              <map-advanced-marker
+                #stopMarker="mapAdvancedMarker"
+                [position]="stop.location"
+                [content]="stop.pinContent ?? null"
+                [title]="stop.orderIndex + '. ' + stop.name"
+                [zIndex]="60"
+                (mapClick)="openStopInfo(stop, stopMarker)"
+              />
+            }
+
+            <!-- Stop Details InfoWindow -->
+            <map-info-window #stopInfoWindow="mapInfoWindow">
+              @if (selectedStop(); as stop) {
+                <div class="info-window-content">
+                  <div class="iw-badge">Stop #{{ stop.orderIndex }} &middot; {{ stop.primaryType }}</div>
+                  <div class="iw-title">{{ stop.name }}</div>
+                  <div class="iw-address">{{ stop.formattedAddress }}</div>
+                  @if (formatLegMetrics(stop)) {
+                    <div class="iw-leg">Leg from previous stop: {{ formatLegMetrics(stop) }}</div>
+                  }
+                </div>
+              }
+            </map-info-window>
+          </google-map>
+        }
+      </div>
+    </section>
+  </main>
+</div>

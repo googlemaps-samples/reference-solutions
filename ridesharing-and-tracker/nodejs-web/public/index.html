@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MetroPulse Rideshare • Los Angeles Dispatch &amp; Eco Routing</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232563eb'/%3E%3Cpath d='M16 6L24 24L16 20L8 24L16 6Z' fill='%2334d399'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="top-header">
+        <div class="brand-group">
+          <span class="brand-badge" aria-hidden="true">MP</span>
+          <div>
+            <h1 class="brand-title">MetroPulse Rideshare</h1>
+            <p class="brand-subtitle">Los Angeles Live Dispatch &amp; Eco Routing</p>
+          </div>
+        </div>
+        <div class="header-telemetry">
+          <div class="trip-pill" id="header-trip-summary">
+            Union Station → Santa Monica Pier
+          </div>
+          <div class="status-pill" id="header-dispatch-status">
+            Initializing Dispatch…
+          </div>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <aside class="sidebar" aria-label="Trip Planner, Fare Estimator, and Driver Dispatch">
+          <!-- Trip Planner -->
+          <section class="panel" aria-labelledby="planner-heading">
+            <div class="panel-header">
+              <h2 id="planner-heading" class="panel-title">Trip Planner</h2>
+              <span class="panel-tag">Los Angeles, CA</span>
+            </div>
+
+            <div class="location-fields">
+              <div class="field-block">
+                <div class="field-label-row">
+                  <span class="dot dot-pickup" aria-hidden="true"></span>
+                  <label class="field-label" for="pickup-autocomplete-host">Pickup</label>
+                </div>
+                <div
+                  id="pickup-autocomplete-host"
+                  class="autocomplete-host"
+                  data-testid="pickup-autocomplete"
+                ></div>
+                <p class="field-meta" id="pickup-resolved-address">
+                  Resolving Union Station, Los Angeles, CA…
+                </p>
+              </div>
+
+              <div class="swap-row">
+                <button
+                  type="button"
+                  id="swap-locations-btn"
+                  class="btn-swap"
+                  data-testid="swap-locations-btn"
+                  title="Swap pickup and drop-off"
+                >
+                  ⇅ Swap Locations
+                </button>
+              </div>
+
+              <div class="field-block">
+                <div class="field-label-row">
+                  <span class="dot dot-dropoff" aria-hidden="true"></span>
+                  <label class="field-label" for="dropoff-autocomplete-host">Drop-off</label>
+                </div>
+                <div
+                  id="dropoff-autocomplete-host"
+                  class="autocomplete-host"
+                  data-testid="dropoff-autocomplete"
+                ></div>
+                <p class="field-meta" id="dropoff-resolved-address">
+                  Resolving Santa Monica Pier, Santa Monica, CA…
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <!-- Route Comparison -->
+          <section class="panel" aria-labelledby="routes-heading">
+            <div class="panel-header">
+              <h2 id="routes-heading" class="panel-title">Route Comparison</h2>
+              <div class="emission-control">
+                <label class="sr-only" for="emission-type-select">Vehicle Emission Type</label>
+                <select
+                  id="emission-type-select"
+                  class="select-compact"
+                  data-testid="emission-type-select"
+                >
+                  <option value="GASOLINE" selected>Gasoline</option>
+                  <option value="HYBRID">Hybrid</option>
+                  <option value="ELECTRIC">Electric (EV)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="route-cards">
+              <button
+                type="button"
+                id="route-option-fastest"
+                class="route-card is-selected"
+                data-testid="route-option-fastest"
+              >
+                <div class="route-card-top">
+                  <span class="route-badge route-badge-fastest">Fastest • Traffic-Aware</span>
+                  <span class="route-duration" id="fastest-duration">-- min</span>
+                </div>
+                <div class="route-card-metrics">
+                  <span id="fastest-distance">-- mi</span>
+                  <span class="metric-sep">•</span>
+                  <span id="fastest-fuel">-- gal est.</span>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                id="route-option-eco"
+                class="route-card"
+                data-testid="route-option-eco"
+              >
+                <div class="route-card-top">
+                  <span class="route-badge route-badge-eco">Eco-Friendly • Fuel-Efficient</span>
+                  <span class="route-duration" id="eco-duration">-- min</span>
+                </div>
+                <div class="route-card-metrics">
+                  <span id="eco-distance">-- mi</span>
+                  <span class="metric-sep">•</span>
+                  <span id="eco-fuel">-- gal est.</span>
+                </div>
+              </button>
+            </div>
+
+            <div
+              id="eco-savings-banner"
+              class="eco-banner"
+              data-testid="eco-savings-banner"
+            >
+              Computing fuel &amp; CO₂ comparison…
+            </div>
+          </section>
+
+          <!-- Fare Estimator -->
+          <section class="panel" aria-labelledby="fares-heading">
+            <div class="panel-header">
+              <h2 id="fares-heading" class="panel-title">Transparent Fare Estimate</h2>
+              <span class="panel-tag" id="fare-route-tag">Fastest Route</span>
+            </div>
+
+            <div class="fare-list">
+              <button
+                type="button"
+                id="fare-tier-economy"
+                class="fare-card is-selected"
+                data-testid="fare-tier-economy"
+              >
+                <div class="fare-card-main">
+                  <div>
+                    <div class="fare-name">Economy</div>
+                    <div class="fare-desc" id="fare-economy-breakdown">
+                      Base + distance + time
+                    </div>
+                  </div>
+                  <div class="fare-price" id="fare-economy-price">$--.--</div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                id="fare-tier-comfort"
+                class="fare-card"
+                data-testid="fare-tier-comfort"
+              >
+                <div class="fare-card-main">
+                  <div>
+                    <div class="fare-name">Comfort</div>
+                    <div class="fare-desc" id="fare-comfort-breakdown">
+                      Extra legroom • newer sedans
+                    </div>
+                  </div>
+                  <div class="fare-price" id="fare-comfort-price">$--.--</div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                id="fare-tier-green"
+                class="fare-card fare-card-green"
+                data-testid="fare-tier-green"
+              >
+                <div class="fare-card-main">
+                  <div>
+                    <div class="fare-name">
+                      Green <span class="green-chip">EV / Hybrid</span>
+                    </div>
+                    <div class="fare-desc" id="fare-green-breakdown">
+                      Zero/low tailpipe emissions
+                    </div>
+                  </div>
+                  <div class="fare-price" id="fare-green-price">$--.--</div>
+                </div>
+                <div class="fare-eco-callout" id="fare-green-savings">
+                  Calculating eco savings…
+                </div>
+              </button>
+            </div>
+          </section>
+
+          <!-- Live Driver Dispatch -->
+          <section class="panel" aria-labelledby="dispatch-heading">
+            <div class="panel-header">
+              <h2 id="dispatch-heading" class="panel-title">Live Driver Dispatch</h2>
+              <span class="panel-tag" id="dispatch-phase-tag">Standby</span>
+            </div>
+
+            <div class="driver-card">
+              <div class="driver-identity">
+                <div class="driver-avatar" id="driver-avatar">DR</div>
+                <div>
+                  <div class="driver-name" id="driver-name">Selecting closest driver…</div>
+                  <div class="driver-vehicle" id="driver-vehicle">Evaluating nearby LA fleet</div>
+                </div>
+              </div>
+
+              <div
+                id="driver-live-eta"
+                class="driver-eta-box"
+                data-testid="driver-live-eta"
+              >
+                Evaluating candidate vehicles via Route Matrix…
+              </div>
+
+              <div class="fleet-candidates" id="fleet-candidates-list"></div>
+
+              <div class="dispatch-actions">
+                <button
+                  type="button"
+                  id="dispatch-driver-btn"
+                  class="btn-primary"
+                  data-testid="dispatch-driver-btn"
+                >
+                  Dispatch Closest Driver
+                </button>
+                <button
+                  type="button"
+                  id="toggle-simulation-btn"
+                  class="btn-secondary"
+                  data-testid="toggle-simulation-btn"
+                >
+                  Pause Tracking
+                </button>
+              </div>
+            </div>
+          </section>
+        </aside>
+
+        <section class="map-stage" aria-label="Interactive Los Angeles Map">
+          <div
+            id="rideshare-map"
+            class="map-canvas"
+            data-testid="rideshare-map"
+          ></div>
+
+          <div
+            id="map-route-legend"
+            class="map-legend"
+            data-testid="map-route-legend"
+          >
+            <div class="legend-title">Map Legend</div>
+            <div class="legend-row">
+              <span class="legend-line legend-fastest"></span>
+              <span>Fastest (Traffic-Aware)</span>
+            </div>
+            <div class="legend-row">
+              <span class="legend-line legend-eco"></span>
+              <span>Eco-Friendly (Fuel-Efficient)</span>
+            </div>
+            <div class="legend-row">
+              <span class="legend-line legend-approach"></span>
+              <span>Driver Pickup Approach</span>
+            </div>
+            <div class="legend-row">
+              <span class="legend-dot legend-pickup"></span>
+              <span>Pickup</span>
+              <span class="legend-dot legend-dropoff"></span>
+              <span>Drop-off</span>
+              <span class="legend-dot legend-driver"></span>
+              <span>Live Driver</span>
+            </div>
+          </div>
+
+          <div id="map-status-banner" class="map-status-banner is-hidden" role="status"></div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

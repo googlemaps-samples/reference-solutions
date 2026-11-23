@@ -1,0 +1,16 @@
+{
+  "name": "storefront-sample-static-vanilla-js",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Single-Venue Storefront, Booking & Get Directions Hub built with Static HTML, Vanilla ES Modules, and modern Google Maps Platform APIs.",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs --host 127.0.0.1 --port 3000",
+    "dev": "node server.mjs --host 127.0.0.1 --port 3000",
+    "typecheck": "node --check app.js && node --check server.mjs",
+    "build": "node --check app.js && node --check server.mjs && node -e \"import('node:fs').then(fs=>{for(const f of['index.html','app.js','styles.css','server.mjs']){if(!fs.existsSync(f))throw new Error('Missing '+f)}})\""
+  },
+  "dependencies": {
+    "@googlemaps/js-api-loader": "^2.0.2"
+  }
+}

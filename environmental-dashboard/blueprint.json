@@ -1,0 +1,104 @@
+{
+  "solution_id": "environmental-dashboard",
+  "solution_title": "Hyperlocal Weather, Air Quality, Pollen & Solar Dashboard",
+  "summary": "Cohesive Phase 2 Shared Solution Architecture Blueprint for the Hyperlocal Weather, Air Quality, Pollen & Solar Dashboard pre-seeded in Downtown Phoenix (Phoenix City Hall). Uses zero-deprecation Maps JS API v2 (2D Vector Map with mapId='DEMO_MAP_ID', AdvancedMarkerElement, PlaceAutocompleteElement with gmp-select, Place.searchByText, Geocoder for map-click reverse geocoding, and native ImageMapType for WebGL-free AQI heatmap tiles) paired with live Weather, Air Quality, Pollen, and Solar APIs—via direct browser calls on client-only stacks and secure /api/* BFF proxies with X-Goog-Api-Key and X-Goog-FieldMask on full-stack frameworks.",
+  "gmp_products_used": [
+    "Maps JavaScript API (2D Vector Map, AdvancedMarkerElement, PinElement, ImageMapType, Polygon/Rectangle, Geocoder)",
+    "Places API (New) (PlaceAutocompleteElement, Place.searchByText, places:searchText)",
+    "Weather API (currentConditions:lookup, forecast/days:lookup)",
+    "Air Quality API (currentConditions:lookup, mapTypes/US_AQI/heatmapTiles)",
+    "Pollen API (forecast:lookup)",
+    "Solar API (buildingInsights:findClosest)"
+  ],
+  "js_libraries_to_import": [
+    "maps",
+    "marker",
+    "places",
+    "geocoding"
+  ],
+  "matched_sub_skills": [
+    "google-maps-platform",
+    "compliance-review",
+    "gmp-common-api-keys",
+    "maps-javascript-api-javascript",
+    "gmp-framework-react",
+    "places-api-web-api",
+    "weather-api-web-api",
+    "air-quality-api-web-api",
+    "pollen-api-web-api",
+    "solar-api-web-api"
+  ],
+  "uses_3d_map": false,
+  "initial_center_lat": 33.4484,
+  "initial_center_lng": -112.074,
+  "initial_zoom": 16,
+  "seed_search_query": "Phoenix City Hall, Phoenix, AZ",
+  "ui_layout_summary": "Full-viewport split-screen dashboard with a 64px top header bar (app brand, PlaceAutocompleteElement search box, Phoenix preset reset, Imperial/Metric units toggle, AQI tile overlay toggle, and Roadmap/Hybrid satellite toggle) above a 2-column workspace: a 420px scrollable left Environmental Intelligence Sidebar (Location summary, Weather current + 5-day forecast, Air Quality Index + pollutants + health advice, Tree/Grass/Weed Pollen forecast, and Rooftop Solar Building Insights with graceful 404 non-coverage handling) paired with a full-height interactive 2D Google Map (min-height: 520px) featuring an AdvancedMarkerElement, building-click coordinate inspection, optional US_AQI ImageMapType overlay, and building bounding-box highlight.",
+  "interactive_controls": [
+    "data-testid=\"places-autocomplete-container\" (Hosts modern PlaceAutocompleteElement listening to gmp-select and calling event.placePrediction.toPlace().fetchFields())",
+    "data-testid=\"active-location-badge\" (Displays active place/address and live lat/lng coordinates)",
+    "data-testid=\"reset-phoenix-btn\" (Resets inspection target to pre-seeded Phoenix City Hall location)",
+    "data-testid=\"units-toggle-btn\" (Toggles IMPERIAL vs METRIC units for Weather API and Solar/UI display)",
+    "data-testid=\"aqi-layer-toggle\" (Toggles native google.maps.ImageMapType US_AQI raster tile overlay on map.overlayMapTypes without WebGL)",
+    "data-testid=\"map-type-toggle\" (Switches base mapTypeId between roadmap and hybrid/satellite for rooftop visual inspection)",
+    "data-testid=\"environmental-sidebar\" (Scrollable left intelligence panel housing all live environmental cards)",
+    "data-testid=\"selected-location-card\" (Displays resolved place name, formatted address, coordinates, and click-building instruction)",
+    "data-testid=\"weather-card\" (Displays live Weather API current conditions: temp, feels-like, humidity, UV, wind, precipitation)",
+    "data-testid=\"weather-forecast-list\" (Displays 5-day daily forecast cards from Weather API forecast/days:lookup)",
+    "data-testid=\"air-quality-card\" (Displays AQI index badge, category, dominant pollutant, pollutant concentrations, and health recommendations)",
+    "data-testid=\"pollen-card\" (Displays Tree, Grass, and Weed UPI levels, in-season status, plant allergens, and health guidance)",
+    "data-testid=\"solar-card\" (Displays Solar API maxArrayPanelsCount, array kW, maxSunshineHoursPerYear, roof area, carbon offset, or data-testid=\"solar-non-coverage\" graceful fallback)",
+    "data-testid=\"map-container\" (Interactive 2D Google Map with explicit >=520px height, mapId=\"DEMO_MAP_ID\", AdvancedMarkerElement, and solar bounding box highlight)"
+  ],
+  "backend_proxy_endpoints": [
+    {
+      "method": "GET",
+      "path": "/api/weather/current",
+      "upstream_gmp_service": "weather.googleapis.com/v1/currentConditions:lookup",
+      "field_mask": "currentTime,timeZone,weatherCondition,temperature,feelsLikeTemperature,relativeHumidity,uvIndex,wind,precipitation,cloudCover,isDaytime",
+      "purpose": "Proxy current real-time weather conditions from Weather API (currentConditions:lookup) for lat/lng coordinates with X-Goog-Api-Key and unitsSystem support."
+    },
+    {
+      "method": "GET",
+      "path": "/api/weather/forecast",
+      "upstream_gmp_service": "weather.googleapis.com/v1/forecast/days:lookup",
+      "field_mask": "forecastDays,timeZone",
+      "purpose": "Proxy 5-day daily weather forecast from Weather API (forecast/days:lookup) for lat/lng coordinates."
+    },
+    {
+      "method": "POST",
+      "path": "/api/air-quality/current",
+      "upstream_gmp_service": "airquality.googleapis.com/v1/currentConditions:lookup",
+      "field_mask": "dateTime,regionCode,indexes,pollutants,healthRecommendations",
+      "purpose": "Proxy current AQI, local/universal indexes, pollutant concentrations, and demographic health recommendations from Air Quality API (currentConditions:lookup)."
+    },
+    {
+      "method": "GET",
+      "path": "/api/air-quality/tiles",
+      "upstream_gmp_service": "airquality.googleapis.com/v1/mapTypes/{mapType}/heatmapTiles/{zoom}/{x}/{y}",
+      "field_mask": "*",
+      "purpose": "Proxy 256x256 PNG Air Quality heatmap tiles (US_AQI / UAQI_RED_GREEN) for the optional ImageMapType map overlay without exposing server API keys."
+    },
+    {
+      "method": "GET",
+      "path": "/api/pollen/forecast",
+      "upstream_gmp_service": "pollen.googleapis.com/v1/forecast:lookup",
+      "field_mask": "regionCode,dailyInfo",
+      "purpose": "Proxy 3-to-5-day localized Tree, Grass, and Weed pollen index levels, allergen plant info, and health guidance from Pollen API (forecast:lookup)."
+    },
+    {
+      "method": "GET",
+      "path": "/api/solar/building-insights",
+      "upstream_gmp_service": "solar.googleapis.com/v1/buildingInsights:findClosest",
+      "field_mask": "name,center,boundingBox,imageryDate,imageryQuality,postalCode,administrativeArea,regionCode,solarPotential",
+      "purpose": "Proxy rooftop solar panel capacity, annual sunshine hours, roof area, and carbon offset factor from Solar API (buildingInsights:findClosest), returning a clean 404/non-coverage JSON payload when no building is within 50m."
+    },
+    {
+      "method": "POST",
+      "path": "/api/places/search-text",
+      "upstream_gmp_service": "places.googleapis.com/v1/places:searchText",
+      "field_mask": "places.id,places.displayName,places.formattedAddress,places.location",
+      "purpose": "Server-side Places API (New) Text Search proxy for resolving the initial Phoenix seed_search_query on full-stack stacks with explicit X-Goog-FieldMask."
+    }
+  ]
+}

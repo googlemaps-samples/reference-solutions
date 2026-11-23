@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hyperlocal Environmental &amp; Solar Dashboard — FastAPI</title>
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="top-header">
+        <div class="brand-group">
+          <div class="brand-mark" aria-hidden="true">☀</div>
+          <div class="brand-copy">
+            <h1 class="brand-title">EnviroSolar</h1>
+            <span class="brand-subtitle">Phoenix Hyperlocal Intelligence</span>
+          </div>
+        </div>
+
+        <div
+          class="search-wrapper"
+          data-testid="places-autocomplete-container"
+          aria-label="Search address or city"
+        >
+          <input
+            type="text"
+            class="search-fallback-input"
+            placeholder="Loading Google Places search…"
+            disabled
+          />
+        </div>
+
+        <div class="header-controls">
+          <div class="location-pill" data-testid="active-location-badge">
+            Phoenix City Hall · 33.4484, -112.0740
+          </div>
+          <button
+            type="button"
+            class="ctrl-btn"
+            data-testid="reset-phoenix-btn"
+            title="Reset to Downtown Phoenix seed location"
+          >
+            Phoenix Preset
+          </button>
+          <button
+            type="button"
+            class="ctrl-btn"
+            data-testid="units-toggle-btn"
+            title="Toggle Imperial / Metric units"
+          >
+            °F · Imperial
+          </button>
+          <button
+            type="button"
+            class="ctrl-btn"
+            data-testid="aqi-layer-toggle"
+            aria-pressed="false"
+            title="Toggle US Air Quality Index heatmap overlay"
+          >
+            AQI Tiles: Off
+          </button>
+          <button
+            type="button"
+            class="ctrl-btn"
+            data-testid="map-type-toggle"
+            aria-pressed="false"
+            title="Switch between Roadmap and Satellite Hybrid view"
+          >
+            Hybrid View
+          </button>
+        </div>
+      </header>
+
+      <div class="workspace">
+        <aside
+          class="sidebar"
+          data-testid="environmental-sidebar"
+          aria-label="Environmental intelligence panel"
+        >
+          <div id="config-banner" class="config-banner hidden" role="status"></div>
+
+          <section class="intel-card" data-testid="selected-location-card">
+            <div class="card-header">
+              <span class="card-kicker">Inspected Coordinates</span>
+              <span class="status-chip" id="location-status-chip">Seeded</span>
+            </div>
+            <h2 class="location-name" id="location-name">Phoenix City Hall</h2>
+            <p class="location-address" id="location-address">
+              200 W Washington St, Phoenix, AZ 85003
+            </p>
+            <div class="coords-row" id="location-coords">33.44840, -112.07400</div>
+            <p class="hint-text">
+              Search any address above or click directly on a building footprint on the map to inspect real-time weather, air quality, pollen, and rooftop solar capacity.
+            </p>
+          </section>
+
+          <section class="intel-card" data-testid="weather-card">
+            <div class="card-header">
+              <div>
+                <span class="card-kicker">Weather API</span>
+                <h2 class="card-title">Current Conditions &amp; 5-Day Outlook</h2>
+              </div>
+              <span class="status-chip" id="weather-status-chip">Loading…</span>
+            </div>
+            <div id="weather-current-body" class="card-body">
+              <p class="loading-text">Fetching hyperlocal weather telemetry…</p>
+            </div>
+            <div
+              class="forecast-list"
+              data-testid="weather-forecast-list"
+              id="weather-forecast-body"
+            ></div>
+          </section>
+
+          <section class="intel-card" data-testid="air-quality-card">
+            <div class="card-header">
+              <div>
+                <span class="card-kicker">Air Quality API</span>
+                <h2 class="card-title">AQI, Pollutants &amp; Guidance</h2>
+              </div>
+              <span class="status-chip" id="aqi-status-chip">Loading…</span>
+            </div>
+            <div id="air-quality-body" class="card-body">
+              <p class="loading-text">Fetching air quality conditions…</p>
+            </div>
+          </section>
+
+          <section class="intel-card" data-testid="pollen-card">
+            <div class="card-header">
+              <div>
+                <span class="card-kicker">Pollen API</span>
+                <h2 class="card-title">Tree, Grass &amp; Weed Allergens</h2>
+              </div>
+              <span class="status-chip" id="pollen-status-chip">Loading…</span>
+            </div>
+            <div id="pollen-body" class="card-body">
+              <p class="loading-text">Fetching localized pollen forecast…</p>
+            </div>
+          </section>
+
+          <section class="intel-card" data-testid="solar-card">
+            <div class="card-header">
+              <div>
+                <span class="card-kicker">Solar API · Building Insights</span>
+                <h2 class="card-title">Rooftop Solar Potential</h2>
+              </div>
+              <span class="status-chip" id="solar-status-chip">Loading…</span>
+            </div>
+            <div id="solar-body" class="card-body">
+              <p class="loading-text">Scanning rooftop geometry…</p>
+            </div>
+          </section>
+        </aside>
+
+        <main class="map-stage">
+          <div
+            id="map"
+            class="map-canvas"
+            data-testid="map-container"
+            role="application"
+            aria-label="Interactive Google Map"
+          ></div>
+
+          <div class="map-overlay-hint">
+            Click any building on the map to inspect rooftop solar &amp; environmental conditions
+          </div>
+
+          <div id="aqi-legend" class="aqi-legend hidden" aria-label="US AQI Heatmap Legend">
+            <span class="legend-title">US AQI Overlay</span>
+            <div class="legend-scale">
+              <span class="legend-stop good">Good</span>
+              <span class="legend-stop moderate">Moderate</span>
+              <span class="legend-stop usg">Sensitive</span>
+              <span class="legend-stop unhealthy">Unhealthy</span>
+              <span class="legend-stop hazardous">Hazardous</span>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script type="module" src="/static/app.js"></script>
+  </body>
+</html>

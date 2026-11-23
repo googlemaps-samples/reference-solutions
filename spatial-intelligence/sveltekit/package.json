@@ -1,0 +1,32 @@
+{
+  "name": "nyc-spatial-intelligence-sveltekit",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev --host 127.0.0.1 --port 5173",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1 --port 4173 --strictPort",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
+  },
+  "devDependencies": {
+    "@sveltejs/adapter-auto": "^4.0.0",
+    "@sveltejs/kit": "^2.15.1",
+    "@sveltejs/vite-plugin-svelte": "^5.0.3",
+    "@types/google.maps": "^3.58.1",
+    "svelte": "^5.16.0",
+    "svelte-check": "^4.1.1",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.7"
+  },
+  "dependencies": {
+    "@deck.gl/aggregation-layers": "^9.1.4",
+    "@deck.gl/core": "^9.1.4",
+    "@deck.gl/google-maps": "^9.1.4",
+    "@deck.gl/layers": "^9.1.4",
+    "@googlemaps/js-api-loader": "^2.0.1",
+    "terra-draw": "^1.1.0",
+    "terra-draw-google-maps-adapter": "^1.0.1"
+  }
+}

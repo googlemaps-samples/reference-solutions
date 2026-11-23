@@ -1,0 +1,73 @@
+{
+  "solution_id": "storefront-sample",
+  "solution_title": "Single-Venue Storefront, Booking & Get Directions Hub",
+  "summary": "Cohesive Phase 2 architecture for a San Francisco multi-specialty dental clinic storefront, appointment-booking, and get-directions web application across all 8 stacks. Uses Maps JavaScript API (v='weekly', mapId='DEMO_MAP_ID', internalUsageAttributionIds=['gmp_git_agentsamples_v1.0.0']) with AdvancedMarkerElement for custom branded clinic and origin pins, a toggleable 3.5 km Circle service-area overlay for home visits, and a synchronized StreetViewPanorama entrance preview via StreetViewService. Venue details (name, rating, reviews, weekly hours, computed open-now status without beta-only Place.isOpen(), and photos) are fetched live via Places API (New) (Place.searchByText/fetchFields on pure client stacks; /api/places/search & /api/places/photo BFF proxies on Next.js, FastAPI, and Node.js Express). Visitor origin search uses PlaceAutocompleteElement (gmp-select + event.placePrediction.toPlace().fetchFields()) pre-seeded on load with 'Ferry Building, San Francisco, CA' so driving, transit, and walking routes compute immediately via Route.computeRoutes (client stacks) or /api/routes/compute (BFF stacks). Complies with GMP ToS and AUP by keeping all place data live-fetched with attribution and ensuring the booking form handles only non-PHI appointment scheduling metadata.",
+  "gmp_products_used": [
+    "Maps JavaScript API (2D Interactive Map, AdvancedMarkerElement, Circle Overlay, Polyline, StreetViewPanorama, StreetViewService)",
+    "Places API (New) (Place.searchByText, Place.fetchFields, PlaceAutocompleteElement, Places Text Search & Photo Media REST)",
+    "Routes API (Route.computeRoutes in Maps JS SDK, computeRoutes v2 REST)"
+  ],
+  "js_libraries_to_import": [
+    "core",
+    "maps",
+    "marker",
+    "places",
+    "routes",
+    "streetView",
+    "geometry"
+  ],
+  "matched_sub_skills": [
+    "google-maps-platform",
+    "compliance-review",
+    "gmp-common-api-keys",
+    "maps-javascript-api-javascript",
+    "gmp-framework-react",
+    "places-api-web-api",
+    "routes-api-web-api"
+  ],
+  "uses_3d_map": false,
+  "initial_center_lat": 37.7896,
+  "initial_center_lng": -122.4076,
+  "initial_zoom": 13,
+  "seed_search_query": "450 Sutter Dental San Francisco",
+  "ui_layout_summary": "Full-viewport split-screen storefront layout with a 64px top header bar (clinic brand, live open/closed badge, Map/Street View/Split controls, and home-visit coverage overlay toggle). Left scrollable column (440px wide on desktop, stacked on mobile) houses three stacked cards: (1) Live Clinic Storefront Details (photo strip, rating, open-now status, collapsible weekly hours, and Google Places user reviews), (2) Get Directions Planner (pre-seeded PlaceAutocompleteElement origin input, Driving/Transit/Walking mode pills, and live ETA/distance summary card), and (3) Appointment Booking Form (service specialty, In-Clinic vs Home-Visit radio, date/time slot, contact info, and instant confirmation state). Right column fills the remaining viewport width and height (min-height: 520px) with the interactive Google Map (and a docked or split-pane StreetViewPanorama container when Street View preview is toggled on), displaying the branded clinic AdvancedMarkerElement, 3.5 km coverage-radius Circle, origin marker, and active route polyline.",
+  "interactive_controls": [
+    "clinic-header (data-testid='clinic-header'): Top brand bar showing clinic name, live open/closed status pill, phone/address quick metadata, and view mode switcher",
+    "map-container (data-testid='map-container'): Primary interactive Google Map (min-height: 520px / calc(100vh - 72px)) with mapId='DEMO_MAP_ID', internalUsageAttributionIds=['gmp_git_agentsamples_v1.0.0'], branded clinic AdvancedMarkerElement, visitor origin AdvancedMarkerElement, 3.5 km home-visit Circle overlay, and active route Polyline",
+    "coverage-overlay-toggle (data-testid='coverage-overlay-toggle'): Toggle button to show/hide the 3.5 km San Francisco home-visit service-area Circle overlay on the map",
+    "street-view-toggle (data-testid='street-view-toggle'): Button toggling the synchronized Street View entrance panorama panel (Map / Split / Street View) positioned at the clinic entrance via StreetViewService.getPanorama",
+    "street-view-container (data-testid='street-view-container'): Synchronized Google StreetViewPanorama viewport showing the clinic building entrance with heading/pitch oriented toward the venue",
+    "venue-details-panel (data-testid='venue-details-panel'): Live Google Places storefront card displaying venue name, formatted address, star rating, total review count, open-now status, weekly opening hours, photo gallery, and Google Maps attribution link",
+    "venue-reviews-list (data-testid='venue-reviews-list'): Live Google Places user reviews list showing author attribution, star rating, relative publish time, and review text",
+    "origin-autocomplete-container (data-testid='origin-autocomplete-container'): Visitor origin search container hosting PlaceAutocompleteElement (<gmp-place-autocomplete>) biased to San Francisco and pre-seeded on load with 'Ferry Building, San Francisco, CA' (37.7955, -122.3937)",
+    "travel-mode-driving (data-testid='travel-mode-driving'): Travel mode selector button for Driving (DRIVING / DRIVE)",
+    "travel-mode-transit (data-testid='travel-mode-transit'): Travel mode selector button for Public Transit (TRANSIT)",
+    "travel-mode-walking (data-testid='travel-mode-walking'): Travel mode selector button for Walking (WALKING / WALK)",
+    "route-summary-card (data-testid='route-summary-card'): Live route summary card displaying calculated travel time, distance, and mode label between origin and clinic",
+    "booking-form (data-testid='booking-form'): Appointment scheduling form with patient name, email/phone, dental specialty selector, visit type (In-Clinic vs Home Visit), preferred date/time slot, and submit button (collects scheduling inquiry only; no HIPAA medical records sent to GMP APIs)",
+    "booking-confirmation (data-testid='booking-confirmation'): Confirmation banner displayed after submitting an appointment booking request"
+  ],
+  "backend_proxy_endpoints": [
+    {
+      "method": "POST",
+      "path": "/api/places/search",
+      "upstream_gmp_service": "places.googleapis.com/v1/places:searchText",
+      "field_mask": "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.regularOpeningHours,places.currentOpeningHours,places.reviews,places.photos,places.nationalPhoneNumber,places.websiteUri,places.googleMapsUri,places.businessStatus",
+      "purpose": "Server-side BFF proxy to Places API (New) Text Search to fetch live San Francisco dental clinic details, rating, opening hours, open-now status, user reviews, and photo resource names without exposing the server API key or triggering browser CORS errors."
+    },
+    {
+      "method": "GET",
+      "path": "/api/places/photo",
+      "upstream_gmp_service": "places.googleapis.com/v1/{name}/media",
+      "field_mask": "N/A (binary image stream from Places Photo Media endpoint; authenticated via X-Goog-Api-Key header)",
+      "purpose": "Server-side BFF proxy to fetch and stream resized clinic photos from Places API (New) Photo Media (e.g., maxWidthPx=640) using the place photo resource name while keeping the API key off client image URLs."
+    },
+    {
+      "method": "POST",
+      "path": "/api/routes/compute",
+      "upstream_gmp_service": "routes.googleapis.com/directions/v2:computeRoutes",
+      "field_mask": "routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline,routes.localizedValues",
+      "purpose": "Server-side BFF proxy to Routes API v2 computeRoutes for calculating DRIVE, TRANSIT, and WALK routes from the visitor's San Francisco origin to the clinic with travel duration, distanceMeters, localized text, and encoded polyline."
+    }
+  ]
+}

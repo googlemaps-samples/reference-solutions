@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LA RideFlow — Rideshare Booking, Fare Estimator & Live Driver Tracking</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="top-header">
+        <div class="brand-group">
+          <div class="brand-mark" aria-hidden="true">RF</div>
+          <div>
+            <h1 class="brand-title">LA RideFlow</h1>
+            <p class="brand-subtitle" id="header-trip-summary">Los Angeles Smart Dispatch &amp; Eco Routing</p>
+          </div>
+        </div>
+        <div class="header-status-group">
+          <span class="status-pill" id="header-dispatch-badge">Initializing Dispatch...</span>
+        </div>
+      </header>
+
+      <main class="workspace-grid">
+        <aside class="control-sidebar" aria-label="Trip planning and fare estimator">
+          <div id="config-warning-banner" class="warning-banner hidden" role="alert"></div>
+          <div id="error-banner" class="error-banner hidden" role="alert"></div>
+
+          <section class="panel-card">
+            <div class="panel-header">
+              <h2 class="panel-title">1. Trip Planner</h2>
+              <button
+                type="button"
+                class="icon-btn"
+                data-testid="swap-locations-btn"
+                id="swap-locations-btn"
+                title="Swap pickup and drop-off"
+                aria-label="Swap pickup and drop-off locations"
+              >
+                ⇅ Swap
+              </button>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label" for="pickup-autocomplete-container">
+                <span class="dot dot-pickup"></span> Pickup Location
+              </label>
+              <div
+                id="pickup-autocomplete-container"
+                class="autocomplete-host"
+                data-testid="pickup-autocomplete"
+              ></div>
+              <p class="place-meta" id="pickup-meta">Resolving Los Angeles pickup...</p>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label" for="dropoff-autocomplete-container">
+                <span class="dot dot-dropoff"></span> Drop-off Destination
+              </label>
+              <div
+                id="dropoff-autocomplete-container"
+                class="autocomplete-host"
+                data-testid="dropoff-autocomplete"
+              ></div>
+              <p class="place-meta" id="dropoff-meta">Resolving Los Angeles destination...</p>
+            </div>
+          </section>
+
+          <section class="panel-card">
+            <div class="panel-header">
+              <h2 class="panel-title">2. Fastest vs. Eco-Friendly Route</h2>
+              <div class="select-wrap">
+                <label class="sr-only" for="emission-type-select">Vehicle Emission Type</label>
+                <select
+                  id="emission-type-select"
+                  data-testid="emission-type-select"
+                  class="compact-select"
+                  aria-label="Vehicle emission type"
+                >
+                  <option value="GASOLINE" selected>Gasoline</option>
+                  <option value="HYBRID">Hybrid</option>
+                  <option value="ELECTRIC">Electric (EV)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="route-cards-grid">
+              <button
+                type="button"
+                class="route-card active"
+                id="route-option-fastest"
+                data-testid="route-option-fastest"
+              >
+                <div class="route-card-top">
+                  <span class="route-badge badge-fastest">Fastest Traffic</span>
+                  <span class="route-duration" id="fastest-duration">-- min</span>
+                </div>
+                <div class="route-card-metrics" id="fastest-metrics">-- mi • --</div>
+                <div class="route-card-energy" id="fastest-energy">Computing fuel usage...</div>
+              </button>
+
+              <button
+                type="button"
+                class="route-card"
+                id="route-option-eco"
+                data-testid="route-option-eco"
+              >
+                <div class="route-card-top">
+                  <span class="route-badge badge-eco">Eco-Friendly</span>
+                  <span class="route-duration" id="eco-duration">-- min</span>
+                </div>
+                <div class="route-card-metrics" id="eco-metrics">-- mi • --</div>
+                <div class="route-card-energy" id="eco-energy">Computing fuel savings...</div>
+              </button>
+            </div>
+
+            <div class="eco-savings-banner" id="eco-savings-banner" data-testid="eco-savings-banner">
+              Comparing traffic-aware fastest route vs. fuel-efficient route...
+            </div>
+          </section>
+
+          <section class="panel-card">
+            <div class="panel-header">
+              <h2 class="panel-title">3. Transparent Fare Estimator</h2>
+              <span class="panel-caption" id="fare-basis-caption">Live distance + traffic time</span>
+            </div>
+
+            <div class="fare-list">
+              <button
+                type="button"
+                class="fare-card active"
+                id="fare-tier-economy"
+                data-testid="fare-tier-economy"
+              >
+                <div class="fare-card-main">
+                  <div>
+                    <div class="fare-title">Economy</div>
+                    <div class="fare-desc" id="fare-economy-breakdown">Base + distance + time</div>
+                  </div>
+                  <div class="fare-price" id="fare-economy-price">$--.--</div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                class="fare-card"
+                id="fare-tier-comfort"
+                data-testid="fare-tier-comfort"
+              >
+                <div class="fare-card-main">
+                  <div>
+                    <div class="fare-title">Comfort</div>
+                    <div class="fare-desc" id="fare-comfort-breakdown">Spacious sedan • priority</div>
+                  </div>
+                  <div class="fare-price" id="fare-comfort-price">$--.--</div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                class="fare-card"
+                id="fare-tier-green"
+                data-testid="fare-tier-green"
+              >
+                <div class="fare-card-main">
+                  <div>
+                    <div class="fare-title">Green EV / Hybrid <span class="eco-tag">Eco</span></div>
+                    <div class="fare-desc" id="fare-green-breakdown">Low-emission dispatch</div>
+                  </div>
+                  <div class="fare-price" id="fare-green-price">$--.--</div>
+                </div>
+              </button>
+            </div>
+          </section>
+
+          <section class="panel-card">
+            <div class="panel-header">
+              <h2 class="panel-title">4. Live Driver Dispatch</h2>
+              <span class="driver-badge" id="assigned-driver-badge">Matching...</span>
+            </div>
+
+            <div class="driver-eta-box" id="driver-live-eta" data-testid="driver-live-eta">
+              <div class="eta-row">
+                <span class="eta-label">Status</span>
+                <span class="eta-value" id="driver-status-text">Evaluating nearby vehicles</span>
+              </div>
+              <div class="eta-row">
+                <span class="eta-label">Live ETA</span>
+                <span class="eta-value eta-highlight" id="driver-eta-countdown">--</span>
+              </div>
+              <div class="eta-row">
+                <span class="eta-label">Distance Remaining</span>
+                <span class="eta-value" id="driver-distance-remaining">--</span>
+              </div>
+              <div class="eta-row">
+                <span class="eta-label">Assigned Vehicle</span>
+                <span class="eta-value" id="driver-vehicle-info">--</span>
+              </div>
+            </div>
+
+            <div class="dispatch-actions">
+              <button
+                type="button"
+                class="primary-btn"
+                id="dispatch-driver-btn"
+                data-testid="dispatch-driver-btn"
+              >
+                Dispatch Closest Driver
+              </button>
+              <button
+                type="button"
+                class="secondary-btn"
+                id="toggle-simulation-btn"
+                data-testid="toggle-simulation-btn"
+              >
+                Pause Simulation
+              </button>
+            </div>
+
+            <div class="candidates-strip" id="candidate-drivers-list" aria-label="Nearby candidate vehicles"></div>
+          </section>
+        </aside>
+
+        <section class="map-stage" aria-label="Interactive Los Angeles rideshare map">
+          <div id="rideshare-map" class="map-canvas" data-testid="rideshare-map"></div>
+
+          <div class="map-legend" id="map-route-legend" data-testid="map-route-legend">
+            <div class="legend-title">Route &amp; Dispatch Legend</div>
+            <div class="legend-item">
+              <span class="legend-line line-fastest"></span>
+              <span>Fastest Traffic Route</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-line line-eco"></span>
+              <span>Eco-Friendly Route</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-line line-approach"></span>
+              <span>Driver Pickup Approach</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-dot dot-pickup"></span>
+              <span>Pickup (A) / Drop-off (B)</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-dot dot-driver"></span>
+              <span>Live Dispatched Vehicle</span>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="/static/app.js"></script>
+  </body>
+</html>

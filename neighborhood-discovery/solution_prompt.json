@@ -1,0 +1,42 @@
+{
+  "solution_id": "neighborhood-discovery",
+  "id": "neighborhood-discovery",
+  "title": "Hyperlocal Neighborhood Directory & Spot Mapper",
+  "name": "Hyperlocal Neighborhood Directory & Spot Mapper",
+  "category": "Local Discovery & Storefronts",
+  "user_prompt": "Create a hyperlocal neighborhood discovery, business comparison, and community spot-mapping web app pre-seeded in central London. Allow users to enter an address or select a neighborhood via Places Autocomplete and Geocoding, filter nearby places across categories (restaurants, cafes, museums, parks) within a 5km radius using Places API (New) nearby/text search, and view custom category markers on the map. Provide a side-by-side comparison and details drawer showing live ratings, price levels, opening hours, and reviews. Also support clicking anywhere on the map to reverse-geocode the human-readable street address and coordinates so users can inspect or pin a new community spot.",
+  "prompt": "Create a hyperlocal neighborhood discovery, business comparison, and community spot-mapping web app pre-seeded in central London. Allow users to enter an address or select a neighborhood via Places Autocomplete and Geocoding, filter nearby places across categories (restaurants, cafes, museums, parks) within a 5km radius using Places API (New) nearby/text search, and view custom category markers on the map. Provide a side-by-side comparison and details drawer showing live ratings, price levels, opening hours, and reviews. Also support clicking anywhere on the map to reverse-geocode the human-readable street address and coordinates so users can inspect or pin a new community spot.",
+  "expectations": [
+    "Map displays categorized custom Advanced Markers for nearby London places on load",
+    "Address/neighborhood search and category filter controls are functional",
+    "Place details and comparison cards display live ratings, hours, and reviews",
+    "Clicking on the map performs reverse geocoding and displays the street address and coordinates",
+    "No console errors"
+  ],
+  "test_interactions": [
+    {
+      "description": "Map displays categorized custom Advanced Markers for nearby London places on load",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Address/neighborhood search and category filter controls are functional",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Place details and comparison cards display live ratings, hours, and reviews",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Clicking on the map performs reverse geocoding and displays the street address and coordinates",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    }
+  ]
+}

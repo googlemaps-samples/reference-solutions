@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SF Real Estate, Parcel &amp; Commute Explorer</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+    <link rel="stylesheet" href="/static/styles.css" />
+    <script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js"></script>
+    <script src="https://unpkg.com/terra-draw@1.0.0/dist/terra-draw.umd.js"></script>
+    <script src="https://unpkg.com/terra-draw-google-maps-adapter@1.0.0/dist/terra-draw-google-maps-adapter.umd.js"></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="top-bar">
+        <div class="brand">
+          <div class="brand-badge" aria-hidden="true">SF</div>
+          <div class="brand-copy">
+            <h1>Bayview Parcel Explorer</h1>
+            <span class="brand-subtitle">San Francisco Homes, Lots &amp; Commutes</span>
+          </div>
+        </div>
+
+        <div class="search-and-filters">
+          <div id="location-search-host" class="location-search-host">
+            <input
+              id="location-search-fallback"
+              type="text"
+              class="search-fallback-input"
+              placeholder="Search San Francisco neighborhood or address..."
+              aria-label="Search San Francisco neighborhood or address"
+            />
+          </div>
+
+          <label class="filter-field">
+            <span class="sr-only">Max Price</span>
+            <select id="filter-max-price" aria-label="Maximum Price">
+              <option value="0">Any Price</option>
+              <option value="1250000">Up to $1.25M</option>
+              <option value="1750000">Up to $1.75M</option>
+              <option value="2500000">Up to $2.50M</option>
+              <option value="3500000">Up to $3.50M</option>
+            </select>
+          </label>
+
+          <label class="filter-field">
+            <span class="sr-only">Minimum Bedrooms</span>
+            <select id="filter-min-beds" aria-label="Minimum Bedrooms">
+              <option value="0">Any Beds</option>
+              <option value="1">1+ Beds</option>
+              <option value="2">2+ Beds</option>
+              <option value="3">3+ Beds</option>
+              <option value="4">4+ Beds</option>
+            </select>
+          </label>
+
+          <label class="filter-field">
+            <span class="sr-only">Property Type</span>
+            <select id="filter-property-type" aria-label="Property Type">
+              <option value="all">All Types</option>
+              <option value="Single Family">Single Family</option>
+              <option value="Victorian">Victorian</option>
+              <option value="Townhouse">Townhouse</option>
+              <option value="Condo">Condo</option>
+            </select>
+          </label>
+
+          <div id="results-count" class="results-count" aria-live="polite">
+            0 homes
+          </div>
+        </div>
+      </header>
+
+      <div id="api-key-banner" class="api-key-banner hidden" role="status"></div>
+
+      <main class="split-workspace">
+        <section class="map-pane" aria-label="Interactive property map">
+          <div id="map-container" class="map-container"></div>
+
+          <div class="map-floating-controls" role="toolbar" aria-label="Map tools">
+            <button
+              id="draw-area-btn"
+              type="button"
+              class="map-tool-btn"
+              aria-pressed="false"
+            >
+              Draw Search Area
+            </button>
+            <button
+              id="clear-area-btn"
+              type="button"
+              class="map-tool-btn map-tool-btn-secondary"
+              disabled
+            >
+              Clear Area
+            </button>
+            <button
+              id="map-type-toggle"
+              type="button"
+              class="map-tool-btn"
+              aria-pressed="false"
+            >
+              Satellite
+            </button>
+          </div>
+
+          <div id="map-status-pill" class="map-status-pill hidden" aria-live="polite"></div>
+
+          <div class="map-legend">
+            <span class="legend-item">
+              <span class="legend-swatch legend-pill"></span>
+              Price Pin
+            </span>
+            <span class="legend-item">
+              <span class="legend-swatch legend-parcel"></span>
+              Cadastral Parcel
+            </span>
+            <span class="legend-item">
+              <span class="legend-swatch legend-route"></span>
+              Commute Route
+            </span>
+          </div>
+        </section>
+
+        <aside class="left-column" aria-label="Listings and property details">
+          <section class="property-list-section" aria-label="Matching properties">
+            <div class="section-header-row">
+              <h2>San Francisco Listings</h2>
+              <span id="area-filter-badge" class="area-filter-badge hidden">Polygon Filter Active</span>
+            </div>
+            <div id="property-list" class="property-list"></div>
+          </section>
+
+          <section id="listing-detail-panel" class="listing-detail-panel" aria-label="Selected property details">
+            <div class="detail-empty-state">
+              Select a property card or price pin to inspect cadastral lot boundaries, Street View, nearby amenities, and commute ETAs.
+            </div>
+          </section>
+        </aside>
+      </main>
+    </div>
+
+    <script type="module" src="/static/app.js"></script>
+  </body>
+</html>

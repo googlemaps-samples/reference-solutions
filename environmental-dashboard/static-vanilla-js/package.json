@@ -1,0 +1,18 @@
+{
+  "name": "gmp-environmental-dashboard-static-vanilla-js",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Hyperlocal Weather, Air Quality, Pollen & Solar Dashboard using Static HTML + Vanilla JavaScript (Zero-Bundler ES Modules) and Google Maps Platform APIs.",
+  "scripts": {
+    "start": "node server.mjs --host 127.0.0.1 --port 3000",
+    "typecheck": "node --check app.js && node --check server.mjs",
+    "build": "node --check app.js && node --check server.mjs && node -e \"import('node:fs').then(fs => { for (const f of ['index.html', 'app.js', 'styles.css', 'server.mjs']) { if (!fs.existsSync(f)) throw new Error('Missing ' + f); } console.log('Build verification passed.'); })\""
+  },
+  "dependencies": {
+    "@googlemaps/js-api-loader": "^2.0.1"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

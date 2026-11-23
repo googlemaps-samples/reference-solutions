@@ -1,0 +1,16 @@
+{
+  "name": "complete-heatmap-static-vanilla-js",
+  "version": "1.0.0",
+  "description": "Disaster Hazard Heatmap, Civic Incident & Safe Shelter Router in Static HTML + Vanilla JavaScript (Zero-Bundler ES Modules) using Google Maps Platform and deck.gl",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs --host 127.0.0.1 --port 3000",
+    "typecheck": "node --check app.js && node --check server.mjs",
+    "build": "node --check app.js && node --check server.mjs && node -e \"import('fs').then(fs=>{const required=['index.html','app.js','styles.css','server.mjs','.env.example','.gitignore','README.md','AGENTS.md'];for(const f of required){if(!fs.existsSync(f))throw new Error('Missing required file: '+f);}console.log('Verified static assets and syntax checks passed.');})\""
+  },
+  "dependencies": {
+    "@googlemaps/js-api-loader": "^2.0.1",
+    "deck.gl": "^9.1.4"
+  }
+}

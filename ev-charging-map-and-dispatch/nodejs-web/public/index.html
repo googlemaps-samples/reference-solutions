@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Seattle EV &amp; Roadside Dispatch — On-Demand Local Services</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="top-header">
+        <div class="brand-group">
+          <div class="brand-badge" aria-hidden="true">⚡</div>
+          <div>
+            <h1 class="brand-title">Seattle Roadside &amp; EV Dispatch</h1>
+            <p class="brand-subtitle">On-Demand Fast Charging &amp; Auto Repair Locator</p>
+          </div>
+        </div>
+
+        <div class="header-controls">
+          <div class="autocomplete-wrap">
+            <label class="sr-only" for="autocomplete-container">Search breakdown location</label>
+            <div id="autocomplete-container" class="autocomplete-container"></div>
+          </div>
+
+          <div
+            id="driver-address-badge"
+            class="driver-address-badge"
+            title="Current driver breakdown location"
+          >
+            <span class="pin-dot" aria-hidden="true"></span>
+            <span id="driver-address-text">Downtown Seattle, WA</span>
+          </div>
+
+          <button
+            id="use-map-center-btn"
+            type="button"
+            class="btn btn-secondary"
+            title="Move breakdown pin to the current map center"
+          >
+            Set Pin to Map Center
+          </button>
+        </div>
+
+        <div class="filter-bar">
+          <div class="segmented-control" role="group" aria-label="Service category filter">
+            <button
+              id="category-filter-all"
+              type="button"
+              class="filter-pill is-active"
+              data-category="all"
+            >
+              All
+            </button>
+            <button
+              id="category-filter-ev"
+              type="button"
+              class="filter-pill"
+              data-category="ev"
+            >
+              EV Fast Charging
+            </button>
+            <button
+              id="category-filter-repair"
+              type="button"
+              class="filter-pill"
+              data-category="repair"
+            >
+              Auto Repair
+            </button>
+          </div>
+
+          <div
+            id="radius-select"
+            class="segmented-control"
+            role="group"
+            aria-label="Search radius"
+          >
+            <button
+              id="radius-5km"
+              type="button"
+              class="radius-pill"
+              data-radius="5000"
+            >
+              5 km
+            </button>
+            <button
+              id="radius-10km"
+              type="button"
+              class="radius-pill is-active"
+              data-radius="10000"
+            >
+              10 km
+            </button>
+            <button
+              id="radius-15km"
+              type="button"
+              class="radius-pill"
+              data-radius="15000"
+            >
+              15 km
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <aside class="sidebar" aria-label="Nearby stations and roadside service providers">
+          <div class="sidebar-header">
+            <div>
+              <h2 class="sidebar-title">Nearby Dispatch Options</h2>
+              <p id="results-meta" class="results-meta">Ranked by live driving ETA</p>
+            </div>
+            <span id="results-count" class="count-pill">0</span>
+          </div>
+
+          <div id="status-banner" class="status-banner hidden" role="status"></div>
+
+          <section
+            id="route-summary-panel"
+            class="route-summary-panel hidden"
+            aria-label="Active dispatch route summary"
+          >
+            <div class="route-summary-header">
+              <div>
+                <span class="route-eyebrow">Active Dispatch Route</span>
+                <h3 id="route-dest-name" class="route-dest-name"></h3>
+              </div>
+              <button id="clear-route-btn" type="button" class="btn btn-ghost btn-sm">
+                Clear Route
+              </button>
+            </div>
+
+            <div class="route-metrics">
+              <div class="metric-chip">
+                <span class="metric-label">Drive ETA</span>
+                <strong id="route-eta-value" class="metric-value">--</strong>
+              </div>
+              <div class="metric-chip">
+                <span class="metric-label">Distance</span>
+                <strong id="route-distance-value" class="metric-value">--</strong>
+              </div>
+            </div>
+
+            <p id="route-dest-address" class="route-dest-address"></p>
+
+            <div class="route-actions">
+              <a
+                id="route-gmaps-link"
+                class="btn btn-secondary btn-sm hidden"
+                href="#"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Open in Google Maps
+              </a>
+              <button
+                id="toggle-steps-btn"
+                type="button"
+                class="btn btn-ghost btn-sm"
+                aria-expanded="true"
+                aria-controls="turn-by-turn-steps"
+              >
+                Hide Steps
+              </button>
+            </div>
+
+            <ol id="turn-by-turn-steps" class="turn-by-turn-steps"></ol>
+          </section>
+
+          <div id="provider-list" class="provider-list" role="list"></div>
+        </aside>
+
+        <section class="map-pane" aria-label="Interactive Seattle dispatch map">
+          <div id="map-container" class="map-container"></div>
+
+          <div class="map-legend" aria-label="Map marker legend">
+            <span class="legend-item">
+              <span class="legend-swatch swatch-driver">SOS</span>
+              Breakdown Pin (drag or click map)
+            </span>
+            <span class="legend-item">
+              <span class="legend-swatch swatch-ev">EV</span>
+              EV Fast Charging
+            </span>
+            <span class="legend-item">
+              <span class="legend-swatch swatch-repair">FX</span>
+              Auto Repair
+            </span>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

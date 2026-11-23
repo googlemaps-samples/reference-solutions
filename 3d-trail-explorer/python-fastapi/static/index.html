@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lake Tahoe 3D Trail Explorer</title>
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div id="app" class="app-shell" data-testid="trail-explorer-app">
+      <!-- Top Floating Glassmorphic Header -->
+      <header class="top-bar">
+        <div class="brand-group">
+          <div class="brand-badge" aria-hidden="true">3D</div>
+          <div class="brand-text">
+            <h1 class="brand-title">Lake Tahoe 3D Trail Explorer</h1>
+            <p class="brand-subtitle">Emerald Bay &amp; Rubicon Ridge Photorealistic Terrain</p>
+          </div>
+        </div>
+
+        <div class="search-wrapper">
+          <form id="landmark-search-form" class="search-form" role="search">
+            <input
+              id="landmark-search-input"
+              data-testid="landmark-search-input"
+              class="search-input"
+              type="text"
+              placeholder="Search Lake Tahoe landmarks (e.g., Inspiration Point)..."
+              autocomplete="off"
+              aria-label="Search Lake Tahoe landmarks"
+            />
+            <button
+              id="landmark-search-submit"
+              data-testid="landmark-search-submit"
+              class="search-submit-btn"
+              type="submit"
+            >
+              Fly To
+            </button>
+          </form>
+          <ul
+            id="search-suggestions"
+            class="search-suggestions hidden"
+            role="listbox"
+            aria-label="Place autocomplete suggestions"
+          ></ul>
+          <div id="places-widget-host" class="places-widget-host hidden"></div>
+        </div>
+
+        <div class="header-right">
+          <div
+            id="camera-telemetry-badge"
+            data-testid="camera-telemetry-badge"
+            class="telemetry-badge"
+            aria-live="polite"
+          >
+            <span class="telemetry-item">
+              <span class="telemetry-label">HDG</span>
+              <span id="telemetry-heading" class="telemetry-value">35°</span>
+            </span>
+            <span class="telemetry-divider" aria-hidden="true"></span>
+            <span class="telemetry-item">
+              <span class="telemetry-label">TILT</span>
+              <span id="telemetry-tilt" class="telemetry-value">62°</span>
+            </span>
+            <span class="telemetry-divider" aria-hidden="true"></span>
+            <span class="telemetry-item">
+              <span class="telemetry-label">RANGE</span>
+              <span id="telemetry-range" class="telemetry-value">2,400m</span>
+            </span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Split Workspace -->
+      <main class="workspace">
+        <!-- Left Floating Storytelling & Elevation Sidebar -->
+        <aside class="sidebar" aria-label="Trail storytelling and elevation controls">
+          <!-- Guided Chapter Tour -->
+          <section
+            class="panel chapter-panel"
+            data-testid="chapter-tour-panel"
+            aria-labelledby="chapter-panel-heading"
+          >
+            <div class="panel-header">
+              <div>
+                <h2 id="chapter-panel-heading" class="panel-title">Guided Camera Tour</h2>
+                <p class="panel-caption">5 scenic stops along Emerald Bay</p>
+              </div>
+              <button
+                id="tour-autoplay-toggle"
+                data-testid="tour-autoplay-toggle"
+                class="autoplay-btn"
+                type="button"
+                aria-pressed="false"
+              >
+                Auto-Play
+              </button>
+            </div>
+
+            <div class="chapter-list" role="group" aria-label="Camera tour chapters">
+              <button
+                type="button"
+                class="chapter-btn is-active"
+                data-chapter-id="overview"
+                data-testid="chapter-btn-overview"
+              >
+                <span class="chapter-num">1</span>
+                <span class="chapter-meta">
+                  <span class="chapter-name">Emerald Bay Overview</span>
+                  <span class="chapter-cam">Hdg 35° · Tilt 62° · 2.4km</span>
+                </span>
+              </button>
+
+              <button
+                type="button"
+                class="chapter-btn"
+                data-chapter-id="trailhead"
+                data-testid="chapter-btn-trailhead"
+              >
+                <span class="chapter-num">2</span>
+                <span class="chapter-meta">
+                  <span class="chapter-name">Eagle Falls Trailhead</span>
+                  <span class="chapter-cam">Hdg 48° · Tilt 68° · 950m</span>
+                </span>
+              </button>
+
+              <button
+                type="button"
+                class="chapter-btn"
+                data-chapter-id="ridge"
+                data-testid="chapter-btn-ridge"
+              >
+                <span class="chapter-num">3</span>
+                <span class="chapter-meta">
+                  <span class="chapter-name">Rubicon Ridge</span>
+                  <span class="chapter-cam">Hdg 120° · Tilt 72° · 1.1km</span>
+                </span>
+              </button>
+
+              <button
+                type="button"
+                class="chapter-btn"
+                data-chapter-id="overlook"
+                data-testid="chapter-btn-overlook"
+              >
+                <span class="chapter-num">4</span>
+                <span class="chapter-meta">
+                  <span class="chapter-name">Eagle Point Overlook</span>
+                  <span class="chapter-cam">Hdg 255° · Tilt 70° · 1.3km</span>
+                </span>
+              </button>
+
+              <button
+                type="button"
+                class="chapter-btn"
+                data-chapter-id="summit"
+                data-testid="chapter-btn-summit"
+              >
+                <span class="chapter-num">5</span>
+                <span class="chapter-meta">
+                  <span class="chapter-name">Tahoe Summit Panorama</span>
+                  <span class="chapter-cam">Hdg 175° · Tilt 66° · 3.4km</span>
+                </span>
+              </button>
+            </div>
+          </section>
+
+          <!-- Selected Viewpoint / Searched Landmark Card -->
+          <section
+            id="selected-viewpoint-card"
+            data-testid="selected-viewpoint-card"
+            class="panel viewpoint-card"
+            aria-live="polite"
+          >
+            <div class="viewpoint-top">
+              <span id="viewpoint-badge" class="viewpoint-badge">Chapter 1</span>
+              <span id="viewpoint-elevation-pill" class="elevation-pill">Elevation: -- m</span>
+            </div>
+            <h3 id="viewpoint-title" class="viewpoint-title">Emerald Bay Overview</h3>
+            <p id="viewpoint-address" class="viewpoint-address">
+              Emerald Bay State Park, South Lake Tahoe, CA
+            </p>
+            <p id="viewpoint-description" class="viewpoint-description">
+              Sweeping aerial perspective across Emerald Bay, Fannette Island, and the granite glacier-carved shoreline.
+            </p>
+            <div id="viewpoint-place-meta" class="viewpoint-place-meta"></div>
+          </section>
+
+          <!-- Elevation Profile Panel -->
+          <section
+            class="panel elevation-panel"
+            data-testid="elevation-profile-panel"
+            aria-labelledby="elevation-panel-heading"
+          >
+            <div class="panel-header">
+              <div>
+                <h2 id="elevation-panel-heading" class="panel-title">Trail Elevation Profile</h2>
+                <p id="elevation-status-text" class="panel-caption">
+                  Sampled via Google Elevation API
+                </p>
+              </div>
+              <span class="trail-color-chip">
+                <span class="trail-swatch" aria-hidden="true"></span>
+                3D Trail
+              </span>
+            </div>
+
+            <div
+              id="trail-metrics-summary"
+              data-testid="trail-metrics-summary"
+              class="metrics-grid"
+            >
+              <div class="metric-box">
+                <span class="metric-label">Distance</span>
+                <span id="metric-distance" class="metric-value">-- km</span>
+              </div>
+              <div class="metric-box">
+                <span class="metric-label">Max Elev</span>
+                <span id="metric-max-elev" class="metric-value">-- m</span>
+              </div>
+              <div class="metric-box">
+                <span class="metric-label">Ascent</span>
+                <span id="metric-ascent" class="metric-value">-- m</span>
+              </div>
+              <div class="metric-box">
+                <span class="metric-label">Descent</span>
+                <span id="metric-descent" class="metric-value">-- m</span>
+              </div>
+            </div>
+
+            <div class="chart-container">
+              <svg
+                id="elevation-profile-chart"
+                data-testid="elevation-profile-chart"
+                class="elevation-svg"
+                viewBox="0 0 320 118"
+                role="img"
+                aria-label="Interactive trail elevation profile chart"
+              ></svg>
+              <div id="chart-hover-readout" class="chart-hover-readout">
+                Hover or click profile points to focus 3D camera
+              </div>
+            </div>
+          </section>
+        </aside>
+
+        <!-- Right/Main Photorealistic 3D Map Canvas -->
+        <section
+          id="map-3d-container"
+          data-testid="map-3d-container"
+          class="map-stage"
+          aria-label="Photorealistic 3D Map of Lake Tahoe"
+        >
+          <gmp-map-3d
+            id="trail-map-3d"
+            data-testid="gmp-map-3d"
+            mode="hybrid"
+            center="38.9542,-120.1103,40"
+            range="2400"
+            tilt="62"
+            heading="35"
+            internal-usage-attribution-ids="gmp_git_agentsamples_v1.0.0"
+          ></gmp-map-3d>
+
+          <div id="map-status-banner" class="map-status-banner hidden" role="status"></div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="/static/app.js"></script>
+  </body>
+</html>

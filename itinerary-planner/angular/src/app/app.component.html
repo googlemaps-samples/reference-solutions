@@ -1,0 +1,448 @@
+<div class="app-shell">
+  <!-- Top Header Bar (64px) -->
+  <header class="top-header">
+    <div class="brand-group">
+      <div class="brand-mark" aria-hidden="true">✈</div>
+      <div class="brand-text">
+        <h1 class="brand-title">Trip Itinerary &amp; Time Zone Hub</h1>
+        <span class="brand-subtitle">Multi-Day Planner • Places • Routes • Street View</span>
+      </div>
+    </div>
+
+    <div class="search-controls">
+      <div
+        #autocompleteHost
+        class="autocomplete-host"
+        data-testid="destination-search-input"
+      >
+        @if (!mapsLoaded()) {
+          <input
+            type="text"
+            class="fallback-search-input"
+            placeholder="Search destination city or landmark..."
+            aria-label="Destination search"
+            disabled
+          />
+        }
+      </div>
+
+      <select
+        class="quick-select"
+        data-testid="destination-quick-select"
+        aria-label="Quick destination selector"
+        [value]="selectedPresetId()"
+        (change)="onQuickPresetChange($event)"
+      >
+        @for (preset of presets; track preset.id) {
+          <option [value]="preset.id">{{ preset.name }}, {{ preset.country }}</option>
+        }
+        @if (selectedPresetId() === 'custom') {
+          <option value="custom">{{ destinationName() }}</option>
+        }
+      </select>
+    </div>
+
+    <app-timezone-hub
+      [destinationName]="destinationName()"
+      [timeZone]="timeZoneInfo()"
+    />
+  </header>
+
+  @if (mapsError()) {
+    <div class="config-banner" role="alert">
+      <strong>Maps API Setup Required:</strong>
+      <span>{{ mapsError() }}</span>
+      <a
+        href="https://mapsplatform.google.com/maps-demo-key?utm_campaign=gmp_git_agentsamples_v1.0.0"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Get a free Maps Demo Key →
+      </a>
+    </div>
+  }
+
+  <!-- Two-Column Split-Screen Workspace -->
+  <main class="workspace">
+    <!-- Left Sidebar (420px fixed on desktop) -->
+    <aside class="sidebar">
+      <!-- Section 1: Multi-Day Itinerary Planner -->
+      <section class="panel itinerary-panel" aria-label="Multi-day itinerary">
+        <div class="panel-header-row">
+          <div class="day-tabs" data-testid="itinerary-day-tabs" role="tablist">
+            <button
+              type="button"
+              role="tab"
+              class="day-tab"
+              [class.day-tab-active]="activeDay() === 1"
+              [style.--day-accent]="dayColors[1].primary"
+              [attr.aria-selected]="activeDay() === 1"
+              (click)="selectDay(1)"
+            >
+              <span class="day-dot" style="background: #0f766e"></span>
+              <span>Day 1</span>
+              <span class="day-count">{{ day1Stops().length }}</span>
+            </button>
+
+            <button
+              type="button"
+              role="tab"
+              class="day-tab"
+              [class.day-tab-active]="activeDay() === 2"
+              [style.--day-accent]="dayColors[2].primary"
+              [attr.aria-selected]="activeDay() === 2"
+              (click)="selectDay(2)"
+            >
+              <span class="day-dot" style="background: #d97706"></span>
+              <span>Day 2</span>
+              <span class="day-count">{{ day2Stops().length }}</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="route-controls-row">
+          <label class="mode-label">
+            <span>Mode</span>
+            <select
+              class="mode-select"
+              data-testid="travel-mode-select"
+              [value]="travelMode()"
+              (change)="onTravelModeChange($event)"
+            >
+              <option value="DRIVE">Drive</option>
+              <option value="WALK">Walk</option>
+              <option value="TRANSIT">Transit</option>
+            </select>
+          </label>
+
+          <button
+            type="button"
+            class="optimize-btn"
+            data-testid="optimize-route-btn"
+            [disabled]="!canOptimizeActiveRoute()"
+            [title]="
+              travelMode() === 'TRANSIT'
+                ? 'Waypoint optimization is available in Drive or Walk mode'
+                : activeDayStops().length < 3
+                  ? 'Add at least 3 stops to optimize intermediate order'
+                  : 'Optimize intermediate stop order via Routes API'
+            "
+            (click)="optimizeActiveRoute()"
+          >
+            {{ routeLoading() ? 'Routing...' : 'Optimize Order' }}
+          </button>
+        </div>
+
+        <div
+          class="route-summary-bar"
+          data-testid="route-summary-bar"
+          [style.borderLeftColor]="dayColors[activeDay()].primary"
+        >
+          @if (activeDayStops().length < 2) {
+            <span class="route-summary-empty">
+              Add at least 2 stops to Day {{ activeDay() }} to draw a multi-stop route.
+            </span>
+          } @else if (activeRouteSummary().errorMessage) {
+            <span class="route-summary-error">
+              {{ activeRouteSummary().errorMessage }}
+            </span>
+          } @else {
+            <div class="route-metrics">
+              <span class="metric-chip">
+                <strong>{{ activeRouteSummary().totalDurationText }}</strong>
+                <span>total travel</span>
+              </span>
+              <span class="metric-chip">
+                <strong>{{ activeRouteSummary().totalDistanceText }}</strong>
+                <span>{{ activeDayStops().length }} stops</span>
+              </span>
+              @if (activeRouteSummary().optimized) {
+                <span class="optimized-badge">Optimized</span>
+              }
+            </div>
+          }
+        </div>
+
+        <ol class="stops-list" data-testid="itinerary-stops-list">
+          @if (activeDayStops().length === 0) {
+            <li class="empty-stops">
+              No stops added to Day {{ activeDay() }} yet. Pick attractions, restaurants, or hotels below.
+            </li>
+          } @else {
+            @for (stop of activeDayStops(); track stop.stopUid; let idx = $index) {
+              <li
+                class="stop-card"
+                [class.stop-card-selected]="selectedPlaceId() === stop.id"
+              >
+                <div class="stop-row">
+                  <span
+                    class="stop-number"
+                    [style.backgroundColor]="dayColors[activeDay()].primary"
+                  >
+                    {{ idx + 1 }}
+                  </span>
+
+                  <div class="stop-info">
+                    <div class="stop-name">{{ stop.displayName }}</div>
+                    <div class="stop-sub">
+                      <span>{{ stop.primaryTypeDisplayName }}</span>
+                      @if (stop.rating !== null) {
+                        <span>• ★ {{ stop.rating.toFixed(1) }}</span>
+                      }
+                    </div>
+                  </div>
+
+                  <div class="stop-actions">
+                    <button
+                      type="button"
+                      class="icon-btn"
+                      title="Inspect Street View"
+                      (click)="inspectStreetView(stop)"
+                    >
+                      SV
+                    </button>
+                    <button
+                      type="button"
+                      class="icon-btn"
+                      title="Move up"
+                      [disabled]="idx === 0"
+                      (click)="moveStop(activeDay(), idx, -1)"
+                    >
+                      ↑
+                    </button>
+                    <button
+                      type="button"
+                      class="icon-btn"
+                      title="Move down"
+                      [disabled]="idx === activeDayStops().length - 1"
+                      (click)="moveStop(activeDay(), idx, 1)"
+                    >
+                      ↓
+                    </button>
+                    <button
+                      type="button"
+                      class="icon-btn icon-btn-danger"
+                      title="Remove stop"
+                      (click)="removeStop(activeDay(), stop.stopUid)"
+                    >
+                      ×
+                    </button>
+                  </div>
+                </div>
+
+                @if (getLegAfterStop(idx); as leg) {
+                  <div class="leg-connector">
+                    <span>↓ {{ leg.durationText }} • {{ leg.distanceText }} to next stop</span>
+                  </div>
+                }
+              </li>
+            }
+          }
+        </ol>
+      </section>
+
+      <!-- Section 2: Live Places API (New) Discovery -->
+      <section class="panel discovery-panel" aria-label="Place discovery">
+        <div class="discovery-header">
+          <h2 class="section-heading">Discover {{ destinationName() }}</h2>
+          <div class="category-tabs" data-testid="discovery-category-tabs" role="tablist">
+            <button
+              type="button"
+              role="tab"
+              class="cat-tab"
+              [class.cat-tab-active]="activeCategory() === 'attractions'"
+              (click)="selectCategory('attractions')"
+            >
+              Attractions
+            </button>
+            <button
+              type="button"
+              role="tab"
+              class="cat-tab"
+              [class.cat-tab-active]="activeCategory() === 'restaurants'"
+              (click)="selectCategory('restaurants')"
+            >
+              Restaurants
+            </button>
+            <button
+              type="button"
+              role="tab"
+              class="cat-tab"
+              [class.cat-tab-active]="activeCategory() === 'hotels'"
+              (click)="selectCategory('hotels')"
+            >
+              Hotels
+            </button>
+          </div>
+        </div>
+
+        <div class="discovery-list" data-testid="discovery-results-list">
+          @if (discoveryLoading()) {
+            <div class="discovery-state">Loading live Places API (New) results...</div>
+          } @else if (discoveryError()) {
+            <div class="discovery-state discovery-error">{{ discoveryError() }}</div>
+          } @else if (discoveryResults().length === 0) {
+            <div class="discovery-state">
+              No places found yet. Try selecting another category or destination.
+            </div>
+          } @else {
+            @for (place of discoveryResults(); track place.id) {
+              <article
+                class="place-card"
+                [class.place-card-selected]="selectedPlaceId() === place.id"
+              >
+                <div class="place-card-top">
+                  @if (place.photoUrl) {
+                    <img
+                      class="place-thumb"
+                      [src]="place.photoUrl"
+                      [alt]="place.displayName"
+                      loading="lazy"
+                    />
+                  } @else {
+                    <div class="place-thumb place-thumb-empty">No Photo</div>
+                  }
+
+                  <div class="place-meta">
+                    <div class="place-title-row">
+                      <h3 class="place-name">{{ place.displayName }}</h3>
+                    </div>
+                    <div class="place-type-rating">
+                      <span class="type-pill">{{ place.primaryTypeDisplayName }}</span>
+                      @if (place.rating !== null) {
+                        <span class="rating-text">
+                          ★ {{ place.rating.toFixed(1) }}
+                          @if (place.userRatingCount !== null) {
+                            ({{ place.userRatingCount | number }})
+                          }
+                        </span>
+                      }
+                    </div>
+                    <p class="place-address">{{ place.formattedAddress }}</p>
+                    <p class="place-hours">{{ place.todayHoursSummary }}</p>
+                  </div>
+                </div>
+
+                <div class="place-card-actions">
+                  <button
+                    type="button"
+                    class="add-day-btn add-day-1"
+                    [class.added]="isPlaceInDay(place.id, 1)"
+                    (click)="addPlaceToDay(place, 1)"
+                  >
+                    {{ isPlaceInDay(place.id, 1) ? '✓ Day 1' : '+ Day 1' }}
+                  </button>
+                  <button
+                    type="button"
+                    class="add-day-btn add-day-2"
+                    [class.added]="isPlaceInDay(place.id, 2)"
+                    (click)="addPlaceToDay(place, 2)"
+                  >
+                    {{ isPlaceInDay(place.id, 2) ? '✓ Day 2' : '+ Day 2' }}
+                  </button>
+                  <button
+                    type="button"
+                    class="sv-btn"
+                    (click)="inspectStreetView(place)"
+                  >
+                    Street View
+                  </button>
+                </div>
+              </article>
+            }
+          }
+        </div>
+      </section>
+    </aside>
+
+    <!-- Right Workspace: Interactive 2D Map + Docked Street View Panel -->
+    <section class="right-workspace">
+      <div class="map-container" data-testid="map-container">
+        @if (mapsLoaded()) {
+          <google-map
+            width="100%"
+            height="100%"
+            [center]="mapCenter()"
+            [zoom]="mapZoom()"
+            [options]="mapOptions"
+            (mapInitialized)="onMapInitialized($event)"
+          >
+            @for (item of stopMarkerItems(); track item.stop.stopUid) {
+              <map-advanced-marker
+                #stopMarker="mapAdvancedMarker"
+                [position]="item.stop.location"
+                [title]="(item.index + 1) + '. ' + item.stop.displayName"
+                [content]="item.pin"
+                [zIndex]="200 + item.index"
+                (mapClick)="onMarkerClick(item.stop, stopMarker)"
+              />
+            }
+
+            @for (disc of discoveryMarkerItems(); track disc.place.id) {
+              <map-advanced-marker
+                #discMarker="mapAdvancedMarker"
+                [position]="disc.place.location"
+                [title]="disc.place.displayName"
+                [content]="disc.pin"
+                [zIndex]="50"
+                (mapClick)="onMarkerClick(disc.place, discMarker)"
+              />
+            }
+
+            @if (activeRoutePath().length >= 2) {
+              <map-polyline
+                [path]="activeRoutePath()"
+                [options]="activePolylineOptions()"
+              />
+            }
+
+            <map-info-window>
+              @if (infoWindowPlace(); as place) {
+                <div class="info-window-card">
+                  <div class="iw-title">{{ place.displayName }}</div>
+                  <div class="iw-meta">
+                    <span>{{ place.primaryTypeDisplayName }}</span>
+                    @if (place.rating !== null) {
+                      <span>• ★ {{ place.rating.toFixed(1) }}</span>
+                    }
+                  </div>
+                  <div class="iw-address">{{ place.formattedAddress }}</div>
+                  <div class="iw-hours">{{ place.todayHoursSummary }}</div>
+                  <div class="iw-actions">
+                    <button
+                      type="button"
+                      class="iw-btn"
+                      (click)="addPlaceToDay(place, activeDay())"
+                    >
+                      + Day {{ activeDay() }}
+                    </button>
+                    <button
+                      type="button"
+                      class="iw-btn iw-btn-secondary"
+                      (click)="inspectStreetView(place)"
+                    >
+                      Street View
+                    </button>
+                  </div>
+                </div>
+              }
+            </map-info-window>
+          </google-map>
+        } @else {
+          <div class="map-loading-state">
+            @if (mapsLoading()) {
+              <span>Loading Google Maps JavaScript API libraries...</span>
+            } @else {
+              <span>Configure GOOGLE_MAPS_API_KEY in .env to render the interactive map.</span>
+            }
+          </div>
+        }
+      </div>
+
+      <app-street-view-panel
+        [mapsLoaded]="mapsLoaded()"
+        [target]="streetViewTarget()"
+      />
+    </section>
+  </main>
+</div>

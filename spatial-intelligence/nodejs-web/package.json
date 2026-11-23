@@ -1,0 +1,31 @@
+{
+  "name": "3d-spatial-intelligence-nodejs-web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Enterprise GIS Workbench, GeoJSON Zones & Deck.gl Analytics built with Node.js, Express, TypeScript, and Google Maps Platform.",
+  "type": "module",
+  "scripts": {
+    "dev": "tsc && node scripts/bundle-vendor.mjs && node dist/server.js --host 127.0.0.1 --port 3000",
+    "build": "tsc && node scripts/bundle-vendor.mjs",
+    "start": "node dist/server.js --host 127.0.0.1 --port 3000",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@deck.gl/aggregation-layers": "^9.1.0",
+    "@deck.gl/core": "^9.1.0",
+    "@deck.gl/google-maps": "^9.1.0",
+    "@deck.gl/layers": "^9.1.0",
+    "@googlemaps/js-api-loader": "^2.0.2",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "terra-draw": "^1.1.0",
+    "terra-draw-google-maps-adapter": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/google.maps": "^3.58.1",
+    "@types/node": "^22.10.2",
+    "esbuild": "^0.24.2",
+    "typescript": "^5.7.2"
+  }
+}

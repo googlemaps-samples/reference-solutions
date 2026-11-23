@@ -1,0 +1,42 @@
+<div class="map-wrapper" data-testid="map-container">
+  <google-map
+    width="100%"
+    height="100%"
+    [options]="mapOptions"
+    [center]="initialCenter"
+    [zoom]="initialZoom"
+    (mapInitialized)="onMapInitialized($event)"
+  >
+    <map-advanced-marker
+      [position]="originPosition()"
+      [title]="originTitle()"
+      [content]="originPinContent()"
+      [zIndex]="1000"
+    />
+  </google-map>
+
+  <div class="map-legend" data-testid="map-legend">
+    <div class="map-legend__title">NYC Network Legend</div>
+    <div class="map-legend__items">
+      <div class="map-legend__item">
+        <span class="legend-dot legend-dot--flagship"></span>
+        <span>Flagship Store</span>
+      </div>
+      <div class="map-legend__item">
+        <span class="legend-dot legend-dot--kiosk"></span>
+        <span>Express Kiosk</span>
+      </div>
+      <div class="map-legend__item">
+        <span class="legend-dot legend-dot--atm"></span>
+        <span>24/7 ATM</span>
+      </div>
+      <div class="map-legend__item">
+        <span class="legend-dot legend-dot--origin"></span>
+        <span>Your Origin</span>
+      </div>
+    </div>
+    <div class="map-legend__hint">
+      Zoom {{ currentZoom() }} · Click a cluster or zoom in for branch pins
+    </div>
+  </div>
+</div>

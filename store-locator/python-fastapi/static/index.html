@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NYC Multi-Branch Store, ATM &amp; Inventory Locator</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231e3a8a'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' fill='%23ffffff' font-family='sans-serif' font-weight='700' font-size='18'%3EM%3C/text%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/styles.css" />
+    <script
+      src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js"
+      defer
+    ></script>
+    <script type="module" src="/static/app.js"></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="app-header" data-testid="app-header">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">M</div>
+          <div class="brand-copy">
+            <h1>MetroRetail NYC Locator</h1>
+            <p class="brand-subtitle">Stores, Express Kiosks &amp; 24/7 ATMs</p>
+          </div>
+        </div>
+
+        <div class="header-controls">
+          <div class="origin-search-wrap">
+            <label class="sr-only" for="origin-search-input">
+              Search NYC starting location
+            </label>
+            <div class="search-input-box">
+              <span class="search-icon" aria-hidden="true">&#128269;</span>
+              <input
+                id="origin-search-input"
+                type="text"
+                autocomplete="off"
+                placeholder="Search NYC starting point (e.g., Grand Central, SoHo, 350 5th Ave)..."
+                data-testid="origin-search-input"
+              />
+              <button
+                id="reset-origin-btn"
+                type="button"
+                class="reset-origin-btn"
+                title="Reset to Penn Station, Midtown NYC"
+              >
+                Midtown
+              </button>
+            </div>
+            <ul
+              id="autocomplete-dropdown"
+              class="autocomplete-dropdown hidden"
+              role="listbox"
+              aria-label="Location suggestions"
+              data-testid="autocomplete-dropdown"
+            ></ul>
+          </div>
+
+          <div class="mode-and-cta">
+            <label class="sr-only" for="travel-mode-select">Travel mode</label>
+            <select
+              id="travel-mode-select"
+              class="travel-mode-select"
+              data-testid="travel-mode-select"
+            >
+              <option value="DRIVE">Drive (Traffic-Aware)</option>
+              <option value="WALK">Walk</option>
+              <option value="TRANSIT">NYC Transit</option>
+            </select>
+
+            <button
+              id="route-fastest-button"
+              type="button"
+              class="route-fastest-btn"
+              data-testid="route-fastest-button"
+            >
+              Route to Fastest
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div id="config-banner" class="config-banner hidden" role="status"></div>
+
+      <main class="split-workspace">
+        <aside class="sidebar" aria-label="Branch directory and filters">
+          <section class="filters-panel">
+            <div class="filter-group">
+              <div class="filter-group-header">
+                <span class="filter-label">Branch Type</span>
+                <span id="results-count" class="results-count">Loading NYC branches...</span>
+              </div>
+              <div class="chip-row" role="group" aria-label="Filter by branch type">
+                <button
+                  type="button"
+                  class="filter-chip active"
+                  data-type-filter="all"
+                  data-testid="filter-type-all"
+                >
+                  All
+                </button>
+                <button
+                  type="button"
+                  class="filter-chip"
+                  data-type-filter="flagship"
+                  data-testid="filter-type-flagship"
+                >
+                  <span class="dot dot-flagship" aria-hidden="true"></span>
+                  Flagship Store
+                </button>
+                <button
+                  type="button"
+                  class="filter-chip"
+                  data-type-filter="kiosk"
+                  data-testid="filter-type-kiosk"
+                >
+                  <span class="dot dot-kiosk" aria-hidden="true"></span>
+                  Express Kiosk
+                </button>
+                <button
+                  type="button"
+                  class="filter-chip"
+                  data-type-filter="atm"
+                  data-testid="filter-type-atm"
+                >
+                  <span class="dot dot-atm" aria-hidden="true"></span>
+                  24/7 ATM
+                </button>
+              </div>
+            </div>
+
+            <div class="filter-group">
+              <span class="filter-label">Inventory &amp; Services</span>
+              <div class="chip-row" role="group" aria-label="Filter by service availability">
+                <button
+                  type="button"
+                  class="service-chip"
+                  data-service-filter="pickup"
+                  data-testid="filter-service-pickup"
+                >
+                  Click &amp; Collect
+                </button>
+                <button
+                  type="button"
+                  class="service-chip"
+                  data-service-filter="coffee"
+                  data-testid="filter-service-coffee"
+                >
+                  Express Espresso
+                </button>
+                <button
+                  type="button"
+                  class="service-chip"
+                  data-service-filter="cash"
+                  data-testid="filter-service-cash"
+                >
+                  Cash Deposit
+                </button>
+                <button
+                  type="button"
+                  class="service-chip"
+                  data-service-filter="open24"
+                  data-testid="filter-service-open24"
+                >
+                  Open 24h
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <section
+            id="route-summary-banner"
+            class="route-summary-banner"
+            data-testid="route-summary-banner"
+          >
+            <div class="route-summary-main">
+              <span class="route-summary-kicker">Origin: Penn Station, Midtown NYC</span>
+              <strong id="route-summary-title">Calculating fastest nearby branch...</strong>
+              <p id="route-summary-metrics" class="route-summary-metrics">
+                Evaluating live road travel times via Routes API
+              </p>
+            </div>
+            <button
+              id="clear-route-btn"
+              type="button"
+              class="clear-route-btn hidden"
+            >
+              Clear Route
+            </button>
+          </section>
+
+          <div
+            id="branch-list"
+            class="branch-list"
+            data-testid="branch-list"
+          ></div>
+        </aside>
+
+        <section class="map-section" aria-label="Interactive NYC branch map">
+          <div
+            id="map-container"
+            class="map-container"
+            data-testid="map-container"
+          ></div>
+
+          <div
+            id="map-legend"
+            class="map-legend"
+            data-testid="map-legend"
+          >
+            <div class="legend-title">NYC Network Legend</div>
+            <div class="legend-items">
+              <div class="legend-item">
+                <span class="legend-swatch swatch-flagship"></span>
+                <span>Flagship Store</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-swatch swatch-kiosk"></span>
+                <span>Express Kiosk</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-swatch swatch-atm"></span>
+                <span>24/7 ATM</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-swatch swatch-origin"></span>
+                <span>Your Origin</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-swatch swatch-cluster"></span>
+                <span>Branch Cluster</span>
+              </div>
+            </div>
+            <div class="legend-hint">
+              Zoom in or click a cluster to inspect individual branch pins.
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

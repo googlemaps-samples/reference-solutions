@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+:root {
+  --bg-canvas: #f4f7f6;
+  --surface-card: #ffffff;
+  --surface-muted: #f0f4f3;
+  --border-subtle: #dbe3e0;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --accent-primary: #0f766e;
+  --accent-primary-hover: #0d5e58;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Style Google Maps PlaceAutocompleteElement cleanly in light mode */
+.gmp-autocomplete-host gmp-place-autocomplete {
+  display: block;
+  width: 100%;
+  color-scheme: light;
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.625rem;
+  font-family: inherit;
+  font-size: 0.875rem;
+  color: #0f172a;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.gmp-autocomplete-host gmp-place-autocomplete:focus-within {
+  border-color: #0f766e;
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.14);
+}
+
+/* Custom subtle scrollbars for sidebar */
+.sidebar-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 9999px;
+}

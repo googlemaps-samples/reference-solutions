@@ -1,0 +1,301 @@
+<div class="app-shell">
+  <!-- 56px Top Header -->
+  <header class="top-header">
+    <div class="brand">
+      <div class="brand-logo" aria-hidden="true">⚡</div>
+      <div class="brand-text">
+        <span class="brand-title">LA EcoRide</span>
+        <span class="brand-subtitle">Angular · Google Maps Platform</span>
+      </div>
+    </div>
+
+    @if (pickupPlace && dropoffPlace) {
+      <div class="header-trip-pill">
+        <span class="trip-endpoint">{{ pickupPlace.name }}</span>
+        <span class="trip-arrow">→</span>
+        <span class="trip-endpoint">{{ dropoffPlace.name }}</span>
+        @if (activeRoute) {
+          <span class="trip-chip">
+            {{ formatDistanceMiles(activeRoute.distanceMeters) }} · {{ formatDuration(activeRoute.durationSeconds) }}
+          </span>
+        }
+      </div>
+    }
+
+    <div class="header-status-badge" [class.badge-active]="simulationRunning">
+      <span class="pulse-dot" [class.pulsing]="simulationRunning"></span>
+      <span>{{ headerStatusText }}</span>
+    </div>
+  </header>
+
+  <!-- Main Split-Screen Workspace -->
+  <main class="workspace">
+    <!-- Left 400px Control & Telemetry Sidebar -->
+    <aside class="sidebar">
+      @if (errorMessage) {
+        <div class="error-banner" role="alert">
+          <strong>Notice:</strong> {{ errorMessage }}
+        </div>
+      }
+
+      <!-- 1. Trip Planner -->
+      <section class="panel-card">
+        <div class="panel-header">
+          <h2>Trip Planner · Los Angeles</h2>
+          <button
+            type="button"
+            class="swap-btn"
+            data-testid="swap-locations-btn"
+            (click)="swapLocations()"
+            [disabled]="!pickupPlace || !dropoffPlace || isComputing"
+            title="Swap pickup and drop-off"
+          >
+            ⇅ Swap
+          </button>
+        </div>
+
+        <div class="planner-inputs">
+          <app-place-autocomplete-input
+            label="Pickup"
+            placeholder="Search LA pickup address…"
+            testId="pickup-autocomplete"
+            variant="pickup"
+            [displayText]="pickupDisplayText"
+            [resolvedPlace]="pickupPlace"
+            [mapsReady]="mapsReady"
+            (placeSelected)="onPickupSelected($event)"
+          />
+
+          <app-place-autocomplete-input
+            label="Drop-off"
+            placeholder="Search LA drop-off destination…"
+            testId="dropoff-autocomplete"
+            variant="dropoff"
+            [displayText]="dropoffDisplayText"
+            [resolvedPlace]="dropoffPlace"
+            [mapsReady]="mapsReady"
+            (placeSelected)="onDropoffSelected($event)"
+          />
+        </div>
+      </section>
+
+      <!-- 2. Route Comparison & Eco Savings -->
+      <section class="panel-card">
+        <div class="panel-header">
+          <h2>Route Comparison</h2>
+          <label class="emission-select-wrap">
+            <span class="sr-only">Vehicle Emission Type</span>
+            <select
+              data-testid="emission-type-select"
+              class="emission-select"
+              [ngModel]="emissionType"
+              (ngModelChange)="onEmissionTypeChange($event)"
+            >
+              <option value="GASOLINE">Gasoline</option>
+              <option value="HYBRID">Hybrid</option>
+              <option value="ELECTRIC">Electric (EV)</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="route-cards">
+          <!-- Fastest Route -->
+          <button
+            type="button"
+            class="route-card"
+            [class.selected]="selectedRouteKind === 'fastest'"
+            data-testid="route-option-fastest"
+            (click)="selectRouteKind('fastest')"
+          >
+            <div class="route-card-top">
+              <span class="route-badge badge-fastest">Fastest · Traffic-Aware</span>
+              <span class="route-duration">
+                {{ formatDuration(fastestRoute?.durationSeconds) }}
+              </span>
+            </div>
+            <div class="route-card-metrics">
+              <span>{{ formatDistanceMiles(fastestRoute?.distanceMeters) }}</span>
+              <span>·</span>
+              <span>Est. Energy: {{ formatFuelLiters(fastestRoute?.fuelConsumptionMicroliters ?? null) }}</span>
+            </div>
+          </button>
+
+          <!-- Eco-Friendly Route -->
+          <button
+            type="button"
+            class="route-card route-card-eco"
+            [class.selected]="selectedRouteKind === 'eco'"
+            data-testid="route-option-eco"
+            (click)="selectRouteKind('eco')"
+          >
+            <div class="route-card-top">
+              <span class="route-badge badge-eco">Eco-Friendly · Fuel-Efficient</span>
+              <span class="route-duration eco-text">
+                {{ formatDuration(ecoRoute?.durationSeconds) }}
+              </span>
+            </div>
+            <div class="route-card-metrics">
+              <span>{{ formatDistanceMiles(ecoRoute?.distanceMeters) }}</span>
+              <span>·</span>
+              <span>Est. Energy: {{ formatFuelLiters(ecoRoute?.fuelConsumptionMicroliters ?? null) }}</span>
+            </div>
+          </button>
+        </div>
+
+        <!-- Eco Savings Banner -->
+        <div class="eco-savings-banner" data-testid="eco-savings-banner">
+          @if (ecoSavings) {
+            @if (!ecoSavings.isSameAsFastest && ecoSavings.fuelSavedLiters > 0) {
+              <div class="savings-title">
+                🌿 Saves {{ ecoSavings.fuelSavedLiters.toFixed(2) }} L ({{ ecoSavings.fuelSavedPercent.toFixed(1) }}%) &amp;
+                {{ (ecoSavings.co2SavedGrams / 1000).toFixed(2) }} kg CO₂
+              </div>
+              <div class="savings-sub">
+                Computed via Routes API <code>FUEL_EFFICIENT</code> + <code>FUEL_CONSUMPTION</code> ({{ ecoSavings.emissionType }})
+              </div>
+            } @else {
+              <div class="savings-title">
+                🌿 Fastest path is already the optimal Eco-Friendly route
+              </div>
+              <div class="savings-sub">
+                Routes API confirmed <code>DEFAULT_ROUTE</code> &amp; <code>FUEL_EFFICIENT</code> align for {{ ecoSavings.emissionType }}.
+              </div>
+            }
+          } @else {
+            <div class="savings-sub">Computing live fuel &amp; CO₂ comparison…</div>
+          }
+        </div>
+      </section>
+
+      <!-- 3. Transparent Fare Estimator -->
+      <section class="panel-card">
+        <div class="panel-header">
+          <h2>Transparent Fare Estimator</h2>
+          <span class="panel-meta">Live distance &amp; time</span>
+        </div>
+
+        <div class="fare-list">
+          @for (fare of fareEstimates; track fare.id) {
+            <button
+              type="button"
+              class="fare-card"
+              [class.selected]="selectedFareTier === fare.id"
+              [attr.data-testid]="'fare-tier-' + fare.id"
+              (click)="selectFareTier(fare.id)"
+            >
+              <div class="fare-top">
+                <div class="fare-name-group">
+                  <span class="fare-name">{{ fare.name }}</span>
+                  <span class="fare-pill" [class.pill-green]="fare.id === 'green'">{{ fare.badge }}</span>
+                </div>
+                <span class="fare-price">\${{ fare.totalFare.toFixed(2) }}</span>
+              </div>
+              <div class="fare-subtitle">{{ fare.subtitle }}</div>
+              <div class="fare-breakdown">
+                Base \${{ fare.baseFare.toFixed(2) }} + Dist \${{ fare.distanceFare.toFixed(2) }} + Time \${{ fare.timeFare.toFixed(2) }}
+                @if (fare.greenDiscount > 0) {
+                  <span class="discount-tag">−\${{ fare.greenDiscount.toFixed(2) }} Eco</span>
+                }
+              </div>
+              <div class="fare-co2">{{ fare.co2Label }}</div>
+            </button>
+          }
+        </div>
+      </section>
+
+      <!-- 4. Live Driver Dispatch & ETA Tracker -->
+      <section class="panel-card">
+        <div class="panel-header">
+          <h2>Live Driver Dispatch</h2>
+          <span class="panel-meta">Route Matrix Closest Match</span>
+        </div>
+
+        <div class="dispatch-actions">
+          <button
+            type="button"
+            class="primary-btn"
+            data-testid="dispatch-driver-btn"
+            (click)="dispatchClosestDriver()"
+            [disabled]="!pickupPlace || !activeRoute || isComputing"
+          >
+            {{ driverTelemetry.driver ? 'Re-Dispatch Closest Driver' : 'Dispatch Closest Driver' }}
+          </button>
+          <button
+            type="button"
+            class="secondary-btn"
+            data-testid="toggle-simulation-btn"
+            (click)="toggleSimulation()"
+            [disabled]="!pickupPlace || !activeRoute"
+          >
+            {{ simulationRunning ? 'Pause' : 'Resume' }}
+          </button>
+        </div>
+
+        <div class="live-eta-box" data-testid="driver-live-eta">
+          @if (driverTelemetry.driver) {
+            <div class="driver-row">
+              <div class="driver-avatar">{{ driverTelemetry.driver.name.charAt(0) }}</div>
+              <div class="driver-info">
+                <div class="driver-name">
+                  {{ driverTelemetry.driver.name }}
+                  <span class="driver-rating">★ {{ driverTelemetry.driver.rating.toFixed(2) }}</span>
+                </div>
+                <div class="driver-vehicle">
+                  {{ driverTelemetry.driver.vehicleModel }} · {{ driverTelemetry.driver.licensePlate }} ·
+                  <span class="ev-tag">{{ driverTelemetry.driver.emissionType }}</span>
+                </div>
+              </div>
+              <div class="eta-metric">
+                <div class="eta-value">
+                  {{ driverTelemetry.phase === 'arrived_dropoff' ? '0 min' : formatDuration(driverTelemetry.remainingSeconds) }}
+                </div>
+                <div class="eta-dist">{{ formatDistanceMiles(driverTelemetry.remainingMeters) }}</div>
+              </div>
+            </div>
+
+            <div class="progress-track">
+              <div class="progress-fill" [style.width.%]="driverTelemetry.progressPercent"></div>
+            </div>
+
+            <div class="telemetry-status">
+              <span>{{ driverTelemetry.statusLabel }}</span>
+              <span>{{ driverTelemetry.progressPercent }}%</span>
+            </div>
+          } @else {
+            <div class="telemetry-placeholder">
+              Evaluating nearby LA drivers via Route Matrix…
+            </div>
+          }
+        </div>
+
+        <!-- Nearby Candidate Vehicles Mini-Grid -->
+        <div class="candidates-list">
+          @for (cand of candidateDrivers; track cand.id) {
+            <div class="candidate-row" [class.dispatched]="cand.isDispatched">
+              <span class="cand-name">{{ cand.name }} ({{ cand.emissionType }})</span>
+              <span class="cand-eta">
+                {{ cand.matrixDurationSeconds != null ? formatDuration(cand.matrixDurationSeconds) : '—' }}
+                · {{ formatDistanceMiles(cand.matrixDistanceMeters) }}
+              </span>
+            </div>
+          }
+        </div>
+      </section>
+    </aside>
+
+    <!-- Right Interactive Google Map Canvas -->
+    <section class="map-column">
+      <app-rideshare-map
+        [mapsReady]="mapsReady"
+        [apiKeyMissing]="apiKeyMissing"
+        [pickupPlace]="pickupPlace"
+        [dropoffPlace]="dropoffPlace"
+        [fastestRoute]="fastestRoute"
+        [ecoRoute]="ecoRoute"
+        [selectedRouteKind]="selectedRouteKind"
+        [candidates]="candidateDrivers"
+        [driverTelemetry]="driverTelemetry"
+      />
+    </section>
+  </main>
+</div>

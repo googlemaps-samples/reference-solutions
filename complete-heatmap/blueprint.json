@@ -1,0 +1,92 @@
+{
+  "solution_id": "complete-heatmap",
+  "solution_title": "Disaster Hazard Heatmap, Civic Incident & Safe Shelter Router",
+  "summary": "A cohesive civic flood/storm hazard monitoring, incident reporting, and safe-shelter evacuation routing portal centered in Miami, FL (25.7743, -80.1937). Built strictly on modern zero-deprecation Google Maps Platform APIs: interactive 2D vector Google Map (DEMO_MAP_ID, attribution ID gmp_git_agentsamples_v1.0.0) with deck.gl HeatmapLayer via GoogleMapsOverlay (with graceful WebGL2 fallback for headless environments) and active flood-hazard zone polygons. Clicking anywhere on the map drops an AdvancedMarkerElement and enriches a geotagged civic incident report in parallel via reverse geocoding (Geocoder / Geocoding API), terrain elevation (ElevationService / Elevation API), and live wind/precipitation conditions (Weather API v1 currentConditions:lookup), allowing residents to submit reports that dynamically update the heatmap. On load and via 'Find Safe Shelter', Places API (New) searches nearby Miami hospitals and community centers, renders them with PinElement Advanced Markers, and computes a flood-zone-bypass evacuation polyline via Routes API (checking polygon intersection with geometry.poly and injecting a safe perimeter via-waypoint when needed). Client-only stacks (static-vanilla-js, react-vite, sveltekit, vue-vite, angular) use Maps JS importLibrary() wrappers + Weather REST; full-stack frameworks (nextjs, python-fastapi, nodejs-web) route Places, Routes, Geocoding, Elevation, and Weather calls through /api/* BFF proxy endpoints with explicit X-Goog-Api-Key and X-Goog-FieldMask headers.",
+  "gmp_products_used": [
+    "Maps JavaScript API (Map, Polygon, Polyline, InfoWindow, AdvancedMarkerElement, PinElement, geometry.poly)",
+    "deck.gl HeatmapLayer via GoogleMapsOverlay (@deck.gl/aggregation-layers, @deck.gl/google-maps)",
+    "Places API (New) (Place.searchByText / places.googleapis.com/v1/places:searchText)",
+    "Routes API (Route.computeRoutes / routes.googleapis.com/directions/v2:computeRoutes)",
+    "Geocoding API (Geocoder / maps.googleapis.com/maps/api/geocode/json)",
+    "Elevation API (ElevationService / maps.googleapis.com/maps/api/elevation/json)",
+    "Weather API (weather.googleapis.com/v1/currentConditions:lookup)"
+  ],
+  "js_libraries_to_import": [
+    "core",
+    "maps",
+    "marker",
+    "places",
+    "routes",
+    "geocoding",
+    "elevation",
+    "geometry"
+  ],
+  "matched_sub_skills": [
+    "google-maps-platform",
+    "compliance-review",
+    "gmp-common-api-keys",
+    "maps-javascript-api-javascript",
+    "gmp-framework-react",
+    "places-api-web-api",
+    "routes-api-web-api",
+    "geocoding-api-web-api",
+    "elevation-api-web-api",
+    "weather-api-web-api"
+  ],
+  "uses_3d_map": false,
+  "initial_center_lat": 25.7743,
+  "initial_center_lng": -80.1937,
+  "initial_zoom": 13,
+  "seed_search_query": "hospital and community center in Miami, FL",
+  "ui_layout_summary": "Full-viewport split-screen civic command dashboard: (1) Top Header Bar (56px height) featuring the portal title, Miami live weather/alert status pill, layer visibility toggles (HeatmapLayer & Flood-Hazard Polygons), and 'Find Safe Shelter' primary CTA button. (2) Left Control Sidebar (380px–420px fixed width on desktop, collapsible drawer on mobile) organized into three stacked cards: [A] Civic Incident Reporter (clicked coordinates, reverse-geocoded street address, elevation in meters, live wind/gust/precipitation readout, hazard type selector, and 'Log Hazard Report' button that appends to the HeatmapLayer), [B] Safe Shelter Evacuation Route Summary (origin-to-shelter ETA, distance, flood-polygon bypass verification badge, and avoid-flood toggle), and [C] Live Nearby Emergency Shelters List (hospitals & community centers fetched via Places API New with ratings, status, and one-click 'Route Here' buttons). (3) Right Interactive Map Canvas (flex: 1, min-height: 540px / height: calc(100vh - 56px)) rendering the Google Map with deck.gl HeatmapLayer (GoogleMapsOverlay), semi-transparent red/amber flood-hazard zone polygons, custom PinElement AdvancedMarkerElement markers for shelters and active incidents, an interactive InfoWindow, and a high-contrast evacuation route Polyline plus a compact bottom-left map legend and civic planning disclaimer.",
+  "interactive_controls": [
+    "map-container",
+    "layer-toggle-heatmap",
+    "layer-toggle-polygons",
+    "incident-report-panel",
+    "incident-type-select",
+    "incident-submit-btn",
+    "find-shelter-btn",
+    "shelter-search-input",
+    "shelter-list",
+    "route-summary-card",
+    "avoid-flood-toggle"
+  ],
+  "backend_proxy_endpoints": [
+    {
+      "method": "POST",
+      "path": "/api/places/search",
+      "upstream_gmp_service": "places.googleapis.com/v1/places:searchText",
+      "field_mask": "places.id,places.displayName,places.formattedAddress,places.location,places.types,places.rating,places.userRatingCount,places.businessStatus",
+      "purpose": "Proxy Places API (New) Text Search requests to locate nearby hospitals and community centers in Miami without exposing the server API key."
+    },
+    {
+      "method": "POST",
+      "path": "/api/routes/compute",
+      "upstream_gmp_service": "routes.googleapis.com/directions/v2:computeRoutes",
+      "field_mask": "routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline,routes.routeLabels,routes.legs.duration,routes.legs.distanceMeters,routes.legs.steps.navigationInstruction,routes.legs.steps.distanceMeters",
+      "purpose": "Proxy Routes API v2 computeRoutes requests (including via-waypoint flood-polygon bypass detours) with explicit X-Goog-FieldMask cost control."
+    },
+    {
+      "method": "GET",
+      "path": "/api/geocode/reverse",
+      "upstream_gmp_service": "maps.googleapis.com/maps/api/geocode/json",
+      "field_mask": "N/A (Geocoding REST API uses query parameters; no X-Goog-FieldMask header)",
+      "purpose": "Reverse-geocode clicked map coordinates into a human-readable street address in Miami via the Geocoding API."
+    },
+    {
+      "method": "GET",
+      "path": "/api/elevation",
+      "upstream_gmp_service": "maps.googleapis.com/maps/api/elevation/json",
+      "field_mask": "N/A (Elevation REST API uses query parameters; no X-Goog-FieldMask header)",
+      "purpose": "Fetch terrain elevation in meters above local mean sea level for clicked incident coordinates via the Elevation API."
+    },
+    {
+      "method": "GET",
+      "path": "/api/weather/current",
+      "upstream_gmp_service": "weather.googleapis.com/v1/currentConditions:lookup",
+      "field_mask": "N/A (Weather API v1 currentConditions:lookup returns compact JSON; no X-Goog-FieldMask header)",
+      "purpose": "Fetch live wind speed, gust, direction, precipitation probability/QPF, and storm conditions for clicked coordinates via the Weather API."
+    }
+  ]
+}

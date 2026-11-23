@@ -1,0 +1,56 @@
+{
+  "solution_id": "storefront-sample",
+  "id": "storefront-sample",
+  "title": "Single-Venue Storefront, Booking & Get Directions Hub",
+  "name": "Single-Venue Storefront, Booking & Get Directions Hub",
+  "category": "Local Discovery & Storefronts",
+  "user_prompt": "Build a modern appointment-booking and storefront web application for a multi-specialty dental clinic in San Francisco. Render an interactive Google Map centered on the clinic with a custom branded Advanced Marker pin, a coverage-radius overlay for local home visits, and a synchronized Street View panorama toggle to inspect the building entrance. Fetch and display live Google Places business details for the venue (rating, user reviews, open-now status, opening hours, and photos) using Places API (New) or the Places UI Kit. Include a visitor origin address search with Places Autocomplete (pre-seeded with a default San Francisco origin on load) that calculates and draws driving, transit, and walking routes to the clinic on the map with live travel time and distance alongside the booking form.",
+  "prompt": "Build a modern appointment-booking and storefront web application for a multi-specialty dental clinic in San Francisco. Render an interactive Google Map centered on the clinic with a custom branded Advanced Marker pin, a coverage-radius overlay for local home visits, and a synchronized Street View panorama toggle to inspect the building entrance. Fetch and display live Google Places business details for the venue (rating, user reviews, open-now status, opening hours, and photos) using Places API (New) or the Places UI Kit. Include a visitor origin address search with Places Autocomplete (pre-seeded with a default San Francisco origin on load) that calculates and draws driving, transit, and walking routes to the clinic on the map with live travel time and distance alongside the booking form.",
+  "expectations": [
+    "Interactive map is visible with a custom clinic Advanced Marker and service-area overlay",
+    "Live venue details and user reviews from Google Places are displayed",
+    "Street View entrance preview toggle or split view is functional",
+    "Origin Places Autocomplete input is present and pre-seeded on load",
+    "Route polyline, travel time, and distance to the venue are displayed for selectable travel modes",
+    "Appointment booking form is visible",
+    "No console errors"
+  ],
+  "test_interactions": [
+    {
+      "description": "Interactive map is visible with a custom clinic Advanced Marker and service-area overlay",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Live venue details and user reviews from Google Places are displayed",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Street View entrance preview toggle or split view is functional",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Origin Places Autocomplete input is present and pre-seeded on load",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Route polyline, travel time, and distance to the venue are displayed for selectable travel modes",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Appointment booking form is visible",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    }
+  ]
+}

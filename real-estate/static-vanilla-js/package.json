@@ -1,0 +1,17 @@
+{
+  "name": "gmp-real-estate-static-vanilla-js",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Split-Screen Real Estate Search, Parcel Polygon & Commute Explorer built with Static HTML + Vanilla JavaScript (Zero-Bundler ES Modules) and Google Maps Platform.",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs --host 127.0.0.1 --port 3000",
+    "build": "node --check app.js && node --check server.mjs && node -e \"import('node:fs').then(fs=>{['index.html','styles.css','app.js','server.mjs'].forEach(f=>{if(!fs.existsSync(f))throw new Error('Missing '+f);});console.log('Static vanilla JS build verified.');})\""
+  },
+  "dependencies": {
+    "@googlemaps/js-api-loader": "^2.0.0",
+    "@googlemaps/markerclusterer": "^2.5.3",
+    "terra-draw": "^1.0.0",
+    "terra-draw-google-maps-adapter": "^1.0.0"
+  }
+}

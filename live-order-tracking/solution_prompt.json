@@ -1,0 +1,42 @@
+{
+  "solution_id": "live-order-tracking",
+  "id": "live-order-tracking",
+  "title": "On-Demand Delivery Checkout, Zone Validation & Live Tracker",
+  "name": "On-Demand Delivery Checkout, Zone Validation & Live Tracker",
+  "category": "Logistics, Dispatch & Tracking",
+  "user_prompt": "Build an end-to-end restaurant and grocery delivery checkout and live order-tracking web app in Chicago. Include a checkout address form using Places Autocomplete (pre-seeded with a valid Chicago customer address) that verifies deliverability and address granularity via the Address Validation API, checks whether the drop-off coordinate falls inside the store's polygon delivery zone and 8km road-distance limit, and calculates tiered delivery fees and ETA using the Routes API. Display a live order-tracking map with custom Advanced Markers for the kitchen, customer, and smoothly moving courier along the route polyline, plus an order receipt card featuring a static route summary map from the Maps Static API.",
+  "prompt": "Build an end-to-end restaurant and grocery delivery checkout and live order-tracking web app in Chicago. Include a checkout address form using Places Autocomplete (pre-seeded with a valid Chicago customer address) that verifies deliverability and address granularity via the Address Validation API, checks whether the drop-off coordinate falls inside the store's polygon delivery zone and 8km road-distance limit, and calculates tiered delivery fees and ETA using the Routes API. Display a live order-tracking map with custom Advanced Markers for the kitchen, customer, and smoothly moving courier along the route polyline, plus an order receipt card featuring a static route summary map from the Maps Static API.",
+  "expectations": [
+    "Places Autocomplete and Address Validation API deliverability results are displayed",
+    "Delivery polygon zone, route polyline, delivery fee, and ETA are visible on the map",
+    "Courier Advanced Marker animates smoothly along the computed delivery route",
+    "Order receipt section renders a valid Maps Static API route preview image",
+    "No console errors"
+  ],
+  "test_interactions": [
+    {
+      "description": "Places Autocomplete and Address Validation API deliverability results are displayed",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Delivery polygon zone, route polyline, delivery fee, and ETA are visible on the map",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Courier Advanced Marker animates smoothly along the computed delivery route",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Order receipt section renders a valid Maps Static API route preview image",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    }
+  ]
+}

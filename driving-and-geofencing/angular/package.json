@@ -1,0 +1,35 @@
+{
+  "name": "driving-and-geofencing-angular",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Field Workforce Geofenced Attendance & Site Audit Router built with Angular Standalone Components, @angular/google-maps, Terra Draw, Places API (New), Routes API, and Geocoding API.",
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve",
+    "build": "ng build --configuration production",
+    "watch": "ng build --watch --configuration development",
+    "typecheck": "tsc --noEmit",
+    "serve:dist": "node serve-dist.mjs --host 127.0.0.1 --port 4200"
+  },
+  "dependencies": {
+    "@angular/common": "^20.3.0",
+    "@angular/compiler": "^20.3.0",
+    "@angular/core": "^20.3.0",
+    "@angular/forms": "^20.3.0",
+    "@angular/google-maps": "^20.2.14",
+    "@angular/platform-browser": "^20.3.0",
+    "@googlemaps/js-api-loader": "^2.1.3",
+    "rxjs": "~7.8.1",
+    "terra-draw": "^1.40.0",
+    "terra-draw-google-maps-adapter": "^1.7.0",
+    "tslib": "^2.8.1",
+    "zone.js": "~0.15.0"
+  },
+  "devDependencies": {
+    "@angular/build": "^20.3.0",
+    "@angular/cli": "^20.3.0",
+    "@angular/compiler-cli": "^20.3.0",
+    "@types/google.maps": "^3.60.0",
+    "typescript": "~5.8.3"
+  }
+}

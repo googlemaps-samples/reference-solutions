@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+:root {
+  --bg-alpine: #020617;
+  --panel-alpine: rgba(15, 23, 42, 0.88);
+  --border-alpine: rgba(148, 163, 184, 0.18);
+  --trail-red: rgb(255, 0, 0);
+}
+
+html,
+body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-alpine);
+  color: #f8fafc;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+gmp-map-3d,
+[data-testid="map-3d"] {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 300px;
+  min-height: 520px;
+}
+
+/* Style the Google Maps PlaceAutocompleteElement web component to match dark alpine UI */
+gmp-place-autocomplete {
+  display: block;
+  width: 100%;
+  min-width: 190px;
+  color-scheme: dark;
+  background-color: rgba(15, 23, 42, 0.92);
+  color: #f8fafc;
+  border: 1px solid rgba(71, 85, 105, 0.75);
+  border-radius: 0.625rem;
+  font-size: 0.8125rem;
+  line-height: 1.25rem;
+}
+
+/* Custom subtle scrollbars for sidebar on small viewports */
+.alpine-scroll::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.alpine-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.alpine-scroll::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.28);
+  border-radius: 9999px;
+}

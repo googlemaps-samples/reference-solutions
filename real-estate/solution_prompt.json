@@ -1,0 +1,42 @@
+{
+  "solution_id": "real-estate",
+  "id": "real-estate",
+  "title": "Split-Screen Real Estate Search, Parcel Polygon & Commute Explorer",
+  "name": "Split-Screen Real Estate Search, Parcel Polygon & Commute Explorer",
+  "category": "Real Estate & Property Mapping",
+  "user_prompt": "Build a Zillow-style split-screen real estate property search, lot-boundary, and neighborhood commute explorer in San Francisco. Display a filterable property card list synchronized with an interactive vector Google Map rendering custom HTML price-pill Advanced Markers (with bidirectional hover highlighting), Marker Clustering, and cadastral lot/parcel polygon outlines on selected listings. Include a Terra Draw 'Draw Search Area' polygon filter on the map, satellite/roadmap toggle, an embedded Street View neighborhood preview, nearby schools/groceries/transit discovery within 5km via Places API (New), and a workplace 'Commute Time Calculator' using the Routes API route matrix to show driving and transit travel times from the selected property.",
+  "prompt": "Build a Zillow-style split-screen real estate property search, lot-boundary, and neighborhood commute explorer in San Francisco. Display a filterable property card list synchronized with an interactive vector Google Map rendering custom HTML price-pill Advanced Markers (with bidirectional hover highlighting), Marker Clustering, and cadastral lot/parcel polygon outlines on selected listings. Include a Terra Draw 'Draw Search Area' polygon filter on the map, satellite/roadmap toggle, an embedded Street View neighborhood preview, nearby schools/groceries/transit discovery within 5km via Places API (New), and a workplace 'Commute Time Calculator' using the Routes API route matrix to show driving and transit travel times from the selected property.",
+  "expectations": [
+    "Split-screen property list and map with custom HTML price-tag Advanced Markers are synchronized",
+    "Drawing a search polygon filters visible properties or parcel lot boundaries render on selection",
+    "Selected listing panel displays nearby Places amenities (schools/transit) and Street View preview",
+    "Workplace commute calculator computes and displays real driving and transit ETAs",
+    "No console errors"
+  ],
+  "test_interactions": [
+    {
+      "description": "Split-screen property list and map with custom HTML price-tag Advanced Markers are synchronized",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Drawing a search polygon filters visible properties or parcel lot boundaries render on selection",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Selected listing panel displays nearby Places amenities (schools/transit) and Street View preview",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Workplace commute calculator computes and displays real driving and transit ETAs",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    }
+  ]
+}

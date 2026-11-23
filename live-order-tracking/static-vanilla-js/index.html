@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fulton Market Express — Live Order Tracking &amp; Delivery Checkout</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230F766E'/%3E%3Ctext x='16' y='21' text-anchor='middle' font-family='sans-serif' font-size='14' font-weight='bold' fill='white'%3EFM%3C/text%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "@googlemaps/js-api-loader": "/node_modules/@googlemaps/js-api-loader/dist/index.js"
+        }
+      }
+    </script>
+    <script src="/env-config.js"></script>
+  </head>
+  <body>
+    <header class="top-bar">
+      <div class="brand-group">
+        <div class="brand-mark" aria-hidden="true">FM</div>
+        <div>
+          <h1 class="brand-title">Fulton Market Express</h1>
+          <p class="brand-subtitle">On-Demand Chicago Kitchen &amp; Grocery Delivery</p>
+        </div>
+      </div>
+
+      <div class="top-badges">
+        <span class="hub-badge">Kitchen Hub: 915 W Fulton Market, Chicago</span>
+        <span id="top-status-pill" class="status-pill status-neutral">Initializing Map…</span>
+      </div>
+    </header>
+
+    <main class="split-layout">
+      <aside class="sidebar" aria-label="Delivery checkout and live order tracking">
+        <div id="api-key-alert" class="alert-banner hidden" role="alert"></div>
+
+        <!-- Card 1: Checkout Address Autocomplete & Validation -->
+        <section class="card" aria-labelledby="checkout-heading">
+          <div class="card-header">
+            <span class="step-badge">1</span>
+            <div>
+              <h2 id="checkout-heading" class="card-title">Checkout Address &amp; Zone Check</h2>
+              <p class="card-desc">Places Autocomplete + Address Validation + 8 km Polygon Check</p>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="fallback-address-input">Delivery Street Address (Chicago, IL)</label>
+            <div
+              id="checkout-address-autocomplete"
+              data-testid="checkout-address-autocomplete"
+              class="autocomplete-host"
+            ></div>
+            <input
+              id="fallback-address-input"
+              class="fallback-input hidden"
+              type="text"
+              value="401 N Michigan Ave, Chicago, IL 60611"
+              placeholder="Enter a Chicago street address"
+              aria-label="Delivery Street Address"
+            />
+          </div>
+
+          <div class="action-row">
+            <button
+              id="validate-address-btn"
+              data-testid="validate-address-btn"
+              type="button"
+              class="btn btn-primary"
+            >
+              Validate &amp; Check Zone
+            </button>
+          </div>
+
+          <div class="preset-row">
+            <button
+              id="preset-address-in-zone-btn"
+              data-testid="preset-address-in-zone-btn"
+              type="button"
+              class="btn btn-secondary btn-sm"
+            >
+              In-Zone: 2111 N Clark St
+            </button>
+            <button
+              id="preset-address-out-of-zone-btn"
+              data-testid="preset-address-out-of-zone-btn"
+              type="button"
+              class="btn btn-secondary btn-sm"
+            >
+              Out-of-Zone: 5801 S Ellis Ave
+            </button>
+          </div>
+
+          <div
+            id="zone-eligibility-badge"
+            data-testid="zone-eligibility-badge"
+            class="eligibility-banner eligibility-pending"
+          >
+            Checking Chicago delivery polygon and 8 km road-distance cap…
+          </div>
+
+          <div
+            id="validation-status-panel"
+            data-testid="validation-status-panel"
+            class="validation-panel"
+          >
+            <p class="muted-note">Address Validation verdict and USPS CASS details will appear here.</p>
+          </div>
+        </section>
+
+        <!-- Card 2: Tiered Delivery Fee, ETA & Live Courier Dispatch -->
+        <section class="card" aria-labelledby="dispatch-heading">
+          <div class="card-header">
+            <span class="step-badge">2</span>
+            <div>
+              <h2 id="dispatch-heading" class="card-title">Delivery Tier, ETA &amp; Live Courier</h2>
+              <p class="card-desc">Routes API Traffic-Aware ETA &amp; Smooth Polyline Tracking</p>
+            </div>
+          </div>
+
+          <div
+            id="delivery-fee-eta-summary"
+            data-testid="delivery-fee-eta-summary"
+            class="metrics-grid"
+          >
+            <div class="metric-box">
+              <span class="metric-label">Road Distance</span>
+              <strong id="metric-distance" class="metric-value">-- km</strong>
+            </div>
+            <div class="metric-box">
+              <span class="metric-label">Traffic ETA</span>
+              <strong id="metric-eta" class="metric-value">-- min</strong>
+            </div>
+            <div class="metric-box">
+              <span class="metric-label">Delivery Fee</span>
+              <strong id="metric-fee" class="metric-value">--</strong>
+            </div>
+          </div>
+
+          <p id="tier-explanation" class="tier-note">
+            Tiers: $2.99 (&le; 3.0 km) &bull; $4.99 (&le; 5.5 km) &bull; $6.99 (&le; 8.0 km)
+          </p>
+
+          <div class="action-row">
+            <button
+              id="place-order-btn"
+              data-testid="place-order-btn"
+              type="button"
+              class="btn btn-accent"
+            >
+              Place Order &amp; Dispatch Courier
+            </button>
+            <button
+              id="courier-simulation-toggle-btn"
+              data-testid="courier-simulation-toggle-btn"
+              type="button"
+              class="btn btn-secondary"
+              disabled
+            >
+              Pause Courier
+            </button>
+          </div>
+
+          <div
+            id="courier-progress-panel"
+            data-testid="courier-progress-panel"
+            class="courier-panel"
+          >
+            <div class="courier-header">
+              <span id="courier-status-label" class="courier-status">Awaiting Order Dispatch</span>
+              <span id="courier-progress-pct" class="courier-pct">0%</span>
+            </div>
+            <div class="progress-track" aria-hidden="true">
+              <div id="courier-progress-bar" class="progress-fill"></div>
+            </div>
+            <p id="courier-step-hint" class="courier-hint">
+              Validate an eligible Chicago address and place your order to launch live tracking.
+            </p>
+          </div>
+        </section>
+
+        <!-- Card 3: Order Receipt Card & Maps Static API Preview -->
+        <section
+          id="order-receipt-card"
+          data-testid="order-receipt-card"
+          class="card receipt-card"
+          aria-labelledby="receipt-heading"
+        >
+          <div class="card-header">
+            <span class="step-badge">3</span>
+            <div>
+              <h2 id="receipt-heading" class="card-title">Order Receipt &amp; Route Snapshot</h2>
+              <p id="receipt-order-meta" class="card-desc">Order #FMP-2026-8419 &bull; Preview</p>
+            </div>
+          </div>
+
+          <div class="receipt-map-frame">
+            <img
+              id="static-receipt-map-img"
+              data-testid="static-receipt-map-img"
+              class="receipt-static-img hidden"
+              alt="Static route summary map from Fulton Market Kitchen to customer drop-off"
+            />
+            <div id="static-receipt-placeholder" class="receipt-map-placeholder">
+              Static route summary image loads automatically once a route is computed.
+            </div>
+          </div>
+
+          <div id="receipt-line-items" class="receipt-items">
+            <div class="receipt-row">
+              <span>West Loop Burrata &amp; Farro Bowl</span>
+              <span>$18.50</span>
+            </div>
+            <div class="receipt-row">
+              <span>Fulton Market Sourdough &amp; Cultured Butter</span>
+              <span>$12.00</span>
+            </div>
+            <div class="receipt-row">
+              <span>Organic Honeycrisp &amp; Greens Crate</span>
+              <span>$12.00</span>
+            </div>
+            <div class="receipt-divider"></div>
+            <div class="receipt-row">
+              <span>Items Subtotal</span>
+              <span>$42.50</span>
+            </div>
+            <div class="receipt-row">
+              <span>Tiered Delivery Fee</span>
+              <span id="receipt-delivery-fee">--</span>
+            </div>
+            <div class="receipt-row receipt-total">
+              <span>Order Total</span>
+              <span id="receipt-total-amount">$42.50</span>
+            </div>
+          </div>
+        </section>
+      </aside>
+
+      <section class="map-pane" aria-label="Interactive live order tracking map">
+        <div
+          id="live-tracking-map"
+          data-testid="live-tracking-map"
+          class="map-canvas"
+        ></div>
+
+        <div id="map-floating-eta" class="map-overlay-card map-eta-card">
+          <div class="eta-eyebrow">LIVE DELIVERY TRACKER</div>
+          <div id="floating-eta-value" class="eta-headline">Preparing Route…</div>
+          <div id="floating-eta-sub" class="eta-sub">Fulton Market Hub &rarr; Chicago</div>
+        </div>
+
+        <div id="map-legend" class="map-overlay-card map-legend-card" aria-label="Map Legend">
+          <div class="legend-item">
+            <span class="legend-dot legend-kitchen"></span>
+            <span>Kitchen Hub</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-dot legend-customer"></span>
+            <span>Drop-off</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-dot legend-courier"></span>
+            <span>Live Courier</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-swatch legend-zone"></span>
+            <span>Delivery Zone</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-line legend-route"></span>
+            <span>Routes API Path</span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

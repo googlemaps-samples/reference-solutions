@@ -1,0 +1,419 @@
+<div class="app-shell">
+  <!-- Top Bar (64px) -->
+  <header class="top-bar">
+    <div class="brand-group">
+      <div class="brand-icon" aria-hidden="true">FM</div>
+      <div>
+        <h1 class="brand-title">Fulton Market Fresh</h1>
+        <p class="brand-subtitle">On-Demand Delivery Checkout &amp; Live Tracker</p>
+      </div>
+    </div>
+
+    <div class="header-badges">
+      <div class="hub-badge">
+        <span class="hub-dot"></span>
+        <span>{{ kitchenHub.name }} · Chicago</span>
+      </div>
+      <div
+        class="status-pill"
+        [class.status-pill--ok]="eligibility?.eligible && courierState.status !== 'delivered'"
+        [class.status-pill--warn]="eligibility && !eligibility.eligible"
+        [class.status-pill--live]="courierState.status === 'dispatched' || courierState.status === 'delivered'"
+      >
+        {{ topStatusText }}
+      </div>
+    </div>
+  </header>
+
+  <!-- Split-Screen Workspace -->
+  <main class="workspace">
+    <!-- Left Sidebar (440px scrollable) -->
+    <aside class="sidebar">
+      @if (initError) {
+        <section class="card card--alert">
+          <h2 class="card-title">Google Maps API Key Required</h2>
+          <p class="alert-text">{{ initError }}</p>
+          <p class="alert-hint">
+            Obtain a free zero-billing
+            <a
+              href="https://mapsplatform.google.com/maps-demo-key?utm_campaign=gmp_git_agentsamples_v1.0.0"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Maps Demo Key</a
+            >, add <code>GOOGLE_MAPS_API_KEY</code> to <code>.env</code>, and restart the server.
+          </p>
+        </section>
+      }
+
+      <!-- Card 1: Checkout Address Autocomplete & Address Validation + Zone Eligibility -->
+      <section class="card">
+        <div class="card-header">
+          <span class="step-badge">1</span>
+          <h2 class="card-title">Checkout Address &amp; Zone Check</h2>
+        </div>
+
+        <label class="field-label" for="checkout-address-autocomplete">
+          Delivery Street Address (Places Autocomplete)
+        </label>
+        <div class="autocomplete-shell">
+          <gmp-place-autocomplete
+            #autocompleteHost
+            id="checkout-address-autocomplete"
+            class="gmp-autocomplete-widget"
+          ></gmp-place-autocomplete>
+        </div>
+
+        <div class="unit-row">
+          <div class="unit-field">
+            <label class="field-label" for="unit-input">Apt / Suite</label>
+            <input
+              id="unit-input"
+              type="text"
+              class="text-input"
+              [(ngModel)]="unitInput"
+              placeholder="Suite 1200"
+            />
+          </div>
+          <button
+            id="validate-address-btn"
+            type="button"
+            class="btn btn--primary"
+            [disabled]="!mapsReady || isProcessing"
+            (click)="onValidateAddressClick()"
+          >
+            {{ isProcessing ? 'Checking...' : 'Validate Address' }}
+          </button>
+        </div>
+
+        <div class="preset-row">
+          <button
+            id="preset-address-in-zone-btn"
+            type="button"
+            class="btn btn--ghost"
+            [disabled]="!mapsReady || isProcessing"
+            (click)="selectPresetAddress('in-zone')"
+          >
+            In-Zone: 401 N Michigan Ave
+          </button>
+          <button
+            id="preset-address-out-of-zone-btn"
+            type="button"
+            class="btn btn--ghost"
+            [disabled]="!mapsReady || isProcessing"
+            (click)="selectPresetAddress('out-of-zone')"
+          >
+            Out-of-Zone: 5801 S Ellis Ave
+          </button>
+        </div>
+
+        <!-- Address Validation Verdict Panel -->
+        <div id="validation-status-panel" class="validation-panel">
+          <div class="validation-header">
+            <span class="validation-title">Address Validation Verdict</span>
+            <span
+              class="granularity-chip"
+              [class.granularity-chip--ok]="validationSummary.deliverable"
+              [class.granularity-chip--warn]="!validationSummary.deliverable"
+            >
+              {{ validationSummary.validationGranularity || validationSummary.status }}
+            </span>
+          </div>
+
+          <p class="formatted-address">{{ validationSummary.formattedAddress }}</p>
+          <p class="validation-message">{{ validationSummary.message }}</p>
+
+          <div class="verdict-grid">
+            <div class="verdict-item">
+              <span class="verdict-label">Geocode Granularity</span>
+              <span class="verdict-value">{{ validationSummary.geocodeGranularity || '—' }}</span>
+            </div>
+            <div class="verdict-item">
+              <span class="verdict-label">Address Complete</span>
+              <span class="verdict-value">{{ validationSummary.addressComplete ? 'Yes' : 'No' }}</span>
+            </div>
+            <div class="verdict-item">
+              <span class="verdict-label">Property Type</span>
+              <span class="verdict-value">{{ validationSummary.propertyType }}</span>
+            </div>
+            <div class="verdict-item">
+              <span class="verdict-label">USPS DPV</span>
+              <span class="verdict-value">{{ validationSummary.uspsDpvConfirmation || 'N/A' }}</span>
+            </div>
+          </div>
+
+          @if (validationSummary.hasInferredComponents || validationSummary.hasReplacedComponents || validationSummary.hasUnconfirmedComponents) {
+            <div class="flags-row">
+              @if (validationSummary.hasInferredComponents) {
+                <span class="flag-tag">Inferred Components</span>
+              }
+              @if (validationSummary.hasReplacedComponents) {
+                <span class="flag-tag">Replaced Components</span>
+              }
+              @if (validationSummary.hasUnconfirmedComponents) {
+                <span class="flag-tag flag-tag--warn">Unconfirmed Components</span>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Zone & 8km Eligibility Badge -->
+        @if (eligibility) {
+          <div
+            id="zone-eligibility-badge"
+            class="eligibility-banner"
+            [class.eligibility-banner--ok]="eligibility.eligible"
+            [class.eligibility-banner--fail]="!eligibility.eligible"
+          >
+            <div class="eligibility-top">
+              <strong>{{ eligibility.eligible ? 'Eligible for Delivery' : 'Not Eligible for Delivery' }}</strong>
+              <span>{{ eligibility.feeTierLabel }}</span>
+            </div>
+            <p class="eligibility-reason">{{ eligibility.reason }}</p>
+            <div class="eligibility-checks">
+              <span>{{ eligibility.insidePolygon ? '✓ Inside Chicago Polygon' : '✕ Outside Chicago Polygon' }}</span>
+              <span>{{ eligibility.withinDistanceLimit ? '✓ Within 8.0 km Cap' : '✕ Exceeds 8.0 km Cap' }}</span>
+            </div>
+          </div>
+        }
+
+        @if (routeError) {
+          <p class="error-inline">{{ routeError }}</p>
+        }
+      </section>
+
+      <!-- Card 2: Tiered Delivery Fee, Traffic-Aware ETA & Live Courier Dispatch -->
+      <section class="card">
+        <div class="card-header">
+          <span class="step-badge">2</span>
+          <h2 class="card-title">Delivery Quote &amp; Live Dispatch</h2>
+        </div>
+
+        <div id="delivery-fee-eta-summary" class="quote-grid">
+          <div class="quote-metric">
+            <span class="quote-label">Road Distance</span>
+            <strong class="quote-value">
+              {{ routeSummary ? routeSummary.distanceKm + ' km' : '—' }}
+            </strong>
+          </div>
+          <div class="quote-metric">
+            <span class="quote-label">Traffic ETA</span>
+            <strong class="quote-value">
+              {{ routeSummary ? routeSummary.durationMinutes + ' min' : '—' }}
+            </strong>
+          </div>
+          <div class="quote-metric">
+            <span class="quote-label">Delivery Fee</span>
+            <strong class="quote-value">
+              {{
+                eligibility?.deliveryFee !== null && eligibility?.deliveryFee !== undefined
+                  ? '$' + eligibility!.deliveryFee!.toFixed(2)
+                  : 'N/A'
+              }}
+            </strong>
+          </div>
+        </div>
+
+        <div class="tier-legend">
+          <span>Tiered Rates: ≤3 km <strong>$2.99</strong></span>
+          <span>3–5.5 km <strong>$4.99</strong></span>
+          <span>5.5–8 km <strong>$6.99</strong></span>
+        </div>
+
+        <div class="dispatch-actions">
+          <button
+            id="place-order-btn"
+            type="button"
+            class="btn btn--accent"
+            [disabled]="!canPlaceOrder"
+            (click)="placeOrderAndDispatch()"
+          >
+            {{
+              courierState.orderNumber
+                ? 'Re-Dispatch Courier (' + courierState.orderNumber + ')'
+                : 'Place Order &amp; Dispatch Courier'
+            }}
+          </button>
+
+          <button
+            id="courier-simulation-toggle-btn"
+            type="button"
+            class="btn btn--secondary"
+            [disabled]="!routeSummary || !eligibility?.eligible"
+            (click)="toggleCourierSimulation()"
+          >
+            {{
+              courierState.status === 'dispatched'
+                ? 'Pause Courier'
+                : courierState.status === 'paused'
+                  ? 'Resume Courier'
+                  : 'Simulate Route'
+            }}
+          </button>
+        </div>
+
+        <div id="courier-progress-panel" class="courier-panel">
+          <div class="courier-top">
+            <span class="courier-state">
+              @switch (courierState.status) {
+                @case ('awaiting-order') { Ready for dispatch from Fulton Market }
+                @case ('dispatched') { Courier en route ({{ courierState.orderNumber }}) }
+                @case ('paused') { Courier simulation paused }
+                @case ('delivered') { Delivered to customer doorstep! }
+              }
+            </span>
+            <span class="courier-pct">{{ (courierState.progress * 100) | number:'1.0-0' }}%</span>
+          </div>
+          <div class="progress-track">
+            <div
+              class="progress-fill"
+              [style.width.%]="courierState.progress * 100"
+            ></div>
+          </div>
+          <div class="courier-meta">
+            <span>Remaining: {{ courierState.remainingKm }} km</span>
+            <span>ETA: {{ courierState.remainingMinutes }} min</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Card 3: Itemized Order Receipt Card with Maps Static API Preview -->
+      <section id="order-receipt-card" class="card">
+        <div class="card-header">
+          <span class="step-badge">3</span>
+          <h2 class="card-title">Order Receipt &amp; Static Route Map</h2>
+        </div>
+
+        <div class="receipt-items">
+          @for (item of cartItems; track item.id) {
+            <div class="receipt-row">
+              <div>
+                <span class="item-name">{{ item.quantity }}× {{ item.name }}</span>
+                <span class="item-cat">{{ item.category }}</span>
+              </div>
+              <span class="item-price">${{ (item.unitPrice * item.quantity) | number:'1.2-2' }}</span>
+            </div>
+          }
+          <div class="receipt-divider"></div>
+          <div class="receipt-row">
+            <span>Subtotal</span>
+            <span>${{ subtotal | number:'1.2-2' }}</span>
+          </div>
+          <div class="receipt-row">
+            <span>Delivery Fee ({{ eligibility?.feeTierLabel || 'Pending' }})</span>
+            <span>
+              {{
+                eligibility?.deliveryFee !== null && eligibility?.deliveryFee !== undefined
+                  ? '$' + eligibility!.deliveryFee!.toFixed(2)
+                  : '—'
+              }}
+            </span>
+          </div>
+          <div class="receipt-row receipt-row--total">
+            <span>Order Total</span>
+            <span>${{ totalAmount | number:'1.2-2' }}</span>
+          </div>
+        </div>
+
+        <div class="static-map-frame">
+          @if (staticMapUrl && !staticMapError) {
+            <img
+              id="static-receipt-map-img"
+              [src]="staticMapUrl"
+              alt="Maps Static API summary route from Fulton Market Kitchen Hub to delivery address"
+              class="static-map-img"
+              (load)="onStaticMapLoad()"
+              (error)="onStaticMapError()"
+            />
+          } @else {
+            <div class="static-map-placeholder">
+              @if (staticMapError) {
+                <span>Maps Static API preview unavailable (enable Maps Static API on your key to render receipt image).</span>
+              } @else {
+                <span>Static route preview will render once a route is computed.</span>
+              }
+            </div>
+          }
+          <div class="static-map-caption">
+            <span>Maps Static API Route Summary</span>
+            <span>K: Fulton Hub → D: Drop-off</span>
+          </div>
+        </div>
+      </section>
+    </aside>
+
+    <!-- Right Interactive Map Panel -->
+    <section class="map-panel">
+      @if (mapsReady) {
+        <google-map
+          id="live-tracking-map"
+          width="100%"
+          height="100%"
+          [center]="mapCenter"
+          [zoom]="mapZoom"
+          [options]="mapOptions"
+        >
+          <map-polygon
+            [paths]="deliveryZonePolygon"
+            [options]="zonePolygonOptions"
+          />
+
+          @if (routePath.length > 0) {
+            <map-polyline
+              [path]="routePath"
+              [options]="routePolylineOptions"
+            />
+          }
+
+          <map-advanced-marker
+            [position]="kitchenHub.location"
+            [content]="kitchenMarkerContent"
+            [title]="kitchenHub.name"
+          />
+
+          @if (dropoffPosition) {
+            <map-advanced-marker
+              [position]="dropoffPosition"
+              [content]="customerMarkerContent"
+              [title]="validationSummary.formattedAddress"
+            />
+          }
+
+          @if (routePath.length > 0) {
+            <map-advanced-marker
+              #courierMarker="mapAdvancedMarker"
+              [position]="courierState.position"
+              [content]="courierMarkerContent"
+              [zIndex]="20"
+              title="Live Courier"
+            />
+          }
+        </google-map>
+      } @else {
+        <div class="map-fallback">
+          <div class="map-fallback-card">
+            <h2>Live Chicago Delivery Map</h2>
+            <p>{{ initError || 'Loading Google Maps JavaScript SDK...' }}</p>
+          </div>
+        </div>
+      }
+
+      <!-- Floating Map Legend & Live ETA Overlay -->
+      <div class="map-overlay-card">
+        <div class="legend-row">
+          <span class="legend-swatch legend-swatch--zone"></span>
+          <span>Chicago 8 km Delivery Zone</span>
+        </div>
+        <div class="legend-row">
+          <span class="legend-swatch legend-swatch--route"></span>
+          <span>Routes API Driving Path</span>
+        </div>
+        @if (routeSummary) {
+          <div class="overlay-eta">
+            <strong>{{ courierState.remainingMinutes }} min</strong>
+            <span>· {{ routeSummary.distanceKm }} km</span>
+          </div>
+        }
+      </div>
+    </section>
+  </main>
+</div>

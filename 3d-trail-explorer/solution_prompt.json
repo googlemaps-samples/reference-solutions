@@ -1,0 +1,42 @@
+{
+  "solution_id": "3d-trail-explorer",
+  "id": "3d-trail-explorer",
+  "title": "Photorealistic 3D Map Explorer, Camera Tour & 3D Trail Route",
+  "name": "Photorealistic 3D Map Explorer, Camera Tour & 3D Trail Route",
+  "category": "Advanced Spatial Analytics & 3D",
+  "user_prompt": "Create an interactive Photorealistic 3D terrain storytelling and trail exploration web app in Lake Tahoe using the Maps JavaScript API 3D capabilities (<gmp-map-3d> / Map3DElement). Render a realistic 3D mountain and lake view featuring an extruded 3D hiking trail route path in bright red RGB(255, 0, 0), interactive 3D trailhead and viewpoint markers, and a live elevation profile fetched from the Elevation API. Include chapter tour buttons that trigger smooth 3D camera fly-to animations across scenic viewpoints (adjusting tilt, heading, and range), plus a Places search bar to fly the 3D camera to any user-searched landmark.",
+  "prompt": "Create an interactive Photorealistic 3D terrain storytelling and trail exploration web app in Lake Tahoe using the Maps JavaScript API 3D capabilities (<gmp-map-3d> / Map3DElement). Render a realistic 3D mountain and lake view featuring an extruded 3D hiking trail route path in bright red RGB(255, 0, 0), interactive 3D trailhead and viewpoint markers, and a live elevation profile fetched from the Elevation API. Include chapter tour buttons that trigger smooth 3D camera fly-to animations across scenic viewpoints (adjusting tilt, heading, and range), plus a Places search bar to fly the 3D camera to any user-searched landmark.",
+  "expectations": [
+    "True Photorealistic 3D map (<gmp-map-3d> / Map3DElement) is rendered",
+    "3D hiking route polyline is visible in red color RGB(255, 0, 0) with 3D viewpoint markers",
+    "Camera tour preset controls smoothly update 3D camera position, tilt, and heading",
+    "Elevation profile or trail metrics and landmark search are functional",
+    "No console errors"
+  ],
+  "test_interactions": [
+    {
+      "description": "True Photorealistic 3D map (<gmp-map-3d> / Map3DElement) is rendered",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "3D hiking route polyline is visible in red color RGB(255, 0, 0) with 3D viewpoint markers",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Camera tour preset controls smoothly update 3D camera position, tilt, and heading",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Elevation profile or trail metrics and landmark search are functional",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "name": "travel-route-comparator-static-vanilla-js",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Multi-Modal Commute Comparator & Trail Elevation Tracker built with Static HTML + Vanilla JavaScript (Zero-Bundler ES Modules) and modern Google Maps Platform APIs.",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs --host 127.0.0.1 --port 3000",
+    "typecheck": "node --check app.js && node --check server.mjs",
+    "build": "node --check app.js && node --check server.mjs && node -e \"import('node:fs').then(fs => { const required = ['index.html', 'app.js', 'styles.css', 'server.mjs']; for (const file of required) { if (!fs.existsSync(file)) { throw new Error('Missing required static asset: ' + file); } } console.log('Static Vanilla JS verification passed:', required.join(', ')); })\""
+  },
+  "dependencies": {
+    "@googlemaps/js-api-loader": "^2.0.0"
+  }
+}

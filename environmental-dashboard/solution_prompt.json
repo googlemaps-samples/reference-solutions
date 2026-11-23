@@ -1,0 +1,42 @@
+{
+  "solution_id": "environmental-dashboard",
+  "id": "environmental-dashboard",
+  "title": "Hyperlocal Weather, Air Quality, Pollen & Solar Dashboard",
+  "name": "Hyperlocal Weather, Air Quality, Pollen & Solar Dashboard",
+  "category": "Environmental & Civic Intelligence",
+  "user_prompt": "Build a hyperlocal environmental intelligence and rooftop sustainability dashboard pre-seeded in Phoenix. Let users search any address or city via Places Autocomplete or click a building on the Google Map to inspect real-time environmental conditions at those coordinates: current weather and multi-day forecast metrics via the Weather API, local Air Quality Index (AQI), dominant pollutant, and health recommendations via the Air Quality API (plus optional AQI tile/layer toggle), tree/grass/weed pollen levels via the Pollen API, and rooftop solar panel capacity and annual sunshine hours via the Solar API building insights endpoint.",
+  "prompt": "Build a hyperlocal environmental intelligence and rooftop sustainability dashboard pre-seeded in Phoenix. Let users search any address or city via Places Autocomplete or click a building on the Google Map to inspect real-time environmental conditions at those coordinates: current weather and multi-day forecast metrics via the Weather API, local Air Quality Index (AQI), dominant pollutant, and health recommendations via the Air Quality API (plus optional AQI tile/layer toggle), tree/grass/weed pollen levels via the Pollen API, and rooftop solar panel capacity and annual sunshine hours via the Solar API building insights endpoint.",
+  "expectations": [
+    "Interactive map and Places Autocomplete location search are visible and pre-seeded",
+    "Live Weather API current conditions and forecast metrics are displayed",
+    "Live Air Quality API index/health guidance and Pollen API indicators are rendered",
+    "Solar API rooftop sunshine/panel potential metrics (or graceful non-coverage status) are displayed for the selected building",
+    "No console errors"
+  ],
+  "test_interactions": [
+    {
+      "description": "Interactive map and Places Autocomplete location search are visible and pre-seeded",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Live Weather API current conditions and forecast metrics are displayed",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Live Air Quality API index/health guidance and Pollen API indicators are rendered",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Solar API rooftop sunshine/panel potential metrics (or graceful non-coverage status) are displayed for the selected building",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    }
+  ]
+}

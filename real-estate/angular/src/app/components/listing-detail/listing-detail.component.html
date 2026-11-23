@@ -1,0 +1,284 @@
+<section id="listing-detail-panel" class="detail-panel" aria-label="Selected property details">
+  <div class="detail-header">
+    <button type="button" class="back-btn" (click)="closeDetail.emit()">
+      <span aria-hidden="true">←</span> All Listings
+    </button>
+    <span class="parcel-badge">APN {{ listing.apn }}</span>
+  </div>
+
+  <div class="hero-summary" [style.border-left-color]="listing.accentColor">
+    <div class="price-row">
+      <span class="detail-price">{{ formatPrice(listing.price) }}</span>
+      <span class="type-pill">{{ listing.propertyType }}</span>
+    </div>
+    <h2 class="detail-address">{{ listing.address }}</h2>
+    <p class="detail-sub">{{ listing.neighborhood }} · {{ listing.city }} {{ listing.zip }}</p>
+    <div class="specs-row">
+      <span><strong>{{ listing.beds }}</strong> bd</span>
+      <span class="dot">•</span>
+      <span><strong>{{ listing.baths }}</strong> ba</span>
+      <span class="dot">•</span>
+      <span><strong>{{ listing.sqft | number }}</strong> sq ft</span>
+      <span class="dot">•</span>
+      <span>Built <strong>{{ listing.yearBuilt }}</strong></span>
+    </div>
+  </div>
+
+  <!-- Cadastral Parcel Metadata -->
+  <div class="section-card parcel-card">
+    <div class="section-title-row">
+      <h3>Cadastral Lot & Parcel Boundary</h3>
+      <span class="outline-chip">Outlined on map</span>
+    </div>
+    <div class="parcel-grid">
+      <div class="parcel-metric">
+        <span class="metric-label">Assessor Parcel (APN)</span>
+        <span class="metric-value">{{ listing.apn }}</span>
+      </div>
+      <div class="parcel-metric">
+        <span class="metric-label">Lot Area</span>
+        <span class="metric-value">{{ listing.lotSqFt | number }} sq ft</span>
+      </div>
+      <div class="parcel-metric">
+        <span class="metric-label">Lot Dimensions</span>
+        <span class="metric-value">{{ listing.lotDimensions }}</span>
+      </div>
+      <div class="parcel-metric">
+        <span class="metric-label">Zoning Code</span>
+        <span class="metric-value">{{ listing.zoning }}</span>
+      </div>
+    </div>
+    <div class="highlights-row">
+      @for (highlight of listing.highlights; track highlight) {
+        <span class="highlight-tag">{{ highlight }}</span>
+      }
+    </div>
+  </div>
+
+  <!-- Embedded Street View Panorama -->
+  <div class="section-card">
+    <div class="section-title-row">
+      <h3>Street View Neighborhood Preview</h3>
+      <span class="muted-meta">360° Interactive</span>
+    </div>
+    <div class="street-view-wrap">
+      <div
+        #streetViewContainer
+        id="street-view-container"
+        class="street-view-box"
+        aria-label="Google Street View neighborhood preview"
+      ></div>
+      @if (!mapsReady) {
+        <div class="street-view-overlay">
+          Add <code>GOOGLE_MAPS_API_KEY</code> to preview live Street View imagery.
+        </div>
+      } @else if (streetViewUnavailable()) {
+        <div class="street-view-overlay">
+          Outdoor Street View imagery is unavailable for this exact parcel coordinate.
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Nearby Places Amenities (5km radius via Places API New) -->
+  <div id="nearby-amenities-panel" class="section-card">
+    <div class="section-title-row">
+      <h3>Nearby Neighborhood Places</h3>
+      <span class="muted-meta">Within 5 km · Places API (New)</span>
+    </div>
+
+    <div class="amenity-tabs" role="tablist" aria-label="Nearby place categories">
+      <button
+        id="amenity-tab-all"
+        type="button"
+        role="tab"
+        class="tab-btn"
+        [class.active]="activeTab() === 'all'"
+        (click)="setTab('all')"
+      >
+        All ({{ amenities().length }})
+      </button>
+      <button
+        id="amenity-tab-schools"
+        type="button"
+        role="tab"
+        class="tab-btn"
+        [class.active]="activeTab() === 'schools'"
+        (click)="setTab('schools')"
+      >
+        Schools
+      </button>
+      <button
+        id="amenity-tab-groceries"
+        type="button"
+        role="tab"
+        class="tab-btn"
+        [class.active]="activeTab() === 'groceries'"
+        (click)="setTab('groceries')"
+      >
+        Groceries
+      </button>
+      <button
+        id="amenity-tab-transit"
+        type="button"
+        role="tab"
+        class="tab-btn"
+        [class.active]="activeTab() === 'transit'"
+        (click)="setTab('transit')"
+      >
+        Transit
+      </button>
+    </div>
+
+    <div id="nearby-amenities-list" class="amenities-list">
+      @if (!mapsReady) {
+        <p class="empty-note">Configure <code>GOOGLE_MAPS_API_KEY</code> to load live nearby schools, groceries, and transit.</p>
+      } @else if (amenitiesLoading()) {
+        <p class="loading-note">Searching 5 km radius via Places API (New)...</p>
+      } @else if (amenitiesError()) {
+        <p class="error-note">{{ amenitiesError() }}</p>
+      } @else if (filteredAmenities().length === 0) {
+        <p class="empty-note">No places found in this category within 5 km.</p>
+      } @else {
+        @for (place of filteredAmenities(); track place.id) {
+          <button
+            type="button"
+            class="amenity-row"
+            (click)="amenityFocused.emit(place)"
+          >
+            <div class="amenity-badge" [ngClass]="'cat-' + place.category">
+              {{ place.category === 'schools' ? 'S' : place.category === 'groceries' ? 'G' : 'T' }}
+            </div>
+            <div class="amenity-main">
+              <div class="amenity-name">{{ place.name }}</div>
+              <div class="amenity-meta">
+                <span class="amenity-type">{{ place.primaryTypeLabel }}</span>
+                @if (place.rating !== undefined) {
+                  <span>· ★ {{ place.rating | number: '1.1-1' }} ({{ place.userRatingCount || 0 }})</span>
+                }
+              </div>
+            </div>
+            <div class="amenity-distance">{{ formatDistance(place.distanceMeters) }}</div>
+          </button>
+        }
+      }
+    </div>
+  </div>
+
+  <!-- Workplace Commute Time Calculator (Routes API RouteMatrix) -->
+  <div id="commute-calculator-panel" class="section-card">
+    <div class="section-title-row">
+      <h3>Commute Time Calculator</h3>
+      <span class="muted-meta">Routes API Matrix</span>
+    </div>
+
+    <div class="preset-chips">
+      <button
+        type="button"
+        class="preset-chip"
+        (click)="applyWorkplacePreset('Salesforce Tower, San Francisco, CA')"
+      >
+        Salesforce Tower
+      </button>
+      <button
+        type="button"
+        class="preset-chip"
+        (click)="applyWorkplacePreset('UCSF Mission Bay, San Francisco, CA')"
+      >
+        Mission Bay
+      </button>
+      <button
+        type="button"
+        class="preset-chip"
+        (click)="applyWorkplacePreset('San Francisco International Airport, CA')"
+      >
+        SFO Airport
+      </button>
+    </div>
+
+    <div class="commute-form">
+      <div class="workplace-input-wrap">
+        <input
+          id="workplace-input"
+          type="text"
+          class="workplace-input"
+          [ngModel]="workplaceQuery"
+          (ngModelChange)="onWorkplaceInputChange($event)"
+          (keyup.enter)="calculateCommute()"
+          placeholder="Enter workplace address or company..."
+          aria-label="Workplace destination"
+          autocomplete="off"
+        />
+        @if (showSuggestions() && suggestions().length > 0) {
+          <div class="suggestions-dropdown" role="listbox">
+            @for (item of suggestions(); track item.placeId) {
+              <button
+                type="button"
+                class="suggestion-item"
+                role="option"
+                (click)="selectSuggestion(item)"
+              >
+                <span class="suggestion-main">{{ item.mainText }}</span>
+                @if (item.secondaryText) {
+                  <span class="suggestion-sub">{{ item.secondaryText }}</span>
+                }
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      <button
+        id="calculate-commute-btn"
+        type="button"
+        class="calc-btn"
+        [disabled]="commuteLoading()"
+        (click)="calculateCommute()"
+      >
+        {{ commuteLoading() ? 'Calculating...' : 'Calculate' }}
+      </button>
+    </div>
+
+    @if (commuteError()) {
+      <p class="error-note">{{ commuteError() }}</p>
+    }
+
+    <div class="commute-results">
+      <div class="commute-card drive-card">
+        <div class="commute-mode-label">Driving (Traffic-Aware)</div>
+        <div id="commute-drive-eta" class="commute-eta">
+          @if (commuteLoading()) {
+            Computing...
+          } @else if (commuteSummary()?.driving?.available) {
+            {{ commuteSummary()!.driving.durationText }} · {{ commuteSummary()!.driving.distanceText }}
+          } @else if (commuteSummary()) {
+            {{ commuteSummary()!.driving.durationText }}
+          } @else {
+            -- min
+          }
+        </div>
+      </div>
+
+      <div class="commute-card transit-card">
+        <div class="commute-mode-label">Public Transit</div>
+        <div id="commute-transit-eta" class="commute-eta">
+          @if (commuteLoading()) {
+            Computing...
+          } @else if (commuteSummary()?.transit?.available) {
+            {{ commuteSummary()!.transit.durationText }} · {{ commuteSummary()!.transit.distanceText }}
+          } @else if (commuteSummary()) {
+            {{ commuteSummary()!.transit.durationText }}
+          } @else {
+            -- min
+          }
+        </div>
+      </div>
+    </div>
+
+    @if (commuteSummary()) {
+      <p class="commute-destination-note">
+        To: <strong>{{ commuteSummary()!.workplaceName }}</strong> ({{ commuteSummary()!.workplaceAddress }})
+      </p>
+    }
+  </div>
+</section>

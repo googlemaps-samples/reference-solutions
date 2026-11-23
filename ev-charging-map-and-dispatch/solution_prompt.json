@@ -1,0 +1,49 @@
+{
+  "solution_id": "ev-charging-map-and-dispatch",
+  "id": "ev-charging-map-and-dispatch",
+  "title": "On-Demand Local Services & EV Roadside Dispatch",
+  "name": "On-Demand Local Services & EV Roadside Dispatch",
+  "category": "Local Discovery & Storefronts",
+  "user_prompt": "Build an on-demand roadside assistance, mechanic, and EV fast-charging locator app centered in Seattle. Allow drivers to set or drag their breakdown/current location pin on the map (reverse-geocoding the address) or search via Places Autocomplete. Search and display nearby EV charging stations and auto repair providers within a configurable 5km to 15km radius using Places API (New), showing station/provider details, ratings, and availability badges. Rank nearby options by real driving ETA using the Routes API, and draw the turn-by-turn dispatch or navigation route polyline from the driver's pin to the selected station or service provider.",
+  "prompt": "Build an on-demand roadside assistance, mechanic, and EV fast-charging locator app centered in Seattle. Allow drivers to set or drag their breakdown/current location pin on the map (reverse-geocoding the address) or search via Places Autocomplete. Search and display nearby EV charging stations and auto repair providers within a configurable 5km to 15km radius using Places API (New), showing station/provider details, ratings, and availability badges. Rank nearby options by real driving ETA using the Routes API, and draw the turn-by-turn dispatch or navigation route polyline from the driver's pin to the selected station or service provider.",
+  "expectations": [
+    "Interactive map shows user pin, proximity search ring, and nearby EV/service Advanced Markers",
+    "Address search and draggable or clickable user location with reverse geocoding work",
+    "Sidebar displays real nearby EV charging or auto service details and ratings",
+    "Providers/stations show calculated driving distance and ETA",
+    "Selecting a station or provider draws the route polyline on the map",
+    "No console errors"
+  ],
+  "test_interactions": [
+    {
+      "description": "Interactive map shows user pin, proximity search ring, and nearby EV/service Advanced Markers",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Address search and draggable or clickable user location with reverse geocoding work",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Sidebar displays real nearby EV charging or auto service details and ratings",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Providers/stations show calculated driving distance and ETA",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Selecting a station or provider draws the route polyline on the map",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    }
+  ]
+}

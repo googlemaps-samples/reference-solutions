@@ -1,0 +1,91 @@
+{
+  "solution_id": "ev-charging-map-and-dispatch",
+  "solution_title": "On-Demand Local Services & EV Roadside Dispatch",
+  "summary": "Seattle-centered EV fast-charging and roadside auto-service locator & dispatch architecture using strictly modern, non-deprecated Google Maps Platform APIs. On load, the app initializes a 2D vector map centered on Downtown Seattle (47.6062, -122.3321) with mapId=\"DEMO_MAP_ID\" and internalUsageAttributionIds=[\"gmp_git_agentsamples_v1.0.0\"], places a draggable driver breakdown AdvancedMarkerElement with a configurable 5km-15km proximity Circle (default 10km), reverse-geocodes the driver pin via Geocoder, discovers nearby EV charging stations (electric_vehicle_charging_station) and auto repair providers (car_repair) via Places API (New) (including evChargeOptions connector counts/kW and regularOpeningHours), ranks all results by live driving ETA via Routes API RouteMatrix, and draws the selected dispatch route polyline plus turn-by-turn steps via Routes API Route.computeRoutes. Pure client stacks use Maps JS API importLibrary(...) wrappers exclusively; full-stack BFF stacks (Next.js, FastAPI, Node.js Express) additionally route Places/Routes/Geocoding calls through local /api/* endpoints with explicit X-Goog-Api-Key and X-Goog-FieldMask headers.",
+  "gmp_products_used": [
+    "Maps JavaScript API (Map, Circle, AdvancedMarkerElement, PinElement, Polyline, InfoWindow)",
+    "Places API (New) (Place.searchNearby, Place.searchByText, PlaceAutocompleteElement, evChargeOptions)",
+    "Routes API (Route.computeRoutes, RouteMatrix.computeRouteMatrix)",
+    "Geocoding API (Geocoder reverse geocoding)"
+  ],
+  "js_libraries_to_import": [
+    "maps",
+    "marker",
+    "places",
+    "routes",
+    "geocoding",
+    "core"
+  ],
+  "matched_sub_skills": [
+    "google-maps-platform",
+    "compliance-review",
+    "gmp-common-api-keys",
+    "maps-javascript-api-javascript",
+    "gmp-framework-react",
+    "places-api-web-api",
+    "routes-api-web-api",
+    "geocoding-api-web-api"
+  ],
+  "uses_3d_map": false,
+  "initial_center_lat": 47.6062,
+  "initial_center_lng": -122.3321,
+  "initial_zoom": 12,
+  "seed_search_query": "EV charging stations and auto repair providers near Downtown Seattle, WA",
+  "ui_layout_summary": "Responsive full-viewport split-screen dispatch dashboard (100vh): (1) Top Header Bar (64px) with app title, PlaceAutocompleteElement (gmp-select listener) to relocate the driver breakdown location, reverse-geocoded driver address pill, category filter pills (All, EV Fast Charging, Auto Repair), and radius selector (5 km / 10 km / 15 km); (2) Left Dispatch Sidebar (400px desktop, stacked drawer on mobile) showing live count, ETA-ranked provider/station cards (each showing name, category badge, star rating + review count, live EV connector availability/kW rate or open-hours status badge without calling beta-only place.isOpen() on weekly channel, calculated driving distance + ETA, and 'Route Here' button), plus an active Route Summary & collapsible Turn-by-Turn Maneuver Steps panel when a provider is selected; (3) Right Interactive Map Pane (flex: 1, min-height: 520px) rendering the draggable driver AdvancedMarkerElement, dynamic 5km-15km google.maps.Circle proximity ring, clickable category-colored AdvancedMarkerElement pins for EV stations and mechanics (listening to 'click' on marker element for weekly-channel safety), InfoWindow preview, and active Route Polyline fitted to bounds. All DOM updates in vanilla JS avoid innerHTML/outerHTML in favor of createElement/textContent/replaceChildren, and all servers bind to 127.0.0.1 with X-Content-Type-Options: nosniff and X-Frame-Options: SAMEORIGIN.",
+  "interactive_controls": [
+    "autocomplete-container",
+    "driver-address-badge",
+    "use-map-center-btn",
+    "category-filter-all",
+    "category-filter-ev",
+    "category-filter-repair",
+    "radius-select",
+    "radius-5km",
+    "radius-10km",
+    "radius-15km",
+    "provider-list",
+    "provider-card-0",
+    "dispatch-route-btn",
+    "clear-route-btn",
+    "route-summary-panel",
+    "turn-by-turn-steps",
+    "map-container"
+  ],
+  "backend_proxy_endpoints": [
+    {
+      "method": "POST",
+      "path": "/api/places/nearby",
+      "upstream_gmp_service": "places.googleapis.com/v1/places:searchNearby",
+      "field_mask": "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.primaryType,places.types,places.regularOpeningHours,places.evChargeOptions,places.nationalPhoneNumber,places.googleMapsUri",
+      "purpose": "Server-side BFF proxy for Places API (New) Nearby Search to discover EV charging stations (electric_vehicle_charging_station) and auto repair providers (car_repair) within the driver's 5km-15km search circle."
+    },
+    {
+      "method": "POST",
+      "path": "/api/places/search-text",
+      "upstream_gmp_service": "places.googleapis.com/v1/places:searchText",
+      "field_mask": "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.primaryType,places.types,places.regularOpeningHours,places.evChargeOptions,places.nationalPhoneNumber,places.googleMapsUri",
+      "purpose": "Server-side BFF proxy for Places API (New) Text Search fallback/query refinement (e.g., EV fast charging or mobile roadside mechanic queries biased to Seattle)."
+    },
+    {
+      "method": "POST",
+      "path": "/api/routes/matrix",
+      "upstream_gmp_service": "routes.googleapis.com/distanceMatrix/v2:computeRouteMatrix",
+      "field_mask": "originIndex,destinationIndex,status,condition,distanceMeters,duration",
+      "purpose": "Server-side BFF proxy for Routes API Compute Route Matrix to compute real traffic-aware driving distance and ETA from the driver's breakdown pin to all discovered EV stations and auto repair providers for ETA sorting."
+    },
+    {
+      "method": "POST",
+      "path": "/api/routes/compute",
+      "upstream_gmp_service": "routes.googleapis.com/directions/v2:computeRoutes",
+      "field_mask": "routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline,routes.viewport,routes.legs.duration,routes.legs.distanceMeters,routes.legs.steps.navigationInstruction,routes.legs.steps.distanceMeters,routes.legs.steps.staticDuration",
+      "purpose": "Server-side BFF proxy for Routes API Compute Routes to return the encoded dispatch/navigation polyline, total distance/duration, and turn-by-turn maneuver instructions to the selected provider or charging station."
+    },
+    {
+      "method": "GET",
+      "path": "/api/geocode/reverse",
+      "upstream_gmp_service": "maps.googleapis.com/maps/api/geocode/json",
+      "field_mask": "N/A (Geocoding REST API uses query params: latlng, result_type=street_address|premise|route)",
+      "purpose": "Server-side BFF proxy for Geocoding API reverse geocoding when the driver drags the breakdown pin or clicks on the map to update their pickup/breakdown address."
+    }
+  ]
+}

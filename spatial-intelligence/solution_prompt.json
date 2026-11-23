@@ -1,0 +1,42 @@
+{
+  "solution_id": "spatial-intelligence",
+  "id": "spatial-intelligence",
+  "title": "Enterprise GIS Workbench, GeoJSON Zones & Deck.gl Analytics",
+  "name": "Enterprise GIS Workbench, GeoJSON Zones & Deck.gl Analytics",
+  "category": "Advanced Spatial Analytics & 3D",
+  "user_prompt": "Build an enterprise Web GIS spatial analytics workbench centered on New York City. Include a basemap layer switcher (roadmap, satellite, hybrid, terrain), GeoJSON district boundary polygons styled by capacity metrics with smooth zoom-to-bounds when a district is selected, and a high-performance deck.gl overlay (ScatterplotLayer or HexagonLayer via GoogleMapsOverlay) visualizing thousands of infrastructure sensor points. Provide an interactive Terra Draw polygon tool so analysts can draw a custom study zone on the map to dynamically filter points inside the polygon, compute summary metrics, and inspect terrain elevation via the Elevation API.",
+  "prompt": "Build an enterprise Web GIS spatial analytics workbench centered on New York City. Include a basemap layer switcher (roadmap, satellite, hybrid, terrain), GeoJSON district boundary polygons styled by capacity metrics with smooth zoom-to-bounds when a district is selected, and a high-performance deck.gl overlay (ScatterplotLayer or HexagonLayer via GoogleMapsOverlay) visualizing thousands of infrastructure sensor points. Provide an interactive Terra Draw polygon tool so analysts can draw a custom study zone on the map to dynamically filter points inside the polygon, compute summary metrics, and inspect terrain elevation via the Elevation API.",
+  "expectations": [
+    "Map renders GeoJSON district polygons and high-density deck.gl spatial layers",
+    "Basemap type switcher (roadmap, satellite, terrain) is functional",
+    "Terra Draw toolbar allows drawing a custom polygon zone to filter spatial metrics in the sidebar",
+    "Selecting a district zooms/fits the map bounds smoothly and displays zone analytics",
+    "No console errors"
+  ],
+  "test_interactions": [
+    {
+      "description": "Map renders GeoJSON district polygons and high-density deck.gl spatial layers",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Basemap type switcher (roadmap, satellite, terrain) is functional",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Terra Draw toolbar allows drawing a custom polygon zone to filter spatial metrics in the sidebar",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Selecting a district zooms/fits the map bounds smoothly and displays zone analytics",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    }
+  ]
+}

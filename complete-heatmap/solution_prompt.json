@@ -1,0 +1,42 @@
+{
+  "solution_id": "complete-heatmap",
+  "id": "complete-heatmap",
+  "title": "Disaster Hazard Heatmap, Civic Incident & Safe Shelter Router",
+  "name": "Disaster Hazard Heatmap, Civic Incident & Safe Shelter Router",
+  "category": "Environmental & Civic Intelligence",
+  "user_prompt": "Develop a civic flood/storm hazard monitor, citizen incident reporter, and emergency shelter routing portal centered in Miami. Render an interactive Google Map displaying a high-density deck.gl HeatmapLayer (via GoogleMapsOverlay) of reported storm/flooding incidents alongside active flood-hazard zone polygons. Allow residents to click the map to log a geotagged civic hazard report enriched automatically with reverse-geocoded street address (Geocoding API), terrain elevation (Elevation API), and live wind/precipitation conditions (Weather API). Include a 'Find Safe Shelter' feature that searches nearby hospitals or community centers via Places API (New) and calculates an evacuation route via the Routes API configured to avoid the active flood-hazard polygon.",
+  "prompt": "Develop a civic flood/storm hazard monitor, citizen incident reporter, and emergency shelter routing portal centered in Miami. Render an interactive Google Map displaying a high-density deck.gl HeatmapLayer (via GoogleMapsOverlay) of reported storm/flooding incidents alongside active flood-hazard zone polygons. Allow residents to click the map to log a geotagged civic hazard report enriched automatically with reverse-geocoded street address (Geocoding API), terrain elevation (Elevation API), and live wind/precipitation conditions (Weather API). Include a 'Find Safe Shelter' feature that searches nearby hospitals or community centers via Places API (New) and calculates an evacuation route via the Routes API configured to avoid the active flood-hazard polygon.",
+  "expectations": [
+    "Map renders deck.gl HeatmapLayer and flood-hazard zone polygons cleanly",
+    "Clicking the map populates a civic incident report with reverse-geocoded address, elevation, and live weather",
+    "Nearby emergency shelters/hospitals are fetched and displayed with Advanced Markers",
+    "Evacuation route polyline avoiding the hazard polygon is calculated and drawn on the map",
+    "No console errors"
+  ],
+  "test_interactions": [
+    {
+      "description": "Map renders deck.gl HeatmapLayer and flood-hazard zone polygons cleanly",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Clicking the map populates a civic incident report with reverse-geocoded address, elevation, and live weather",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Nearby emergency shelters/hospitals are fetched and displayed with Advanced Markers",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Evacuation route polyline avoiding the hazard polygon is calculated and drawn on the map",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    }
+  ]
+}

@@ -1,0 +1,386 @@
+<div class="workbench-shell">
+  <!-- Top Command Header -->
+  <header class="workbench-header" data-testid="workbench-header">
+    <div class="brand-cluster">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2L20 6.5V17.5L12 22L4 17.5V6.5L12 2Z" />
+          <circle cx="12" cy="12" r="2.8" fill="currentColor" />
+        </svg>
+      </div>
+      <div class="brand-copy">
+        <span class="brand-title">NYC Spatial Intelligence</span>
+        <span class="brand-subtitle">Enterprise GIS Workbench</span>
+      </div>
+    </div>
+
+    <div class="autocomplete-slot">
+      @if (hasApiKey()) {
+        <div #autocompleteHost class="autocomplete-host" aria-label="Search NYC places"></div>
+      } @else {
+        <div class="autocomplete-placeholder">Place search activates with API key</div>
+      }
+    </div>
+
+    <div class="header-controls">
+      <!-- Basemap Switcher -->
+      <div
+        class="segmented-group"
+        role="group"
+        aria-label="Basemap layer switcher"
+        data-testid="basemap-switcher"
+      >
+        @for (type of basemapOptions; track type) {
+          <button
+            type="button"
+            class="seg-btn"
+            [class.active]="activeBasemap() === type"
+            [attr.data-testid]="'basemap-btn-' + type"
+            (click)="setBasemap(type)"
+          >
+            {{ type | titlecase }}
+          </button>
+        }
+      </div>
+
+      <!-- Deck.gl & GeoJSON Controls -->
+      <div
+        class="segmented-group"
+        role="group"
+        aria-label="Spatial overlay controls"
+        data-testid="deckgl-layer-controls"
+      >
+        <button
+          type="button"
+          class="seg-btn"
+          [class.active]="deckGlMode() === 'scatterplot'"
+          data-testid="deckgl-mode-scatterplot"
+          (click)="setDeckGlMode('scatterplot')"
+        >
+          Scatterplot
+        </button>
+        <button
+          type="button"
+          class="seg-btn"
+          [class.active]="deckGlMode() === 'hexagon'"
+          data-testid="deckgl-mode-hexagon"
+          (click)="setDeckGlMode('hexagon')"
+        >
+          Hexagon
+        </button>
+        <button
+          type="button"
+          class="seg-btn geojson-toggle"
+          [class.active]="geoJsonVisible()"
+          data-testid="toggle-geojson-btn"
+          (click)="toggleGeoJsonLayer()"
+        >
+          {{ geoJsonVisible() ? 'Zones On' : 'Zones Off' }}
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Split-Screen Workspace -->
+  <main class="workspace-grid">
+    <!-- Left Analytical Sidebar -->
+    <aside class="analytics-sidebar">
+      <!-- 1. Zone Analytics KPI Card -->
+      <section class="panel-card" data-testid="zone-analytics-panel">
+        <div class="panel-head">
+          <div>
+            <span class="eyebrow">Spatial Telemetry</span>
+            <h2 class="panel-title">{{ zoneAnalytics().scopeLabel }}</h2>
+          </div>
+          @if (zoneAnalytics().scope !== 'citywide') {
+            <button
+              type="button"
+              class="ghost-reset-btn"
+              (click)="resetToCitywide()"
+            >
+              Reset
+            </button>
+          }
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-tile">
+            <span class="kpi-label">Active Sensors</span>
+            <span class="kpi-value mono">{{ zoneAnalytics().sensorCount | number }}</span>
+          </div>
+          <div class="kpi-tile">
+            <span class="kpi-label">Avg Grid Load</span>
+            <span class="kpi-value mono">{{ zoneAnalytics().avgLoadPct }}%</span>
+          </div>
+          <div class="kpi-tile">
+            <span class="kpi-label">Peak Load</span>
+            <span class="kpi-value mono">{{ zoneAnalytics().peakLoadPct }}%</span>
+          </div>
+          <div class="kpi-tile">
+            <span class="kpi-label">Zone Area</span>
+            <span class="kpi-value mono">{{ zoneAnalytics().areaKm2 }} km²</span>
+          </div>
+        </div>
+
+        <div class="capacity-bar-row">
+          <span class="capacity-caption">Total Rated Capacity</span>
+          <span class="capacity-mw mono">{{ zoneAnalytics().totalCapacityMw }} MW</span>
+        </div>
+      </section>
+
+      <!-- 2. Terrain Elevation Inspector -->
+      <section class="panel-card" data-testid="elevation-inspector-card">
+        <div class="panel-head">
+          <div>
+            <span class="eyebrow">Terrain Profile</span>
+            <h2 class="panel-title">Elevation Inspector</h2>
+          </div>
+          <button
+            type="button"
+            class="action-btn"
+            data-testid="sample-elevation-btn"
+            [disabled]="!hasApiKey() || !mapsReady() || elevationLoading()"
+            (click)="sampleElevationForCurrentScope()"
+          >
+            {{ elevationLoading() ? 'Sampling…' : 'Sample Terrain' }}
+          </button>
+        </div>
+
+        @if (elevationProfile(); as profile) {
+          <div class="elevation-source">{{ profile.sourceLabel }} ({{ profile.sampleCount }} pts)</div>
+          <div class="elevation-metrics">
+            <div class="elev-stat">
+              <span class="kpi-label">Min</span>
+              <span class="elev-val mono">{{ profile.minM }} m</span>
+            </div>
+            <div class="elev-stat">
+              <span class="kpi-label">Mean</span>
+              <span class="elev-val mono">{{ profile.meanM }} m</span>
+            </div>
+            <div class="elev-stat">
+              <span class="kpi-label">Max</span>
+              <span class="elev-val mono">{{ profile.maxM }} m</span>
+            </div>
+            <div class="elev-stat">
+              <span class="kpi-label">Res</span>
+              <span class="elev-val mono">{{ profile.resolutionM }} m</span>
+            </div>
+          </div>
+        } @else if (elevationError()) {
+          <p class="status-note warning">{{ elevationError() }}</p>
+        } @else {
+          <p class="status-note">
+            @if (hasApiKey()) {
+              Select a district, draw a study zone, or click Sample Terrain to query the Elevation API.
+            } @else {
+              Configure GOOGLE_MAPS_API_KEY in .env to enable live Elevation API sampling.
+            }
+          </p>
+        }
+      </section>
+
+      <!-- 3. NYC District Capacity Directory -->
+      <section class="panel-card" data-testid="district-selector-list">
+        <div class="panel-head">
+          <div>
+            <span class="eyebrow">GeoJSON Boundary Layer</span>
+            <h2 class="panel-title">NYC District Directory</h2>
+          </div>
+          <span class="count-pill mono">{{ districts.length }}</span>
+        </div>
+
+        <div class="district-list">
+          @for (district of districts; track district.id) {
+            <button
+              type="button"
+              class="district-row"
+              [class.selected]="selectedDistrictId() === district.id"
+              [attr.data-testid]="'district-item-' + district.id"
+              (click)="selectDistrict(district)"
+            >
+              <div class="district-main">
+                <div class="district-name-line">
+                  <span class="district-code mono">{{ district.code }}</span>
+                  <span class="district-name">{{ district.name }}</span>
+                </div>
+                <span class="district-meta">
+                  {{ district.borough }} · {{ district.sensorCount }} sensors · {{ district.areaKm2 }} km²
+                </span>
+              </div>
+              <span
+                class="capacity-badge mono"
+                [ngClass]="capacityTierClass(district.capacityPct)"
+              >
+                {{ district.capacityPct }}%
+              </span>
+            </button>
+          }
+        </div>
+      </section>
+
+      <!-- 4. Live NYC Civic Reference Hubs -->
+      <section class="panel-card" data-testid="live-places-panel">
+        <div class="panel-head">
+          <div>
+            <span class="eyebrow">Places API (New)</span>
+            <h2 class="panel-title">NYC Civic Reference Hubs</h2>
+          </div>
+          <span class="count-pill mono">{{ civicHubs().length }}</span>
+        </div>
+
+        @if (civicHubsLoading()) {
+          <p class="status-note">Querying live NYC civic transit hubs…</p>
+        } @else if (civicHubsError()) {
+          <p class="status-note warning">{{ civicHubsError() }}</p>
+        } @else if (civicHubs().length === 0) {
+          <p class="status-note">
+            @if (hasApiKey()) {
+              No live civic hubs returned for the current query.
+            } @else {
+              Live civic transit hubs load automatically when GOOGLE_MAPS_API_KEY is configured.
+            }
+          </p>
+        } @else {
+          <div class="hub-list">
+            @for (hub of civicHubs(); track hub.id; let idx = $index) {
+              <button
+                type="button"
+                class="hub-row"
+                [class.selected]="activeHubId() === hub.id"
+                (click)="selectCivicHub(hub)"
+              >
+                <span class="hub-index mono">{{ idx + 1 }}</span>
+                <div class="hub-copy">
+                  <span class="hub-name">{{ hub.displayName }}</span>
+                  <span class="hub-address">{{ hub.formattedAddress }}</span>
+                </div>
+              </button>
+            }
+          </div>
+        }
+      </section>
+    </aside>
+
+    <!-- Right Interactive Map Canvas -->
+    <section class="map-viewport" data-testid="map-canvas">
+      @if (hasApiKey() && mapsReady()) {
+        <google-map
+          height="100%"
+          width="100%"
+          [center]="center"
+          [zoom]="zoom"
+          [options]="mapOptions"
+          (mapInitialized)="onMapInitialized($event)"
+        >
+          @for (hub of civicHubs(); track hub.id; let idx = $index) {
+            <map-advanced-marker
+              [position]="hub.location"
+              [title]="hub.displayName"
+              [content]="getHubPinElement(hub, idx)"
+              (mapClick)="selectCivicHub(hub)"
+            />
+          }
+
+          @if (searchedPlace(); as selected) {
+            <map-advanced-marker
+              [position]="selected.location"
+              [title]="selected.displayName"
+              [content]="getSearchPinElement()"
+            />
+          }
+        </google-map>
+      } @else if (mapsError()) {
+        <div class="map-fallback-state">
+          <div class="fallback-card">
+            <h3>Maps Initialization Notice</h3>
+            <p>{{ mapsError() }}</p>
+          </div>
+        </div>
+      } @else if (!hasApiKey()) {
+        <div class="map-fallback-state">
+          <div class="fallback-card">
+            <span class="eyebrow">API Key Required for Live Map Tiles</span>
+            <h3>Configure GOOGLE_MAPS_API_KEY</h3>
+            <p>
+              Add <code>GOOGLE_MAPS_API_KEY</code> to <code>.env</code> in this folder to
+              render the interactive NYC vector map, GeoJSON layer, deck.gl WebGL overlays,
+              Terra Draw polygon tool, Elevation API, and Places API (New).
+            </p>
+            <p class="fallback-hint">
+              Need a free prototyping key? Obtain a zero-billing
+              <a
+                href="https://mapsplatform.google.com/maps-demo-key?utm_campaign=gmp_git_agentsamples_v1.0.0"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Maps Demo Key
+              </a>.
+            </p>
+          </div>
+        </div>
+      } @else {
+        <div class="map-fallback-state">
+          <div class="fallback-card">
+            <p>Loading Google Maps Platform spatial libraries…</p>
+          </div>
+        </div>
+      }
+
+      <!-- Floating Top-Left Terra Draw Study-Zone Toolbar -->
+      <div class="floating-toolbar" data-testid="terradraw-toolbar">
+        <span class="toolbar-label">Study Zone</span>
+        <button
+          type="button"
+          class="tool-btn"
+          [class.active]="terraDrawMode() === 'polygon'"
+          [disabled]="!terraDrawReady()"
+          data-testid="terradraw-polygon-btn"
+          (click)="setTerraDrawMode('polygon')"
+        >
+          Draw Polygon
+        </button>
+        <button
+          type="button"
+          class="tool-btn"
+          [class.active]="terraDrawMode() === 'select'"
+          [disabled]="!terraDrawReady()"
+          data-testid="terradraw-select-btn"
+          (click)="setTerraDrawMode('select')"
+        >
+          Select / Edit
+        </button>
+        <button
+          type="button"
+          class="tool-btn danger"
+          [disabled]="!terraDrawReady()"
+          data-testid="terradraw-clear-btn"
+          (click)="clearTerraDrawZone()"
+        >
+          Clear Zone
+        </button>
+      </div>
+
+      <!-- Floating Bottom-Left Capacity & WebGL Legend -->
+      <div class="floating-legend">
+        <div class="legend-title">District & Sensor Utilization</div>
+        <div class="legend-items">
+          <span class="legend-item">
+            <i class="swatch nominal"></i>
+            &lt; 70% Nominal
+          </span>
+          <span class="legend-item">
+            <i class="swatch elevated"></i>
+            70–84% Elevated
+          </span>
+          <span class="legend-item">
+            <i class="swatch critical"></i>
+            &ge; 85% Critical
+          </span>
+        </div>
+        @if (webglNotice()) {
+          <div class="webgl-pill">{{ webglNotice() }}</div>
+        }
+      </div>
+    </section>
+  </main>
+</div>

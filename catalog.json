@@ -1,0 +1,1153 @@
+{
+ "schema_version": "1.0",
+ "attribution_id": "gmp_git_agentsamples_v1.0.0",
+ "total_solutions": 15,
+ "total_framework_apps": 120,
+ "path_templates": {
+  "solution_readme": "./{solution_id}/README.md",
+  "solution_agents": "./{solution_id}/AGENTS.md",
+  "verification_report": "./{solution_id}/verification_report.md",
+  "framework_dir": "./{solution_id}/{framework}/",
+  "framework_readme": "./{solution_id}/{framework}/README.md",
+  "framework_agents": "./{solution_id}/{framework}/AGENTS.md",
+  "screenshot": "./{solution_id}/screenshots/{framework}.png"
+ },
+ "frameworks": {
+  "static-vanilla-js": {
+   "slug": "static-vanilla-js",
+   "display_name": "Static HTML + Vanilla JavaScript (Zero-Bundler ES Modules)",
+   "language": "JavaScript (ES Modules)",
+   "env_var": "GOOGLE_MAPS_API_KEY",
+   "env_file": ".env",
+   "core_packages": [
+    "@googlemaps/js-api-loader"
+   ],
+   "serve_command": "node server.mjs --host 127.0.0.1 --port {port}"
+  },
+  "react-vite": {
+   "slug": "react-vite",
+   "display_name": "React + Vite + TypeScript (@vis.gl/react-google-maps)",
+   "language": "TypeScript",
+   "env_var": "VITE_GOOGLE_MAPS_API_KEY",
+   "env_file": ".env.local",
+   "core_packages": [
+    "@vis.gl/react-google-maps",
+    "@types/google.maps"
+   ],
+   "serve_command": "npx vite preview --host 127.0.0.1 --port {port} --strictPort"
+  },
+  "nextjs": {
+   "slug": "nextjs",
+   "display_name": "Next.js App Router + TypeScript (@vis.gl/react-google-maps + Route Handlers)",
+   "language": "TypeScript",
+   "env_var": "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY",
+   "env_file": ".env.local",
+   "core_packages": [
+    "@vis.gl/react-google-maps",
+    "@types/google.maps",
+    "next"
+   ],
+   "serve_command": "npx next start --hostname 127.0.0.1 --port {port}"
+  },
+  "sveltekit": {
+   "slug": "sveltekit",
+   "display_name": "SvelteKit + TypeScript (@googlemaps/js-api-loader + Native Web Components)",
+   "language": "TypeScript",
+   "env_var": "PUBLIC_GOOGLE_MAPS_API_KEY",
+   "env_file": ".env",
+   "core_packages": [
+    "@googlemaps/js-api-loader",
+    "@types/google.maps"
+   ],
+   "serve_command": "npx vite preview --host 127.0.0.1 --port {port} --strictPort"
+  },
+  "vue-vite": {
+   "slug": "vue-vite",
+   "display_name": "Vue 3 + Vite + TypeScript (@googlemaps/js-api-loader + Custom Elements)",
+   "language": "TypeScript",
+   "env_var": "VITE_GOOGLE_MAPS_API_KEY",
+   "env_file": ".env.local",
+   "core_packages": [
+    "@googlemaps/js-api-loader",
+    "@types/google.maps"
+   ],
+   "serve_command": "npx vite preview --host 127.0.0.1 --port {port} --strictPort"
+  },
+  "angular": {
+   "slug": "angular",
+   "display_name": "Angular Standalone Components + TypeScript (@angular/google-maps)",
+   "language": "TypeScript",
+   "env_var": "GOOGLE_MAPS_API_KEY",
+   "env_file": ".env",
+   "core_packages": [
+    "@angular/google-maps",
+    "@googlemaps/js-api-loader",
+    "@types/google.maps"
+   ],
+   "serve_command": "node serve-dist.mjs --host 127.0.0.1 --port {port}"
+  },
+  "python-fastapi": {
+   "slug": "python-fastapi",
+   "display_name": "Python FastAPI Backend + Interactive Web Frontend",
+   "language": "Python + Vanilla JS",
+   "env_var": "GOOGLE_MAPS_API_KEY",
+   "env_file": ".env",
+   "core_packages": [
+    "fastapi",
+    "uvicorn",
+    "httpx",
+    "pydantic",
+    "python-dotenv"
+   ],
+   "serve_command": ".venv/bin/uvicorn main:app --host 127.0.0.1 --port {port}"
+  },
+  "nodejs-web": {
+   "slug": "nodejs-web",
+   "display_name": "Node.js + Express + TypeScript Backend + Interactive Web Frontend",
+   "language": "TypeScript",
+   "env_var": "GOOGLE_MAPS_API_KEY",
+   "env_file": ".env",
+   "core_packages": [
+    "express",
+    "@googlemaps/js-api-loader",
+    "typescript"
+   ],
+   "serve_command": "node dist/server.js --host 127.0.0.1 --port {port}"
+  }
+ },
+ "api_index": {
+  "maps-js": [
+   "3d-trail-explorer",
+   "complete-heatmap",
+   "driving-and-geofencing",
+   "environmental-dashboard",
+   "ev-charging-map-and-dispatch",
+   "itinerary-planner",
+   "live-order-tracking",
+   "logistics-and-routing",
+   "neighborhood-discovery",
+   "real-estate",
+   "ridesharing-and-tracker",
+   "spatial-intelligence",
+   "store-locator",
+   "storefront-sample",
+   "travel-route-comparator"
+  ],
+  "maps-3d": [
+   "3d-trail-explorer"
+  ],
+  "places-new": [
+   "3d-trail-explorer",
+   "complete-heatmap",
+   "driving-and-geofencing",
+   "environmental-dashboard",
+   "ev-charging-map-and-dispatch",
+   "itinerary-planner",
+   "live-order-tracking",
+   "logistics-and-routing",
+   "neighborhood-discovery",
+   "real-estate",
+   "ridesharing-and-tracker",
+   "spatial-intelligence",
+   "store-locator",
+   "storefront-sample",
+   "travel-route-comparator"
+  ],
+  "elevation": [
+   "3d-trail-explorer",
+   "complete-heatmap",
+   "spatial-intelligence",
+   "travel-route-comparator"
+  ],
+  "routes": [
+   "complete-heatmap",
+   "driving-and-geofencing",
+   "ev-charging-map-and-dispatch",
+   "itinerary-planner",
+   "live-order-tracking",
+   "logistics-and-routing",
+   "real-estate",
+   "ridesharing-and-tracker",
+   "store-locator",
+   "storefront-sample",
+   "travel-route-comparator"
+  ],
+  "geocoding": [
+   "complete-heatmap",
+   "driving-and-geofencing",
+   "environmental-dashboard",
+   "ev-charging-map-and-dispatch",
+   "live-order-tracking",
+   "neighborhood-discovery",
+   "real-estate",
+   "store-locator"
+  ],
+  "weather": [
+   "complete-heatmap",
+   "environmental-dashboard"
+  ],
+  "deck-gl": [
+   "complete-heatmap",
+   "spatial-intelligence"
+  ],
+  "terra-draw": [
+   "driving-and-geofencing",
+   "real-estate",
+   "spatial-intelligence"
+  ],
+  "air-quality": [
+   "environmental-dashboard"
+  ],
+  "pollen": [
+   "environmental-dashboard"
+  ],
+  "solar": [
+   "environmental-dashboard"
+  ],
+  "route-matrix": [
+   "ev-charging-map-and-dispatch",
+   "logistics-and-routing",
+   "real-estate",
+   "ridesharing-and-tracker",
+   "store-locator"
+  ],
+  "street-view": [
+   "itinerary-planner",
+   "real-estate",
+   "storefront-sample"
+  ],
+  "time-zone": [
+   "itinerary-planner"
+  ],
+  "address-validation": [
+   "live-order-tracking"
+  ],
+  "maps-static": [
+   "live-order-tracking"
+  ],
+  "roads": [
+   "logistics-and-routing"
+  ],
+  "marker-clusterer": [
+   "real-estate",
+   "store-locator"
+  ],
+  "eco-routing": [
+   "ridesharing-and-tracker",
+   "travel-route-comparator"
+  ]
+ },
+ "do_not_use_migrations": [
+  {
+   "modern_api": "AdvancedMarkerElement (`importLibrary('marker')`)",
+   "deprecated_symbol_never_emit": "google.maps.Marker / <Marker> / <map-marker>",
+   "status": "DEPRECATED_DO_NOT_USE",
+   "trigger_or_error": "\"google.maps.Marker is not available to new customers\" (Mar 2025)",
+   "sample_solution_ids": [
+    "storefront-sample",
+    "store-locator",
+    "real-estate"
+   ]
+  },
+  {
+   "modern_api": "PinElement passed directly + `glyphText` / `glyphSrc`",
+   "deprecated_symbol_never_emit": "PinElement.element / PinElement.glyph",
+   "status": "DEPRECATED_DO_NOT_USE",
+   "trigger_or_error": "Deprecated PinElement property warnings or broken pin rendering",
+   "sample_solution_ids": [
+    "3d-trail-explorer",
+    "itinerary-planner",
+    "storefront-sample"
+   ]
+  },
+  {
+   "modern_api": "PlaceAutocompleteElement (`gmp-select` + `event.placePrediction.toPlace().fetchFields()`)",
+   "deprecated_symbol_never_emit": "google.maps.places.Autocomplete / SearchBox / AutocompleteService / gmp-placeselect",
+   "status": "DEPRECATED_DO_NOT_USE",
+   "trigger_or_error": "Legacy Autocomplete disabled for new customers or `gmp-placeselect` never firing",
+   "sample_solution_ids": [
+    "storefront-sample",
+    "neighborhood-discovery",
+    "store-locator"
+   ]
+  },
+  {
+   "modern_api": "Place.searchByText() / Place.searchNearby() / Place.fetchFields()",
+   "deprecated_symbol_never_emit": "google.maps.places.PlacesService",
+   "status": "DEPRECATED_DO_NOT_USE",
+   "trigger_or_error": "Legacy PlacesService disabled; need live ratings, reviews, hours, or EV chargers",
+   "sample_solution_ids": [
+    "neighborhood-discovery",
+    "ev-charging-map-and-dispatch",
+    "storefront-sample"
+   ]
+  },
+  {
+   "modern_api": "Inspect `regularOpeningHours.periods` / `weekdayDescriptions` (or use `v: 'beta'`)",
+   "deprecated_symbol_never_emit": "Place.prototype.isOpen() on default weekly channel",
+   "status": "DEPRECATED_DO_NOT_USE",
+   "trigger_or_error": "\"Place.prototype.isOpen() is not available in this version of the Google Maps JavaScript API\"",
+   "sample_solution_ids": [
+    "storefront-sample",
+    "neighborhood-discovery"
+   ]
+  },
+  {
+   "modern_api": "Route.computeRoutes() / RouteMatrix.computeRouteMatrix() / Routes API v2",
+   "deprecated_symbol_never_emit": "DirectionsService / DirectionsRenderer / DistanceMatrixService / <map-directions-renderer>",
+   "status": "DEPRECATED_DO_NOT_USE",
+   "trigger_or_error": "Legacy Directions/Distance Matrix disabled; need eco-routing, matrix ETAs, or waypoint optimization",
+   "sample_solution_ids": [
+    "ridesharing-and-tracker",
+    "store-locator",
+    "travel-route-comparator"
+   ]
+  },
+  {
+   "modern_api": "@deck.gl/google-maps `GoogleMapsOverlay` + `HeatmapLayer` / `HexagonLayer`",
+   "deprecated_symbol_never_emit": "google.maps.visualization.HeatmapLayer / <map-heatmap-layer>",
+   "status": "DEPRECATED_DO_NOT_USE",
+   "trigger_or_error": "Maps JS visualization library deprecated; need WebGL heatmaps or sensor density layers",
+   "sample_solution_ids": [
+    "complete-heatmap",
+    "spatial-intelligence"
+   ]
+  },
+  {
+   "modern_api": "terra-draw + terra-draw-google-maps-adapter (`TerraDrawGoogleMapsAdapter`)",
+   "deprecated_symbol_never_emit": "google.maps.drawing / DrawingManager",
+   "status": "DEPRECATED_DO_NOT_USE",
+   "trigger_or_error": "Maps JS drawing library deprecated; need interactive polygon geofencing or search-area drawing",
+   "sample_solution_ids": [
+    "driving-and-geofencing",
+    "real-estate",
+    "spatial-intelligence"
+   ]
+  },
+  {
+   "modern_api": "@googlemaps/js-api-loader v2 `setOptions()` + `importLibrary()`",
+   "deprecated_symbol_never_emit": "new Loader(...).load() (js-api-loader v1)",
+   "status": "DEPRECATED_DO_NOT_USE",
+   "trigger_or_error": "\"TypeError: Loader is not a constructor\" after upgrading `@googlemaps/js-api-loader` to v2",
+   "sample_solution_ids": [
+    "vue-vite",
+    "sveltekit",
+    "angular"
+   ]
+  },
+  {
+   "modern_api": "@vis.gl/react-google-maps (React/Next.js) / @angular/google-maps (Angular) / native Web Components (Vue/Svelte)",
+   "deprecated_symbol_never_emit": "@react-google-maps/api / google-map-react / use-places-autocomplete / @googlemaps/react-wrapper / @googlemaps/extended-component-library (<gmpx-*>) / svelte-google-maps / vue3-google-map",
+   "status": "DEPRECATED_DO_NOT_USE",
+   "trigger_or_error": "React 19 peer-dep conflicts, unmaintained wrappers, or retired `<gmpx-*>` elements",
+   "sample_solution_ids": [
+    "storefront-sample",
+    "store-locator",
+    "3d-trail-explorer"
+   ]
+  },
+  {
+   "modern_api": "Maps JS SDK `importLibrary(...)` OR Server BFF `/api/*` proxy with `X-Goog-Api-Key`",
+   "deprecated_symbol_never_emit": "Direct browser fetch() to places.googleapis.com / routes.googleapis.com / roads.googleapis.com / addressvalidation.googleapis.com",
+   "status": "DEPRECATED_DO_NOT_USE",
+   "trigger_or_error": "\"Access to fetch ... has been blocked by CORS policy\"",
+   "sample_solution_ids": [
+    "store-locator",
+    "live-order-tracking",
+    "logistics-and-routing"
+   ]
+  }
+ ],
+ "solutions": [
+  {
+   "id": "3d-trail-explorer",
+   "title": "Photorealistic 3D Map Explorer, Camera Tour & 3D Trail Route",
+   "category": "Advanced Spatial Analytics & 3D",
+   "unique_differentiator": "ONLY Photorealistic 3D (`<gmp-map-3d>` / `Map3DElement`) app; extruded red `Polyline3DElement`, `Marker3DInteractiveElement` + `PopoverElement`, `flyCameraTo` chapter tour, Elevation profile.",
+   "demo_key_support": "partial_cloud_key_required",
+   "required_gcp_apis": [
+    "Elevation API (REST)"
+   ],
+   "canonical_apis": [
+    "maps-js",
+    "maps-3d",
+    "places-new",
+    "elevation"
+   ],
+   "js_libraries": [
+    "core",
+    "elevation",
+    "maps",
+    "maps3d",
+    "marker",
+    "places"
+   ],
+   "third_party_geo_packages": [],
+   "uses_3d_map": true,
+   "prompt_triggers": [
+    "3d map",
+    "photorealistic 3d",
+    "gmp-map-3d",
+    "Map3DElement",
+    "flyCameraTo",
+    "Polyline3DElement",
+    "3d trail",
+    "elevation profile"
+   ],
+   "bff_endpoints": [
+    "POST /api/places/search",
+    "POST /api/places/autocomplete",
+    "POST /api/elevation/profile"
+   ],
+   "frameworks": {
+    "static-vanilla-js": "client-js:PASS",
+    "react-vite": "client-js:PASS",
+    "nextjs": "bff(3):PASS",
+    "sveltekit": "bff(3):PASS",
+    "vue-vite": "client-js:PASS",
+    "angular": "client-js:PASS",
+    "python-fastapi": "bff(3):PASS",
+    "nodejs-web": "bff(3):PASS"
+   }
+  },
+  {
+   "id": "complete-heatmap",
+   "title": "Disaster Hazard Heatmap, Civic Incident & Safe Shelter Router",
+   "category": "Environmental & Civic Intelligence",
+   "unique_differentiator": "deck.gl `HeatmapLayer` (replaces deprecated Maps JS `HeatmapLayer`) + flood polygon + hazard-avoiding shelter route + map-click Weather/Elevation/Geocode incident reporter.",
+   "demo_key_support": "partial_cloud_key_required",
+   "required_gcp_apis": [
+    "Elevation API (REST)"
+   ],
+   "canonical_apis": [
+    "maps-js",
+    "places-new",
+    "routes",
+    "geocoding",
+    "elevation",
+    "weather",
+    "deck-gl"
+   ],
+   "js_libraries": [
+    "core",
+    "elevation",
+    "geocoding",
+    "geometry",
+    "maps",
+    "marker",
+    "places",
+    "routes"
+   ],
+   "third_party_geo_packages": [
+    "deck.gl"
+   ],
+   "uses_3d_map": false,
+   "prompt_triggers": [
+    "heatmap",
+    "deck.gl HeatmapLayer",
+    "disaster hazard",
+    "avoid polygon route",
+    "incident reporter",
+    "shelter routing"
+   ],
+   "bff_endpoints": [
+    "POST /api/places/search",
+    "POST /api/routes/compute",
+    "GET /api/geocode/reverse",
+    "GET /api/elevation",
+    "GET /api/weather/current"
+   ],
+   "frameworks": {
+    "static-vanilla-js": "client+cors-rest:PASS",
+    "react-vite": "client+cors-rest:PASS",
+    "nextjs": "bff(5):PASS",
+    "sveltekit": "client+cors-rest:PASS",
+    "vue-vite": "client+cors-rest:PASS",
+    "angular": "client+cors-rest:PASS",
+    "python-fastapi": "bff(5):PASS",
+    "nodejs-web": "bff(5):PASS"
+   }
+  },
+  {
+   "id": "driving-and-geofencing",
+   "title": "Field Workforce Geofenced Attendance & Site Audit Router",
+   "category": "Logistics, Dispatch & Tracking",
+   "unique_differentiator": "Terra Draw polygon geofence editor (replaces `DrawingManager`) + worker GPS inside/outside `containsLocation` clock-in + Geocoding v4 reverse geocode + `optimizeWaypointOrder` multi-stop audit route.",
+   "demo_key_support": "full",
+   "required_gcp_apis": [],
+   "canonical_apis": [
+    "maps-js",
+    "places-new",
+    "routes",
+    "geocoding",
+    "terra-draw"
+   ],
+   "js_libraries": [
+    "core",
+    "geocoding",
+    "geometry",
+    "maps",
+    "marker",
+    "places",
+    "routes"
+   ],
+   "third_party_geo_packages": [
+    "terra-draw"
+   ],
+   "uses_3d_map": false,
+   "prompt_triggers": [
+    "geofencing",
+    "terra-draw",
+    "DrawingManager replacement",
+    "polygon attendance",
+    "point in polygon",
+    "optimizeWaypointOrder",
+    "geocoding v4"
+   ],
+   "bff_endpoints": [
+    "POST /api/places/search",
+    "POST /api/routes/compute",
+    "GET /api/geocode/reverse"
+   ],
+   "frameworks": {
+    "static-vanilla-js": "client-js:PASS",
+    "react-vite": "client-js:PASS",
+    "nextjs": "bff(3):PASS",
+    "sveltekit": "bff(3):PASS",
+    "vue-vite": "client-js:PASS",
+    "angular": "client-js:PASS",
+    "python-fastapi": "bff(3):PASS",
+    "nodejs-web": "bff(3):PASS"
+   }
+  },
+  {
+   "id": "environmental-dashboard",
+   "title": "Hyperlocal Weather, Air Quality, Pollen & Solar Dashboard",
+   "category": "Environmental & Civic Intelligence",
+   "unique_differentiator": "Weather API (current + forecast) + Air Quality API (AQI + WebGL-free `ImageMapType` `US_AQI` heatmap tiles) + Pollen API + Solar API rooftop `buildingInsights:findClosest` (with 404 handling).",
+   "demo_key_support": "partial_cloud_key_required",
+   "required_gcp_apis": [
+    "Air Quality API",
+    "Pollen API",
+    "Solar API"
+   ],
+   "canonical_apis": [
+    "maps-js",
+    "places-new",
+    "geocoding",
+    "weather",
+    "air-quality",
+    "pollen",
+    "solar"
+   ],
+   "js_libraries": [
+    "core",
+    "geocoding",
+    "maps",
+    "marker",
+    "places"
+   ],
+   "third_party_geo_packages": [],
+   "uses_3d_map": false,
+   "prompt_triggers": [
+    "weather api",
+    "air quality",
+    "aqi heatmap tiles",
+    "pollen api",
+    "solar api",
+    "rooftop solar",
+    "ImageMapType"
+   ],
+   "bff_endpoints": [
+    "GET /api/weather/current",
+    "GET /api/weather/forecast",
+    "POST /api/air-quality/current",
+    "GET /api/air-quality/tiles",
+    "GET /api/pollen/forecast",
+    "GET /api/solar/building-insights",
+    "POST /api/places/search-text"
+   ],
+   "frameworks": {
+    "static-vanilla-js": "local-proxy(8):PASS",
+    "react-vite": "client+cors-rest:PASS",
+    "nextjs": "bff(7):PASS",
+    "sveltekit": "bff(7):PASS",
+    "vue-vite": "client+cors-rest:PASS",
+    "angular": "local-proxy(8):PASS",
+    "python-fastapi": "bff(7):PASS",
+    "nodejs-web": "bff(8):PASS"
+   }
+  },
+  {
+   "id": "ev-charging-map-and-dispatch",
+   "title": "On-Demand Local Services & EV Roadside Dispatch",
+   "category": "Local Discovery & Storefronts",
+   "unique_differentiator": "Draggable user pin with reverse geocode + configurable 5\u201315 km search ring + `Place.searchNearby` (`evChargeOptions`) + driving ETA ranking & turn-by-turn dispatch route.",
+   "demo_key_support": "full",
+   "required_gcp_apis": [],
+   "canonical_apis": [
+    "maps-js",
+    "places-new",
+    "routes",
+    "route-matrix",
+    "geocoding"
+   ],
+   "js_libraries": [
+    "core",
+    "geocoding",
+    "geometry",
+    "maps",
+    "marker",
+    "places",
+    "routes"
+   ],
+   "third_party_geo_packages": [],
+   "uses_3d_map": false,
+   "prompt_triggers": [
+    "ev charging",
+    "evChargeOptions",
+    "draggable AdvancedMarkerElement",
+    "roadside dispatch",
+    "configurable radius",
+    "nearby search"
+   ],
+   "bff_endpoints": [
+    "POST /api/places/nearby",
+    "POST /api/places/search-text",
+    "POST /api/routes/matrix",
+    "POST /api/routes/compute",
+    "GET /api/geocode/reverse"
+   ],
+   "frameworks": {
+    "static-vanilla-js": "client-js:PASS",
+    "react-vite": "client-js:PASS",
+    "nextjs": "bff(5):PASS",
+    "sveltekit": "client-js:PASS",
+    "vue-vite": "client-js:PASS",
+    "angular": "client-js:PASS",
+    "python-fastapi": "bff(5):PASS",
+    "nodejs-web": "bff(5):PASS"
+   }
+  },
+  {
+   "id": "itinerary-planner",
+   "title": "Multi-Day Trip Itinerary Planner, Hotels & Time Zone Hub",
+   "category": "Travel, Navigation & Itineraries",
+   "unique_differentiator": "Multi-day Tokyo trip tabs + Time Zone API local clock/UTC offset + numbered day-colored markers + `optimizeWaypointOrder` daily route + Places photos & Street View preview.",
+   "demo_key_support": "partial_cloud_key_required",
+   "required_gcp_apis": [
+    "Time Zone API"
+   ],
+   "canonical_apis": [
+    "maps-js",
+    "places-new",
+    "routes",
+    "street-view",
+    "time-zone"
+   ],
+   "js_libraries": [
+    "core",
+    "geometry",
+    "maps",
+    "marker",
+    "places",
+    "routes",
+    "streetView"
+   ],
+   "third_party_geo_packages": [],
+   "uses_3d_map": false,
+   "prompt_triggers": [
+    "itinerary planner",
+    "time zone api",
+    "multi-day trip",
+    "numbered markers",
+    "hotel discovery",
+    "street view preview"
+   ],
+   "bff_endpoints": [
+    "POST /api/places/search",
+    "POST /api/places/nearby",
+    "GET /api/places/details",
+    "GET /api/places/photo",
+    "POST /api/routes/compute",
+    "GET /api/timezone"
+   ],
+   "frameworks": {
+    "static-vanilla-js": "local-proxy(1):PASS",
+    "react-vite": "vite-proxy(1):PASS",
+    "nextjs": "bff(6):PASS",
+    "sveltekit": "bff(1):PASS",
+    "vue-vite": "client+cors-rest:PASS",
+    "angular": "local-proxy(1):PASS",
+    "python-fastapi": "bff(6):PASS",
+    "nodejs-web": "bff(6):PASS"
+   }
+  },
+  {
+   "id": "live-order-tracking",
+   "title": "On-Demand Delivery Checkout, Zone Validation & Live Tracker",
+   "category": "Logistics, Dispatch & Tracking",
+   "unique_differentiator": "Address Validation API (deliverability + USPS CASS) + delivery polygon & 8 km fee check + smoothly animated courier `AdvancedMarkerElement` + Maps Static API PNG receipt proxy.",
+   "demo_key_support": "partial_cloud_key_required",
+   "required_gcp_apis": [
+    "Address Validation API",
+    "Maps Static API"
+   ],
+   "canonical_apis": [
+    "maps-js",
+    "places-new",
+    "routes",
+    "geocoding",
+    "address-validation",
+    "maps-static"
+   ],
+   "js_libraries": [
+    "addressValidation",
+    "core",
+    "geocoding",
+    "geometry",
+    "maps",
+    "marker",
+    "places",
+    "routes"
+   ],
+   "third_party_geo_packages": [],
+   "uses_3d_map": false,
+   "prompt_triggers": [
+    "address validation",
+    "usps cass",
+    "delivery tracking",
+    "animate marker along polyline",
+    "maps static api",
+    "delivery zone polygon"
+   ],
+   "bff_endpoints": [
+    "POST /api/address/validate",
+    "POST /api/routes/compute",
+    "GET /api/maps/static-receipt"
+   ],
+   "frameworks": {
+    "static-vanilla-js": "local-proxy(3):PASS",
+    "react-vite": "vite-proxy(1):PASS",
+    "nextjs": "bff(3):PASS",
+    "sveltekit": "bff(3):PASS",
+    "vue-vite": "client+cors-rest:PASS",
+    "angular": "local-proxy(3):PASS",
+    "python-fastapi": "bff(3):PASS",
+    "nodejs-web": "bff(3):PASS"
+   }
+  },
+  {
+   "id": "logistics-and-routing",
+   "title": "Fleet Telematics, Road-Snapped GPS & Dispatch Dashboard",
+   "category": "Logistics, Dispatch & Tracking",
+   "unique_differentiator": "Roads API `snapToRoads` (raw noisy GPS vs. road-snapped polyline) + `TrafficLayer` + status-coded fleet markers (En Route/Delayed/Idle) + depot-to-hub `RouteMatrix`.",
+   "demo_key_support": "partial_cloud_key_required",
+   "required_gcp_apis": [
+    "Roads API"
+   ],
+   "canonical_apis": [
+    "maps-js",
+    "places-new",
+    "routes",
+    "route-matrix",
+    "roads"
+   ],
+   "js_libraries": [
+    "core",
+    "geometry",
+    "maps",
+    "marker",
+    "places",
+    "routes"
+   ],
+   "third_party_geo_packages": [],
+   "uses_3d_map": false,
+   "prompt_triggers": [
+    "roads api",
+    "snapToRoads",
+    "gps breadcrumbs",
+    "fleet telematics",
+    "TrafficLayer",
+    "depot dispatch",
+    "route matrix"
+   ],
+   "bff_endpoints": [
+    "POST /api/routes/compute",
+    "POST /api/routes/matrix",
+    "POST /api/roads/snap",
+    "POST /api/places/search"
+   ],
+   "frameworks": {
+    "static-vanilla-js": "local-proxy(4):PASS",
+    "react-vite": "vite-proxy(1):PASS",
+    "nextjs": "bff(4):PASS",
+    "sveltekit": "bff(4):PASS",
+    "vue-vite": "vite-proxy(1):PASS",
+    "angular": "local-proxy(4):PASS",
+    "python-fastapi": "bff(4):PASS",
+    "nodejs-web": "bff(4):PASS"
+   }
+  },
+  {
+   "id": "neighborhood-discovery",
+   "title": "Hyperlocal Neighborhood Directory & Spot Mapper",
+   "category": "Local Discovery & Storefronts",
+   "unique_differentiator": "5 km category `Place.searchNearby` (restaurants/cafes/museums/parks) + side-by-side place comparison drawer (ratings, hours, reviews, photo proxy) + map-click reverse-geocode spot pinning.",
+   "demo_key_support": "full",
+   "required_gcp_apis": [],
+   "canonical_apis": [
+    "maps-js",
+    "places-new",
+    "geocoding"
+   ],
+   "js_libraries": [
+    "core",
+    "geocoding",
+    "maps",
+    "marker",
+    "places"
+   ],
+   "third_party_geo_packages": [],
+   "uses_3d_map": false,
+   "prompt_triggers": [
+    "neighborhood directory",
+    "nearby places",
+    "place comparison",
+    "reverse geocode click",
+    "community spot mapper"
+   ],
+   "bff_endpoints": [
+    "POST /api/places/nearby",
+    "POST /api/places/search",
+    "GET /api/places/details",
+    "GET /api/geocode",
+    "GET /api/places/photo"
+   ],
+   "frameworks": {
+    "static-vanilla-js": "client-js:PASS",
+    "react-vite": "client-js:PASS",
+    "nextjs": "bff(5):PASS",
+    "sveltekit": "client-js:PASS",
+    "vue-vite": "client-js:PASS",
+    "angular": "client-js:PASS",
+    "python-fastapi": "bff(5):PASS",
+    "nodejs-web": "bff(5):PASS"
+   }
+  },
+  {
+   "id": "real-estate",
+   "title": "Split-Screen Real Estate Search, Parcel Polygon & Commute Explorer",
+   "category": "Real Estate & Property Mapping",
+   "unique_differentiator": "Zillow-style split screen + custom HTML price-pill `AdvancedMarkerElement` with bidirectional hover sync + `MarkerClusterer` + cadastral parcel polygons + Terra Draw search-area filter + Street View + `RouteMatrix` commute times.",
+   "demo_key_support": "full",
+   "required_gcp_apis": [],
+   "canonical_apis": [
+    "maps-js",
+    "places-new",
+    "routes",
+    "route-matrix",
+    "geocoding",
+    "street-view",
+    "marker-clusterer",
+    "terra-draw"
+   ],
+   "js_libraries": [
+    "core",
+    "geocoding",
+    "geometry",
+    "maps",
+    "marker",
+    "places",
+    "routes",
+    "streetView"
+   ],
+   "third_party_geo_packages": [
+    "@googlemaps/markerclusterer",
+    "terra-draw"
+   ],
+   "uses_3d_map": false,
+   "prompt_triggers": [
+    "real estate",
+    "zillow map",
+    "price pill marker",
+    "hover highlight marker",
+    "parcel polygon",
+    "draw search area",
+    "commute calculator",
+    "marker clustering"
+   ],
+   "bff_endpoints": [
+    "POST /api/places/search-text",
+    "POST /api/places/nearby",
+    "POST /api/routes/matrix",
+    "POST /api/routes/compute"
+   ],
+   "frameworks": {
+    "static-vanilla-js": "client-js:PASS",
+    "react-vite": "client-js:PASS",
+    "nextjs": "bff(4):PASS",
+    "sveltekit": "bff(4):PASS",
+    "vue-vite": "client-js:PASS",
+    "angular": "client-js:PASS",
+    "python-fastapi": "bff(4):PASS",
+    "nodejs-web": "bff(4):PASS"
+   }
+  },
+  {
+   "id": "ridesharing-and-tracker",
+   "title": "Rideshare Booking, Fare Estimator & Live Driver Tracking",
+   "category": "Logistics, Dispatch & Tracking",
+   "unique_differentiator": "Fastest vs. Eco-Friendly (`FUEL_EFFICIENT` / `FUEL_CONSUMPTION`) side-by-side route comparison + Economy/Comfort/Green fare estimator + closest-driver dispatch & animated marker along polyline.",
+   "demo_key_support": "full",
+   "required_gcp_apis": [],
+   "canonical_apis": [
+    "maps-js",
+    "places-new",
+    "routes",
+    "eco-routing",
+    "route-matrix"
+   ],
+   "js_libraries": [
+    "core",
+    "geometry",
+    "maps",
+    "marker",
+    "places",
+    "routes"
+   ],
+   "third_party_geo_packages": [],
+   "uses_3d_map": false,
+   "prompt_triggers": [
+    "rideshare",
+    "eco-friendly routing",
+    "FUEL_EFFICIENT",
+    "fuel savings",
+    "fare estimator",
+    "animated driver marker"
+   ],
+   "bff_endpoints": [
+    "POST /api/routes/compute",
+    "POST /api/routes/matrix",
+    "POST /api/places/search"
+   ],
+   "frameworks": {
+    "static-vanilla-js": "local-proxy(3):PASS",
+    "react-vite": "client-js:PASS",
+    "nextjs": "bff(3):PASS",
+    "sveltekit": "bff(3):PASS",
+    "vue-vite": "client-js:PASS",
+    "angular": "local-proxy(3):PASS",
+    "python-fastapi": "bff(3):PASS",
+    "nodejs-web": "bff(3):PASS"
+   }
+  },
+  {
+   "id": "spatial-intelligence",
+   "title": "Enterprise GIS Workbench, GeoJSON Zones & Deck.gl Analytics",
+   "category": "Advanced Spatial Analytics & 3D",
+   "unique_differentiator": "2D Enterprise Web GIS workbench: basemap switcher (roadmap/satellite/hybrid/terrain) + GeoJSON Data Layer styled by capacity + deck.gl `ScatterplotLayer`/`HexagonLayer` + Terra Draw study-zone point filter + Elevation.",
+   "demo_key_support": "partial_cloud_key_required",
+   "required_gcp_apis": [
+    "Elevation API (REST)"
+   ],
+   "canonical_apis": [
+    "maps-js",
+    "places-new",
+    "elevation",
+    "deck-gl",
+    "terra-draw"
+   ],
+   "js_libraries": [
+    "core",
+    "elevation",
+    "maps",
+    "marker",
+    "places"
+   ],
+   "third_party_geo_packages": [
+    "deck.gl",
+    "terra-draw"
+   ],
+   "uses_3d_map": false,
+   "prompt_triggers": [
+    "web gis",
+    "geojson data layer",
+    "deck.gl ScatterplotLayer",
+    "deck.gl HexagonLayer",
+    "basemap switcher",
+    "terra draw filter"
+   ],
+   "bff_endpoints": [
+    "POST /api/places/search",
+    "POST /api/elevation"
+   ],
+   "frameworks": {
+    "static-vanilla-js": "local-proxy(2):PASS",
+    "react-vite": "client-js:PASS",
+    "nextjs": "bff(2):PASS",
+    "sveltekit": "bff(2):PASS",
+    "vue-vite": "client-js:PASS",
+    "angular": "local-proxy(2):PASS",
+    "python-fastapi": "bff(2):PASS",
+    "nodejs-web": "bff(2):PASS"
+   }
+  },
+  {
+   "id": "store-locator",
+   "title": "Multi-Branch Store, ATM & Inventory Locator",
+   "category": "Local Discovery & Storefronts",
+   "unique_differentiator": "Dense NYC multi-branch locator with `@googlemaps/markerclusterer` (custom `AdvancedMarkerElement` cluster renderer) + type/inventory filters + `RouteMatrix` ETAs + 'Route to Fastest' branch.",
+   "demo_key_support": "full",
+   "required_gcp_apis": [],
+   "canonical_apis": [
+    "maps-js",
+    "places-new",
+    "routes",
+    "route-matrix",
+    "geocoding",
+    "marker-clusterer"
+   ],
+   "js_libraries": [
+    "core",
+    "geocoding",
+    "geometry",
+    "maps",
+    "marker",
+    "places",
+    "routes"
+   ],
+   "third_party_geo_packages": [
+    "@googlemaps/markerclusterer"
+   ],
+   "uses_3d_map": false,
+   "prompt_triggers": [
+    "store locator",
+    "markerclusterer",
+    "branch locator",
+    "atm locator",
+    "route matrix eta",
+    "fastest branch"
+   ],
+   "bff_endpoints": [
+    "POST /api/places/search",
+    "POST /api/places/autocomplete",
+    "GET /api/places/details",
+    "POST /api/routes/matrix",
+    "POST /api/routes/compute"
+   ],
+   "frameworks": {
+    "static-vanilla-js": "client-js:PASS",
+    "react-vite": "client-js:PASS",
+    "nextjs": "bff(5):PASS",
+    "sveltekit": "client-js:PASS",
+    "vue-vite": "client-js:PASS",
+    "angular": "client-js:PASS",
+    "python-fastapi": "bff(5):PASS",
+    "nodejs-web": "bff(5):PASS"
+   }
+  },
+  {
+   "id": "storefront-sample",
+   "title": "Single-Venue Storefront, Booking & Get Directions Hub",
+   "category": "Local Discovery & Storefronts",
+   "unique_differentiator": "Single-venue clinic booking hub + branded `AdvancedMarkerElement` + toggleable service-area `Circle` + synchronized `StreetViewPanorama` entrance + live Places reviews/hours/photo proxy + Driving/Transit/Walking directions.",
+   "demo_key_support": "full",
+   "required_gcp_apis": [],
+   "canonical_apis": [
+    "maps-js",
+    "places-new",
+    "routes",
+    "street-view"
+   ],
+   "js_libraries": [
+    "core",
+    "geometry",
+    "maps",
+    "marker",
+    "places",
+    "routes",
+    "streetView"
+   ],
+   "third_party_geo_packages": [],
+   "uses_3d_map": false,
+   "prompt_triggers": [
+    "storefront",
+    "single venue",
+    "appointment booking",
+    "get directions",
+    "street view entrance",
+    "place reviews",
+    "places photo proxy"
+   ],
+   "bff_endpoints": [
+    "POST /api/places/search",
+    "GET /api/places/photo",
+    "POST /api/routes/compute"
+   ],
+   "frameworks": {
+    "static-vanilla-js": "client-js:PASS",
+    "react-vite": "client-js:PASS",
+    "nextjs": "bff(3):PASS",
+    "sveltekit": "client-js:PASS",
+    "vue-vite": "client-js:PASS",
+    "angular": "client-js:PASS",
+    "python-fastapi": "bff(3):PASS",
+    "nodejs-web": "bff(3):PASS"
+   }
+  },
+  {
+   "id": "travel-route-comparator",
+   "title": "Multi-Modal Commute Comparator & Trail Elevation Tracker",
+   "category": "Travel, Navigation & Itineraries",
+   "unique_differentiator": "4-mode commute comparator (Driving/Cycling/Walking/Transit) + Avoid Tolls/Highways & Eco-Friendly toggles + `BicyclingLayer` + Elevation API path profile chart synced with map hover marker.",
+   "demo_key_support": "partial_cloud_key_required",
+   "required_gcp_apis": [
+    "Elevation API (REST)"
+   ],
+   "canonical_apis": [
+    "maps-js",
+    "places-new",
+    "routes",
+    "eco-routing",
+    "elevation"
+   ],
+   "js_libraries": [
+    "core",
+    "elevation",
+    "geometry",
+    "maps",
+    "marker",
+    "places",
+    "routes"
+   ],
+   "third_party_geo_packages": [],
+   "uses_3d_map": false,
+   "prompt_triggers": [
+    "commute comparator",
+    "multi-modal routing",
+    "avoid tolls",
+    "avoid highways",
+    "eco routing",
+    "BicyclingLayer",
+    "trail elevation chart"
+   ],
+   "bff_endpoints": [
+    "POST /api/places/search",
+    "POST /api/places/autocomplete",
+    "POST /api/routes/compute",
+    "POST /api/elevation/profile"
+   ],
+   "frameworks": {
+    "static-vanilla-js": "client-js:PASS",
+    "react-vite": "client-js:PASS",
+    "nextjs": "bff(4):PASS",
+    "sveltekit": "client-js:PASS",
+    "vue-vite": "client-js:PASS",
+    "angular": "client-js:PASS",
+    "python-fastapi": "bff(4):PASS",
+    "nodejs-web": "bff(4):PASS"
+   }
+  }
+ ]
+}

@@ -1,0 +1,505 @@
+<div class="app-shell">
+  <!-- Top Command Header (56px) -->
+  <header class="top-header">
+    <div class="brand-group">
+      <button
+        type="button"
+        class="mobile-menu-btn"
+        (click)="mobileDrawerOpen.set(!mobileDrawerOpen())"
+        aria-label="Toggle civic dashboard sidebar"
+      >
+        ☰
+      </button>
+      <div class="brand-badge" aria-hidden="true">⚡</div>
+      <div class="brand-titles">
+        <h1>Miami Civic Flood &amp; Shelter Router</h1>
+        <span class="brand-sub">Real-Time Hazard Heatmap &amp; Evacuation Portal</span>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      @if (headerWeather(); as hw) {
+        <div class="weather-pill" title="Live Miami Weather (Weather API)">
+          <span class="pulse-dot"></span>
+          @if (!hw.error) {
+            <span>
+              {{ hw.conditionText }}
+              @if (hw.temperatureC !== null) {
+                · {{ hw.temperatureC }}°C
+              }
+              @if (hw.windSpeedKmh !== null) {
+                · Wind {{ hw.windSpeedKmh }} km/h {{ hw.windDirection }}
+              }
+              @if (hw.precipProbability !== null) {
+                · {{ hw.precipProbability }}% precip
+              }
+            </span>
+          } @else {
+            <span>Miami Live Monitor</span>
+          }
+        </div>
+      }
+
+      <button
+        type="button"
+        class="layer-toggle-btn"
+        [class.active]="showHeatmap()"
+        data-testid="layer-toggle-heatmap"
+        (click)="toggleHeatmapLayer()"
+      >
+        <span class="dot dot-heat"></span>
+        Heatmap ({{ incidents().length }})
+      </button>
+
+      <button
+        type="button"
+        class="layer-toggle-btn"
+        [class.active]="showPolygons()"
+        data-testid="layer-toggle-polygons"
+        (click)="toggleFloodPolygons()"
+      >
+        <span class="dot dot-zone"></span>
+        Flood Zones ({{ floodZones.length }})
+      </button>
+
+      <button
+        type="button"
+        class="primary-cta-btn"
+        data-testid="find-shelter-btn"
+        [disabled]="!mapsLoader.isLoaded() || isComputingRoute()"
+        (click)="onFindSafeShelter()"
+      >
+        @if (isComputingRoute()) {
+          Routing...
+        } @else {
+          Find Safe Shelter
+        }
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Split-Screen Workspace -->
+  <div class="workspace-body">
+    <!-- Left Control Sidebar -->
+    <aside class="control-sidebar" [class.drawer-collapsed]="!mobileDrawerOpen()">
+      <!-- [A] Civic Incident Reporter -->
+      <section class="panel-card" data-testid="incident-report-panel">
+        <div class="card-header">
+          <div>
+            <span class="card-kicker">Step 1 · Click Map to Geotag</span>
+            <h2>Civic Incident Reporter</h2>
+          </div>
+          @if (incidentDraft()?.isLoadingEnrichment) {
+            <span class="status-tag status-info">Enriching...</span>
+          }
+        </div>
+
+        @if (incidentDraft(); as draft) {
+          <div class="telemetry-grid">
+            <div class="telemetry-item telemetry-wide">
+              <span class="telemetry-label">Street Address (Geocoding API)</span>
+              <span class="telemetry-value">{{ draft.address }}</span>
+            </div>
+
+            <div class="telemetry-item">
+              <span class="telemetry-label">Coordinates</span>
+              <span class="telemetry-value mono">
+                {{ draft.location.lat.toFixed(4) }}, {{ draft.location.lng.toFixed(4) }}
+              </span>
+            </div>
+
+            <div class="telemetry-item">
+              <span class="telemetry-label">Elevation (Elevation API)</span>
+              <span class="telemetry-value mono">
+                @if (draft.elevationMeters !== null) {
+                  {{ draft.elevationMeters.toFixed(2) }} m
+                } @else {
+                  --
+                }
+              </span>
+            </div>
+
+            <div class="telemetry-item">
+              <span class="telemetry-label">Wind / Gusts (Weather API)</span>
+              <span class="telemetry-value">
+                @if (draft.weather && !draft.weather.error) {
+                  {{ draft.weather.windSpeedKmh ?? '--' }} km/h {{ draft.weather.windDirection }}
+                  @if (draft.weather.windGustKmh !== null) {
+                    (gust {{ draft.weather.windGustKmh }})
+                  }
+                } @else {
+                  --
+                }
+              </span>
+            </div>
+
+            <div class="telemetry-item">
+              <span class="telemetry-label">Precipitation</span>
+              <span class="telemetry-value">
+                @if (draft.weather && !draft.weather.error) {
+                  {{ draft.weather.precipProbability ?? 0 }}% ·
+                  {{ draft.weather.precipQpfMm ?? 0 }} mm/hr
+                } @else {
+                  --
+                }
+              </span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="incident-type-select">Hazard Category</label>
+            <select
+              id="incident-type-select"
+              data-testid="incident-type-select"
+              [ngModel]="selectedHazardType()"
+              (ngModelChange)="selectedHazardType.set($event)"
+            >
+              @for (type of hazardTypes; track type) {
+                <option [value]="type">{{ type }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="incident-notes-input">Field Notes (optional)</label>
+            <input
+              id="incident-notes-input"
+              type="text"
+              placeholder="e.g., Curb-to-curb standing water blocking lane"
+              [ngModel]="incidentNotes()"
+              (ngModelChange)="incidentNotes.set($event)"
+            />
+          </div>
+
+          <button
+            type="button"
+            class="submit-incident-btn"
+            data-testid="incident-submit-btn"
+            [disabled]="draft.isLoadingEnrichment"
+            (click)="submitIncidentReport()"
+          >
+            Log Hazard Report to Heatmap
+          </button>
+        } @else {
+          <div class="empty-hint">
+            Click anywhere on the Miami map to drop a geotagged pin and auto-fetch
+            street address, terrain elevation, and live wind/precipitation telemetry.
+          </div>
+        }
+
+        @if (reportStatusMessage(); as msg) {
+          <div class="alert-banner alert-safe">{{ msg }}</div>
+        }
+      </section>
+
+      <!-- [B] Safe Shelter Evacuation Route Summary -->
+      <section class="panel-card" data-testid="route-summary-card">
+        <div class="card-header">
+          <div>
+            <span class="card-kicker">Step 2 · Routes API Bypass</span>
+            <h2>Evacuation Route</h2>
+          </div>
+          <label class="switch-label">
+            <input
+              type="checkbox"
+              data-testid="avoid-flood-toggle"
+              [checked]="avoidFlood()"
+              (change)="toggleAvoidFlood()"
+            />
+            <span>Avoid Flood Zones</span>
+          </label>
+        </div>
+
+        @if (routeError(); as rErr) {
+          <div class="alert-banner alert-warn">{{ rErr }}</div>
+        }
+
+        @if (activeRoute(); as route) {
+          <div class="route-metrics">
+            <div class="metric-box">
+              <span class="metric-label">ETA</span>
+              <span class="metric-value">{{ route.durationText }}</span>
+            </div>
+            <div class="metric-box">
+              <span class="metric-label">Distance</span>
+              <span class="metric-value">{{ route.distanceText }}</span>
+            </div>
+          </div>
+
+          <div class="route-endpoints">
+            <div><strong>From:</strong> {{ route.originLabel }}</div>
+            <div><strong>To Shelter:</strong> {{ route.destination.name }}</div>
+          </div>
+
+          @if (route.avoidsFloodZones && route.bypassedZoneNames.length > 0) {
+            <div class="bypass-badge badge-safe">
+              ✓ Detour Verified — Bypassed {{ route.bypassedZoneNames.join(', ') }}
+            </div>
+          } @else if (route.avoidsFloodZones) {
+            <div class="bypass-badge badge-safe">
+              ✓ Clear Path — Zero Active Flood Polygon Intersections
+            </div>
+          } @else {
+            <div class="bypass-badge badge-warn">
+              ⚠ Advisory: Route Crosses Active Flood-Hazard Zone
+            </div>
+          }
+
+          @if (route.steps.length > 0) {
+            <button
+              type="button"
+              class="text-link-btn"
+              (click)="showRouteSteps.set(!showRouteSteps())"
+            >
+              {{ showRouteSteps() ? 'Hide' : 'Show' }} Turn-by-Turn Steps ({{ route.steps.length }})
+            </button>
+            @if (showRouteSteps()) {
+              <ol class="route-steps-list">
+                @for (step of route.steps; track $index) {
+                  <li>
+                    <span>{{ step.instruction }}</span>
+                    @if (step.distanceText) {
+                      <span class="step-dist">{{ step.distanceText }}</span>
+                    }
+                  </li>
+                }
+              </ol>
+            }
+          }
+        } @else {
+          <div class="empty-hint">
+            Select a shelter below or click <strong>Find Safe Shelter</strong> to compute
+            a flood-zone-bypass evacuation route.
+          </div>
+        }
+      </section>
+
+      <!-- [C] Live Nearby Emergency Shelters List -->
+      <section class="panel-card shelter-card" data-testid="shelter-list">
+        <div class="card-header">
+          <div>
+            <span class="card-kicker">Step 3 · Places API (New)</span>
+            <h2>Nearby Emergency Shelters</h2>
+          </div>
+          <span class="count-pill">{{ shelters().length }}</span>
+        </div>
+
+        <form
+          class="shelter-search-form"
+          (ngSubmit)="searchShelters(shelterSearchQuery(), false)"
+        >
+          <input
+            type="text"
+            data-testid="shelter-search-input"
+            placeholder="Search hospitals or shelters in Miami..."
+            [ngModel]="shelterSearchQuery()"
+            (ngModelChange)="shelterSearchQuery.set($event)"
+            name="shelterSearchQuery"
+          />
+          <button
+            type="submit"
+            class="search-btn"
+            [disabled]="!mapsLoader.isLoaded() || isSearchingShelters()"
+          >
+            {{ isSearchingShelters() ? '...' : 'Search' }}
+          </button>
+        </form>
+
+        @if (shelterError(); as sErr) {
+          <div class="alert-banner alert-warn">{{ sErr }}</div>
+        }
+
+        <div class="shelter-items">
+          @for (shelter of shelters(); track shelter.id) {
+            <article
+              class="shelter-item"
+              [class.selected]="selectedShelterId() === shelter.id"
+            >
+              <div class="shelter-meta">
+                <h3>{{ shelter.name }}</h3>
+                <p class="shelter-addr">{{ shelter.address }}</p>
+                <div class="shelter-badges">
+                  @if (shelter.rating !== undefined) {
+                    <span class="mini-badge">★ {{ shelter.rating.toFixed(1) }}</span>
+                  }
+                  @if (shelter.distanceMeters !== undefined) {
+                    <span class="mini-badge">{{ formatDistanceKm(shelter.distanceMeters) }}</span>
+                  }
+                  @if (shelter.businessStatus === 'OPERATIONAL') {
+                    <span class="mini-badge mini-safe">Open</span>
+                  }
+                </div>
+              </div>
+              <button
+                type="button"
+                class="route-here-btn"
+                data-testid="route-here-btn"
+                [disabled]="isComputingRoute()"
+                (click)="routeToShelter(shelter)"
+              >
+                Route Here
+              </button>
+            </article>
+          } @empty {
+            @if (!isSearchingShelters() && mapsLoader.isLoaded()) {
+              <div class="empty-hint">No shelters loaded yet. Click Search to query Miami facilities.</div>
+            }
+          }
+        </div>
+      </section>
+    </aside>
+
+    <!-- Right Interactive Map Canvas -->
+    <main class="map-stage" data-testid="map-container">
+      @if (mapsLoader.isLoaded()) {
+        <google-map
+          #googleMapRef
+          height="100%"
+          width="100%"
+          [center]="miamiCenter"
+          [zoom]="initialZoom"
+          [options]="mapOptions"
+          (mapInitialized)="onMapInitialized($event)"
+          (mapClick)="onMapClick($event)"
+        >
+          <!-- Active Flood-Hazard Zone Polygons -->
+          @if (showPolygons()) {
+            @for (zone of floodZones; track zone.id) {
+              <map-polygon
+                [paths]="zone.paths"
+                [options]="getPolygonOptions(zone)"
+                (polygonClick)="openFloodZoneInfo(zone, $event)"
+              />
+            }
+          }
+
+          <!-- Flood-Bypass Evacuation Route Polyline -->
+          @if (activeRoute(); as route) {
+            @if (route.path.length > 1) {
+              <map-polyline
+                [path]="route.path"
+                [options]="routePolylineOptions()"
+              />
+            }
+          }
+
+          <!-- Clicked Draft Incident Pin (AdvancedMarkerElement) -->
+          @if (incidentDraft(); as draft) {
+            <map-advanced-marker
+              [position]="draft.location"
+              title="Selected Incident Location"
+              [content]="getDraftPin()"
+              [zIndex]="50"
+            />
+          }
+
+          <!-- User-Submitted Incident Markers (AdvancedMarkerElement) -->
+          @for (inc of userSubmittedIncidents(); track inc.id) {
+            <map-advanced-marker
+              #incMarker="mapAdvancedMarker"
+              [position]="{ lat: inc.lat, lng: inc.lng }"
+              [title]="inc.type"
+              [content]="getIncidentPin(inc)"
+              [zIndex]="35"
+              (mapClick)="openIncidentInfo(inc, incMarker)"
+            />
+          }
+
+          <!-- Nearby Emergency Shelter Markers (AdvancedMarkerElement + PinElement) -->
+          @for (shelter of shelters(); track shelter.id) {
+            <map-advanced-marker
+              #shelterMarker="mapAdvancedMarker"
+              [position]="shelter.location"
+              [title]="shelter.name"
+              [content]="getShelterPin(shelter)"
+              [zIndex]="30"
+              (mapClick)="openShelterInfo(shelter, shelterMarker)"
+            />
+          }
+
+          <!-- Shared InfoWindow -->
+          <map-info-window #infoWindowRef="mapInfoWindow" [position]="infoPosition()">
+            @if (infoState(); as info) {
+              <div class="info-window-card">
+                <div class="iw-badge" [attr.data-tone]="info.badgeTone">
+                  {{ info.badgeText }}
+                </div>
+                <h3>{{ info.title }}</h3>
+                <p class="iw-sub">{{ info.subtitle }}</p>
+                @for (line of info.details; track $index) {
+                  <p class="iw-detail">{{ line }}</p>
+                }
+                @if (info.shelter; as sh) {
+                  <button
+                    type="button"
+                    class="iw-route-btn"
+                    (click)="routeToShelter(sh)"
+                  >
+                    Route Evacuation Here
+                  </button>
+                }
+              </div>
+            }
+          </map-info-window>
+        </google-map>
+      } @else {
+        <div class="map-setup-state">
+          <div class="setup-card">
+            <div class="setup-icon">🗺️</div>
+            @if (mapsLoader.isLoading()) {
+              <h2>Loading Miami Hazard Map...</h2>
+              <p>Initializing Google Maps JavaScript API, Places, Routes, and deck.gl layers.</p>
+            } @else {
+              <h2>Google Maps API Key Required</h2>
+              <p>
+                {{ mapsLoader.loadError() || 'Set GOOGLE_MAPS_API_KEY in your .env file to activate the live Miami hazard heatmap, reverse geocoding, weather telemetry, and evacuation router.' }}
+              </p>
+              <ol class="setup-steps">
+                <li>Copy <code>.env.example</code> to <code>.env</code></li>
+                <li>
+                  Paste a free Maps Demo Key from
+                  <code>mapsplatform.google.com/maps-demo-key</code>
+                </li>
+                <li>Restart <code>serve-dist.mjs</code> and reload this page</li>
+              </ol>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Bottom-Left Map Legend & Civic Planning Disclaimer -->
+      <div class="map-legend-overlay">
+        <div class="legend-title">
+          Hazard &amp; Shelter Legend
+          @if (heatmapMode() === 'fallback') {
+            <span class="mode-tag">2D Thermal Fallback</span>
+          } @else {
+            <span class="mode-tag">deck.gl WebGL2</span>
+          }
+        </div>
+        <div class="legend-rows">
+          <div class="legend-item">
+            <span class="swatch swatch-heat"></span>
+            <span>Incident Density Heatmap</span>
+          </div>
+          <div class="legend-item">
+            <span class="swatch swatch-flood"></span>
+            <span>Active Flood-Hazard Zone</span>
+          </div>
+          <div class="legend-item">
+            <span class="swatch swatch-shelter">H</span>
+            <span>Hospital / Safe Shelter</span>
+          </div>
+          <div class="legend-item">
+            <span class="swatch swatch-route"></span>
+            <span>Flood-Bypass Evacuation Route</span>
+          </div>
+        </div>
+        <p class="civic-disclaimer">
+          Civic planning aid only — always follow local Miami-Dade emergency
+          management &amp; 911 directives during active storms.
+        </p>
+      </div>
+    </main>
+  </div>
+</div>

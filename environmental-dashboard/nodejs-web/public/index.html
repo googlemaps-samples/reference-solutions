@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hyperlocal Weather, Air Quality, Pollen &amp; Solar Dashboard</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230f766e'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-size='34' fill='%23ffffff'%3E%E2%98%80%3C/text%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand-group">
+          <div class="brand-mark" aria-hidden="true">☀</div>
+          <div class="brand-text">
+            <h1 class="brand-title">EcoPulse</h1>
+            <p class="brand-subtitle">Hyperlocal Environmental &amp; Solar Intelligence</p>
+          </div>
+        </div>
+
+        <div class="search-group">
+          <div
+            class="autocomplete-slot"
+            data-testid="places-autocomplete-container"
+            aria-label="Search address or city"
+          ></div>
+          <div class="location-pill" data-testid="active-location-badge">
+            Phoenix City Hall · 33.4484, -112.0740
+          </div>
+        </div>
+
+        <div class="controls-group">
+          <button
+            type="button"
+            class="control-btn"
+            data-testid="reset-phoenix-btn"
+            title="Reset to Phoenix City Hall"
+          >
+            Phoenix Seed
+          </button>
+          <button
+            type="button"
+            class="control-btn"
+            data-testid="units-toggle-btn"
+            aria-pressed="false"
+            title="Toggle Imperial / Metric units"
+          >
+            °F · Imperial
+          </button>
+          <button
+            type="button"
+            class="control-btn"
+            data-testid="aqi-layer-toggle"
+            aria-pressed="false"
+            title="Toggle US AQI heatmap tile overlay"
+          >
+            AQI Tiles: Off
+          </button>
+          <button
+            type="button"
+            class="control-btn"
+            data-testid="map-type-toggle"
+            aria-pressed="false"
+            title="Toggle Roadmap / Hybrid Satellite view"
+          >
+            Map: Roadmap
+          </button>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <aside class="sidebar" data-testid="environmental-sidebar">
+          <div id="config-banner" class="notice-banner hidden" role="status"></div>
+
+          <section class="card location-card" data-testid="selected-location-card">
+            <div class="card-header">
+              <span class="card-eyebrow">Inspected Location</span>
+              <span id="location-status-chip" class="status-chip">Ready</span>
+            </div>
+            <h2 id="location-name" class="location-name">Phoenix City Hall</h2>
+            <p id="location-address" class="location-address">
+              200 W Washington St, Phoenix, AZ 85003
+            </p>
+            <p id="location-coords" class="location-coords">33.44840, -112.07400</p>
+            <p class="location-hint">
+              Search any address above or click a building on the map to inspect local conditions and
+              rooftop solar capacity.
+            </p>
+          </section>
+
+          <section class="card" data-testid="weather-card">
+            <div class="card-header">
+              <span class="card-eyebrow">Current Weather</span>
+              <span id="weather-updated" class="card-meta">Weather API</span>
+            </div>
+            <div id="weather-content" class="card-body">
+              <p class="muted-state">Loading current weather conditions…</p>
+            </div>
+            <div class="forecast-section">
+              <h3 class="sub-heading">5-Day Forecast</h3>
+              <div class="forecast-list" data-testid="weather-forecast-list">
+                <p class="muted-state">Loading 5-day forecast…</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="card" data-testid="air-quality-card">
+            <div class="card-header">
+              <span class="card-eyebrow">Air Quality Index</span>
+              <span class="card-meta">Air Quality API</span>
+            </div>
+            <div id="aqi-content" class="card-body">
+              <p class="muted-state">Loading air quality telemetry…</p>
+            </div>
+          </section>
+
+          <section class="card" data-testid="pollen-card">
+            <div class="card-header">
+              <span class="card-eyebrow">Pollen Forecast</span>
+              <span class="card-meta">Pollen API</span>
+            </div>
+            <div id="pollen-content" class="card-body">
+              <p class="muted-state">Loading tree, grass &amp; weed pollen levels…</p>
+            </div>
+          </section>
+
+          <section class="card" data-testid="solar-card">
+            <div class="card-header">
+              <span class="card-eyebrow">Rooftop Solar Insights</span>
+              <span class="card-meta">Solar API</span>
+            </div>
+            <div id="solar-content" class="card-body">
+              <p class="muted-state">Evaluating rooftop solar potential…</p>
+            </div>
+          </section>
+        </aside>
+
+        <section class="map-panel" aria-label="Interactive Google Map">
+          <div id="map-container" class="map-canvas" data-testid="map-container"></div>
+          <div id="map-overlay-legend" class="map-legend hidden" role="status">
+            <span class="legend-title">US AQI Overlay</span>
+            <span class="legend-scale">
+              <span class="swatch swatch-good">Good</span>
+              <span class="swatch swatch-mod">Mod</span>
+              <span class="swatch swatch-usg">USG</span>
+              <span class="swatch swatch-unhealthy">Unhealthy</span>
+            </span>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

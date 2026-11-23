@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lake Tahoe 3D Trail Explorer | Photorealistic 3D Map &amp; Camera Tour</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23ef4444'/%3E%3Ctext x='16' y='21' text-anchor='middle' font-family='sans-serif' font-size='14' font-weight='bold' fill='white'%3E3D%3C/text%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="/env-config.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "@googlemaps/js-api-loader": "/node_modules/@googlemaps/js-api-loader/dist/index.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="app" class="app-shell" data-testid="trail-explorer-app">
+      <header class="top-bar" aria-label="Explorer Controls and Landmark Search">
+        <div class="brand-group">
+          <div class="brand-badge" aria-hidden="true">3D</div>
+          <div>
+            <h1 class="brand-title">Lake Tahoe 3D Trail Explorer</h1>
+            <p class="brand-subtitle">Emerald Bay · Rubicon Trail Storytelling</p>
+          </div>
+        </div>
+
+        <div class="search-group">
+          <div id="autocomplete-mount" class="autocomplete-mount" aria-label="Place Autocomplete Search"></div>
+          <form id="landmark-search-form" class="search-form" role="search">
+            <label class="sr-only" for="landmark-search-input">Search Lake Tahoe landmark</label>
+            <input
+              id="landmark-search-input"
+              data-testid="landmark-search-input"
+              class="search-input"
+              type="search"
+              placeholder="Search landmark (e.g. Vikingsholm, Eagle Rock)..."
+              autocomplete="off"
+            />
+            <button
+              id="landmark-search-submit"
+              data-testid="landmark-search-submit"
+              class="search-submit-btn"
+              type="submit"
+            >
+              Fly
+            </button>
+          </form>
+        </div>
+
+        <div
+          id="camera-telemetry-badge"
+          data-testid="camera-telemetry-badge"
+          class="telemetry-badge"
+          aria-live="polite"
+        >
+          <div class="telemetry-item">
+            <span class="telemetry-label">HDG</span>
+            <span id="telemetry-heading" class="telemetry-value">315°</span>
+          </div>
+          <div class="telemetry-item">
+            <span class="telemetry-label">TILT</span>
+            <span id="telemetry-tilt" class="telemetry-value">64°</span>
+          </div>
+          <div class="telemetry-item">
+            <span class="telemetry-label">RANGE</span>
+            <span id="telemetry-range" class="telemetry-value">3,400 m</span>
+          </div>
+        </div>
+      </header>
+
+      <main class="main-stage">
+        <aside class="sidebar" aria-label="Trail Tour and Elevation Profile">
+          <section class="panel" data-testid="chapter-tour-panel">
+            <div class="panel-header">
+              <div>
+                <h2 class="panel-title">Guided Camera Tour</h2>
+                <p class="panel-caption">Select a viewpoint for smooth 3D fly-to</p>
+              </div>
+              <button
+                id="tour-autoplay-toggle"
+                data-testid="tour-autoplay-toggle"
+                class="autoplay-btn"
+                type="button"
+                aria-pressed="false"
+              >
+                Auto-Play
+              </button>
+            </div>
+            <div id="chapter-list" class="chapter-list" role="list">
+              <button
+                type="button"
+                class="chapter-btn is-active"
+                data-testid="chapter-btn-overview"
+                data-chapter-id="overview"
+              >
+                <span class="chapter-index">1</span>
+                <span class="chapter-meta">
+                  <span class="chapter-name">1. Emerald Bay Overview</span>
+                  <span class="chapter-sub">Panoramic glacial fjord view</span>
+                </span>
+              </button>
+              <button
+                type="button"
+                class="chapter-btn"
+                data-testid="chapter-btn-trailhead"
+                data-chapter-id="trailhead"
+              >
+                <span class="chapter-index">2</span>
+                <span class="chapter-meta">
+                  <span class="chapter-name">2. Eagle Falls Trailhead</span>
+                  <span class="chapter-sub">Cascading granite start</span>
+                </span>
+              </button>
+              <button
+                type="button"
+                class="chapter-btn"
+                data-testid="chapter-btn-ridge"
+                data-chapter-id="ridge"
+              >
+                <span class="chapter-index">3</span>
+                <span class="chapter-meta">
+                  <span class="chapter-name">3. Rubicon Ridge</span>
+                  <span class="chapter-sub">High alpine traverse</span>
+                </span>
+              </button>
+              <button
+                type="button"
+                class="chapter-btn"
+                data-testid="chapter-btn-overlook"
+                data-chapter-id="overlook"
+              >
+                <span class="chapter-index">4</span>
+                <span class="chapter-meta">
+                  <span class="chapter-name">4. Eagle Point Overlook</span>
+                  <span class="chapter-sub">Shoreline cliffs &amp; emerald cove</span>
+                </span>
+              </button>
+              <button
+                type="button"
+                class="chapter-btn"
+                data-testid="chapter-btn-summit"
+                data-chapter-id="summit"
+              >
+                <span class="chapter-index">5</span>
+                <span class="chapter-meta">
+                  <span class="chapter-name">5. Tahoe Summit Panorama</span>
+                  <span class="chapter-sub">Lakewide Sierra crest horizon</span>
+                </span>
+              </button>
+            </div>
+          </section>
+
+          <section
+            id="selected-viewpoint-card"
+            class="panel viewpoint-card"
+            data-testid="selected-viewpoint-card"
+            aria-live="polite"
+          ></section>
+
+          <section class="panel elevation-panel" data-testid="elevation-profile-panel">
+            <div class="panel-header">
+              <div>
+                <h2 class="panel-title">Elevation Profile</h2>
+                <p id="elevation-status" class="panel-caption">Sampling trail terrain...</p>
+              </div>
+              <span id="elevation-hover-readout" class="hover-readout">Hover chart</span>
+            </div>
+            <div id="trail-metrics-summary" data-testid="trail-metrics-summary" class="metrics-grid"></div>
+            <div class="chart-wrapper">
+              <svg
+                id="elevation-profile-chart"
+                data-testid="elevation-profile-chart"
+                class="elevation-svg"
+                viewBox="0 0 320 112"
+                role="img"
+                aria-label="Interactive trail elevation profile chart"
+              ></svg>
+            </div>
+          </section>
+        </aside>
+
+        <section
+          id="map-3d-container"
+          data-testid="map-3d-container"
+          class="map-stage"
+          aria-label="Photorealistic 3D Map of Lake Tahoe"
+        >
+          <gmp-map-3d
+            id="map-3d"
+            data-testid="gmp-map-3d"
+            mode="SATELLITE"
+            center="38.9542,-120.1103,1900"
+            range="3400"
+            tilt="64"
+            heading="315"
+            gesture-handling="GREEDY"
+            internal-usage-attribution-ids="gmp_git_agentsamples_v1.0.0"
+          ></gmp-map-3d>
+
+          <div id="map-status-banner" class="map-status-banner is-hidden" role="status"></div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

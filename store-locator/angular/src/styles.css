@@ -1,0 +1,201 @@
+:root {
+  --bg-page: #f4f6f9;
+  --bg-surface: #ffffff;
+  --bg-subtle: #f8fafc;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --border-subtle: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --brand-primary: #1d4ed8;
+  --brand-primary-hover: #1e40af;
+  --brand-accent: #0f766e;
+  --color-flagship: #1d4ed8;
+  --color-kiosk: #d97706;
+  --color-atm: #059669;
+  --color-fastest: #0f766e;
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 12px 28px rgba(15, 23, 42, 0.14);
+  --radius-md: 10px;
+  --radius-lg: 14px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color: var(--text-primary);
+  background: var(--bg-page);
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select {
+  font-family: inherit;
+}
+
+/* Custom AdvancedMarkerElement DOM styles */
+.branch-pin {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffffff;
+  border: 2px solid #ffffff;
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.28);
+  cursor: pointer;
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.branch-pin:hover {
+  transform: translateY(-2px) scale(1.06);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.35);
+}
+
+.branch-pin--flagship {
+  background: #1d4ed8;
+}
+
+.branch-pin--kiosk {
+  background: #d97706;
+}
+
+.branch-pin--atm {
+  background: #059669;
+}
+
+.branch-pin--selected {
+  transform: scale(1.16);
+  outline: 3px solid #facc15;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.42);
+}
+
+.branch-pin--fastest {
+  outline: 2.5px solid #14b8a6;
+}
+
+.branch-pin__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.cluster-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #1e3a8a, #2563eb);
+  color: #ffffff;
+  border: 3px solid #ffffff;
+  box-shadow: 0 4px 14px rgba(30, 58, 138, 0.4);
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.16s ease;
+  user-select: none;
+}
+
+.cluster-badge:hover {
+  transform: scale(1.08);
+}
+
+.cluster-badge__count {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.cluster-badge__sub {
+  font-size: 9px;
+  font-weight: 600;
+  opacity: 0.9;
+  letter-spacing: 0.03em;
+}
+
+.origin-pin {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: #0f172a;
+  color: #ffffff;
+  border: 2.5px solid #38bdf8;
+  font-size: 11px;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.45);
+  white-space: nowrap;
+}
+
+.origin-pin__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #38bdf8;
+}
+
+.gmp-info-card {
+  max-width: 270px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #0f172a;
+  line-height: 1.4;
+}
+
+.gmp-info-card__type {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 6px;
+}
+
+.gmp-info-card__title {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.gmp-info-card__address {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: #475569;
+}
+
+.gmp-info-card__metrics {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #0f766e;
+}
+
+.gmp-info-card__hours {
+  margin: 0;
+  font-size: 11px;
+  color: #64748b;
+}

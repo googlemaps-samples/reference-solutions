@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VoyagePulse — Multi-Day Trip Itinerary Planner, Hotels &amp; Time Zone Hub</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230F766E'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-family='sans-serif' font-size='14' font-weight='700'%3EVP%3C/text%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="top-header">
+      <div class="brand-block">
+        <div class="brand-badge" aria-hidden="true">VP</div>
+        <div class="brand-text">
+          <h1 class="brand-title">VoyagePulse</h1>
+          <p class="brand-subtitle">Multi-Day Trip Itinerary Planner, Hotels &amp; Time Zone Hub</p>
+        </div>
+      </div>
+
+      <div class="header-controls">
+        <div id="destination-search-host" class="search-host">
+          <input
+            id="destination-fallback-input"
+            type="text"
+            class="fallback-search-input"
+            data-testid="destination-search-input"
+            placeholder="Search destination city or landmark..."
+            aria-label="Search destination city or landmark"
+          />
+        </div>
+
+        <label class="sr-only" for="destination-quick-select">Quick Destination</label>
+        <select
+          id="destination-quick-select"
+          class="quick-select"
+          data-testid="destination-quick-select"
+          aria-label="Quick destination selector"
+        >
+          <option value="tokyo" selected>Tokyo, Japan</option>
+          <option value="kyoto">Kyoto, Japan</option>
+          <option value="paris">Paris, France</option>
+          <option value="new_york">New York, USA</option>
+          <option value="london">London, UK</option>
+          <option value="sydney">Sydney, Australia</option>
+        </select>
+
+        <div class="timezone-hub" data-testid="timezone-hub" aria-live="polite">
+          <div class="tz-top">
+            <span class="tz-city" id="tz-city-label">Tokyo</span>
+            <span class="tz-offset-badge" id="tz-offset-badge">UTC+09:00</span>
+          </div>
+          <div class="tz-bottom">
+            <span class="tz-clock" id="tz-clock-value">--:--:--</span>
+            <span class="tz-name" id="tz-name-label">Resolving time zone...</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div id="status-banner" class="status-banner hidden" role="status"></div>
+
+    <main class="workspace">
+      <aside class="sidebar" aria-label="Itinerary and Place Discovery">
+        <section class="panel itinerary-panel">
+          <div class="panel-header">
+            <h2 class="panel-title">Trip Itinerary</h2>
+            <span class="destination-pill" id="active-destination-pill">Tokyo</span>
+          </div>
+
+          <div class="day-tabs" data-testid="itinerary-day-tabs" role="tablist" aria-label="Itinerary Days">
+            <button
+              type="button"
+              class="day-tab day-tab-1 active"
+              data-day="1"
+              role="tab"
+              aria-selected="true"
+            >
+              <span class="day-dot day-dot-1"></span>
+              <span>Day 1</span>
+              <span class="day-count" id="day-1-count">0</span>
+            </button>
+            <button
+              type="button"
+              class="day-tab day-tab-2"
+              data-day="2"
+              role="tab"
+              aria-selected="false"
+            >
+              <span class="day-dot day-dot-2"></span>
+              <span>Day 2</span>
+              <span class="day-count" id="day-2-count">0</span>
+            </button>
+          </div>
+
+          <div class="route-toolbar">
+            <div class="travel-mode-group">
+              <label class="field-label" for="travel-mode-select">Mode</label>
+              <select
+                id="travel-mode-select"
+                class="travel-mode-select"
+                data-testid="travel-mode-select"
+              >
+                <option value="DRIVE" selected>Drive</option>
+                <option value="WALK">Walk</option>
+                <option value="TRANSIT">Transit</option>
+              </select>
+            </div>
+            <button
+              type="button"
+              id="optimize-route-btn"
+              class="btn-optimize"
+              data-testid="optimize-route-btn"
+            >
+              Optimize Order
+            </button>
+          </div>
+
+          <div class="route-summary-bar" data-testid="route-summary-bar" id="route-summary-bar">
+            <span class="summary-metric" id="route-summary-text">Add 2+ stops to compute route</span>
+            <span class="summary-badge" id="route-mode-badge">DRIVE</span>
+          </div>
+
+          <div
+            class="stops-list"
+            id="itinerary-stops-list"
+            data-testid="itinerary-stops-list"
+          ></div>
+        </section>
+
+        <section class="panel discovery-panel">
+          <div class="panel-header">
+            <h2 class="panel-title">Discover Places</h2>
+            <span class="results-count" id="discovery-count">0 places</span>
+          </div>
+
+          <form id="discovery-search-form" class="discovery-search-form">
+            <input
+              id="discovery-query-input"
+              type="text"
+              class="discovery-query-input"
+              placeholder="Filter places (e.g., sushi, boutique hotel, museum)..."
+              aria-label="Filter places"
+            />
+            <button type="submit" class="btn-search-places">Search</button>
+          </form>
+
+          <div
+            class="category-tabs"
+            data-testid="discovery-category-tabs"
+            role="tablist"
+            aria-label="Place categories"
+          >
+            <button
+              type="button"
+              class="category-tab active"
+              data-category="attractions"
+              role="tab"
+              aria-selected="true"
+            >
+              Attractions
+            </button>
+            <button
+              type="button"
+              class="category-tab"
+              data-category="restaurants"
+              role="tab"
+              aria-selected="false"
+            >
+              Restaurants
+            </button>
+            <button
+              type="button"
+              class="category-tab"
+              data-category="hotels"
+              role="tab"
+              aria-selected="false"
+            >
+              Hotels
+            </button>
+          </div>
+
+          <div
+            class="discovery-results-list"
+            id="discovery-results-list"
+            data-testid="discovery-results-list"
+          ></div>
+        </section>
+      </aside>
+
+      <section class="map-workspace" aria-label="Interactive Map and Street View">
+        <div class="map-stage">
+          <div id="map-container" class="map-container" data-testid="map-container"></div>
+          <div class="map-overlay-legend" id="map-overlay-legend">
+            <span class="legend-chip legend-day-1"><i class="legend-swatch"></i>Day 1 Route</span>
+            <span class="legend-chip legend-day-2"><i class="legend-swatch"></i>Day 2 Route</span>
+            <span class="legend-chip legend-discovery"><i class="legend-swatch"></i>Discovery</span>
+          </div>
+        </div>
+
+        <section class="street-view-panel" data-testid="street-view-panel" aria-label="Street View Preview">
+          <div class="street-view-header">
+            <div class="sv-title-group">
+              <span class="sv-badge">Street View</span>
+              <h3 class="sv-place-title" id="street-view-title">Select a landmark or hotel</h3>
+            </div>
+            <span class="sv-status" id="street-view-status">Ready</span>
+          </div>
+          <div class="street-view-body">
+            <div id="street-view-canvas" class="street-view-canvas"></div>
+            <div id="street-view-empty" class="street-view-empty">
+              Inspect any attraction, restaurant, or hotel to preview 360° street-level imagery.
+            </div>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script type="module" src="/static/app.js"></script>
+  </body>
+</html>

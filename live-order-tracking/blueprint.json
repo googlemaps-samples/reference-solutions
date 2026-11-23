@@ -1,0 +1,76 @@
+{
+  "solution_id": "live-order-tracking",
+  "solution_title": "On-Demand Delivery Checkout, Zone Validation & Live Tracker",
+  "summary": "Shared Phase 2 architecture for an end-to-end Chicago restaurant and grocery delivery checkout and live order-tracking web app across all 8 stacks. Anchored at a Fulton Market kitchen hub (41.8868, -87.6486) and seeded with a live Chicago customer address (401 N Michigan Ave, Chicago, IL 60611), the app combines Places API (New) PlaceAutocompleteElement (gmp-select + event.placePrediction.toPlace().fetchFields) with Address Validation API deliverability/granularity checks (weekly-safe verdict fields: validationGranularity, geocodeGranularity, addressComplete, hasUnconfirmedComponents, hasInferredComponents, hasReplacedComponents, metadata, and USPS data). It verifies eligibility against both a Chicago delivery zone Polygon (google.maps.geometry.poly.containsLocation) and an 8 km road-distance cap computed via Routes API (Route.computeRoutes on pure-client stacks; /api/routes/compute BFF on Next.js, FastAPI, and Node.js Express), calculates tiered delivery fees ($2.99 <= 3 km, $4.99 <= 5.5 km, $6.99 <= 8 km) and traffic-aware ETA, renders custom AdvancedMarkerElement pins (Kitchen, Customer, and smoothly animated Courier interpolated along the decoded route polyline via requestAnimationFrame), and generates an Order Receipt Card embedding a live Maps Static API route summary image. Zero legacy/deprecated APIs are used, mapId=\"DEMO_MAP_ID\" and internalUsageAttributionIds=[\"gmp_git_agentsamples_v1.0.0\"] are enforced everywhere, and all servers bind strictly to 127.0.0.1 with security headers.",
+  "gmp_products_used": [
+    "Maps JavaScript API",
+    "Places API (New)",
+    "Address Validation API",
+    "Routes API",
+    "Maps Static API"
+  ],
+  "js_libraries_to_import": [
+    "maps",
+    "marker",
+    "places",
+    "addressValidation",
+    "routes",
+    "geometry",
+    "core"
+  ],
+  "matched_sub_skills": [
+    "google-maps-platform",
+    "compliance-review",
+    "gmp-common-api-keys",
+    "maps-javascript-api-javascript",
+    "gmp-framework-react",
+    "places-api-web-api",
+    "routes-api-web-api",
+    "address-validation-api-web-api",
+    "maps-static-api-web-api"
+  ],
+  "uses_3d_map": false,
+  "initial_center_lat": 41.8868,
+  "initial_center_lng": -87.6486,
+  "initial_zoom": 13,
+  "seed_search_query": "401 N Michigan Ave, Chicago, IL 60611",
+  "ui_layout_summary": "Responsive split-screen layout with a 64px top bar (brand title, Fulton Market Kitchen Hub badge, and live zone/tracking status pill), a 440px scrollable left sidebar containing three stacked cards (1. Checkout Address Autocomplete & Address Validation Verdict + Polygon/8km Eligibility; 2. Tiered Delivery Fee, Traffic-Aware ETA & Live Courier Dispatch Controls; 3. Itemized Order Receipt Card with Maps Static API route preview image), and a full-height right interactive map panel (min-height: 560px / calc(100vh - 64px)) showing the Chicago delivery zone Polygon, Routes API Polyline, custom Kitchen/Customer/Courier AdvancedMarkerElement pins, and a floating map legend + live ETA badge.",
+  "interactive_controls": [
+    "checkout-address-autocomplete",
+    "validate-address-btn",
+    "preset-address-in-zone-btn",
+    "preset-address-out-of-zone-btn",
+    "validation-status-panel",
+    "zone-eligibility-badge",
+    "delivery-fee-eta-summary",
+    "place-order-btn",
+    "courier-simulation-toggle-btn",
+    "courier-progress-panel",
+    "order-receipt-card",
+    "static-receipt-map-img",
+    "live-tracking-map"
+  ],
+  "backend_proxy_endpoints": [
+    {
+      "method": "POST",
+      "path": "/api/address/validate",
+      "upstream_gmp_service": "addressvalidation.googleapis.com/v1:validateAddress",
+      "field_mask": "result.verdict,result.address,result.geocode,result.metadata,result.uspsData",
+      "purpose": "Server-side BFF proxy for Address Validation API (v1:validateAddress) returning validationGranularity, geocodeGranularity, addressComplete, standardized address lines, coordinates, Place ID, property metadata, and USPS CASS/DPV deliverability signals with X-Goog-Api-Key kept on the server."
+    },
+    {
+      "method": "POST",
+      "path": "/api/routes/compute",
+      "upstream_gmp_service": "routes.googleapis.com/directions/v2:computeRoutes",
+      "field_mask": "routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline,routes.legs.steps.navigationInstruction,routes.legs.steps.distanceMeters,routes.legs.steps.staticDuration",
+      "purpose": "Server-side BFF proxy for Routes API v2 (computeRoutes) calculating traffic-aware driving distanceMeters, duration, encodedPolyline, and turn-by-turn steps between the Chicago kitchen hub and validated drop-off location."
+    },
+    {
+      "method": "GET",
+      "path": "/api/maps/static-receipt",
+      "upstream_gmp_service": "maps.googleapis.com/maps/api/staticmap",
+      "field_mask": "N/A (Maps Static API uses URL query parameters: size, scale, maptype, markers, path, key)",
+      "purpose": "Server-side BFF proxy for Maps Static API returning PNG route summary map bytes for the order receipt card (kitchen marker, drop-off marker, and encoded route polyline) without exposing the server API key in client HTML image URLs."
+    }
+  ]
+}

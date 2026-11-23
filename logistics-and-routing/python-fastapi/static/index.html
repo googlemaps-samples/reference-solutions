@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dallas Fleet Telematics, Road-Snapped GPS &amp; Dispatch Dashboard</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%234f46e5'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-family='sans-serif' font-size='12' font-weight='bold'%3EDFW%3C/text%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="top-bar">
+        <div class="brand-group">
+          <div class="brand-mark" aria-hidden="true">DFW</div>
+          <div class="brand-copy">
+            <h1 class="brand-title">Dallas Fleet Telematics &amp; Dispatch</h1>
+            <p class="brand-subtitle">Roads API Snap-to-Road &bull; Routes API Multi-Stop Matrix</p>
+          </div>
+        </div>
+
+        <div class="status-filter-group" role="group" aria-label="Filter fleet by status">
+          <button
+            type="button"
+            class="filter-pill is-active"
+            data-testid="status-filter-all"
+            data-status="ALL"
+            aria-pressed="true"
+          >
+            <span>All</span>
+            <span class="pill-count" id="count-all">5</span>
+          </button>
+          <button
+            type="button"
+            class="filter-pill"
+            data-testid="status-filter-en-route"
+            data-status="En Route"
+            aria-pressed="false"
+          >
+            <span class="status-dot dot-en-route"></span>
+            <span>En Route</span>
+            <span class="pill-count" id="count-en-route">2</span>
+          </button>
+          <button
+            type="button"
+            class="filter-pill"
+            data-testid="status-filter-delayed"
+            data-status="Delayed"
+            aria-pressed="false"
+          >
+            <span class="status-dot dot-delayed"></span>
+            <span>Delayed</span>
+            <span class="pill-count" id="count-delayed">2</span>
+          </button>
+          <button
+            type="button"
+            class="filter-pill"
+            data-testid="status-filter-idle"
+            data-status="Idle"
+            aria-pressed="false"
+          >
+            <span class="status-dot dot-idle"></span>
+            <span>Idle</span>
+            <span class="pill-count" id="count-idle">1</span>
+          </button>
+        </div>
+
+        <div class="top-actions">
+          <div
+            class="autocomplete-wrap"
+            data-testid="place-autocomplete-container"
+            id="place-autocomplete-container"
+          ></div>
+          <button
+            type="button"
+            class="toggle-btn"
+            data-testid="traffic-layer-toggle"
+            id="traffic-layer-toggle"
+            aria-pressed="false"
+          >
+            <span class="toggle-indicator"></span>
+            <span>Live Traffic</span>
+          </button>
+        </div>
+      </header>
+
+      <div id="api-key-banner" class="api-banner hidden" role="status">
+        <span id="api-key-banner-text"></span>
+      </div>
+
+      <main class="workspace">
+        <aside class="sidebar" aria-label="Telemetry and Dispatch Console">
+          <!-- Section 1: Active Fleet Telemetry -->
+          <section class="panel-section">
+            <div class="panel-header">
+              <h2 class="panel-title">Active Fleet Telemetry</h2>
+              <span class="panel-badge" id="fleet-visible-badge">5 units</span>
+            </div>
+            <div
+              class="vehicle-list"
+              data-testid="fleet-vehicle-list"
+              id="fleet-vehicle-list"
+            ></div>
+          </section>
+
+          <!-- Section 2: GPS Trace & Roads API Inspector -->
+          <section class="panel-section" data-testid="raw-vs-snapped-panel" id="raw-vs-snapped-panel">
+            <div class="panel-header">
+              <div>
+                <h2 class="panel-title">GPS Trace &amp; Roads API</h2>
+                <p class="panel-caption" id="roads-active-vehicle-label">
+                  Unit DFW-104 &bull; I-35E Stemmons Corridor
+                </p>
+              </div>
+              <button
+                type="button"
+                class="snap-toggle-btn is-on"
+                data-testid="snap-to-roads-toggle"
+                id="snap-to-roads-toggle"
+                aria-pressed="true"
+              >
+                Road Snap: ON
+              </button>
+            </div>
+
+            <div class="metrics-grid">
+              <div class="metric-card">
+                <span class="metric-label">Raw GPS Pts</span>
+                <span class="metric-value" id="metric-raw-points">0</span>
+              </div>
+              <div class="metric-card">
+                <span class="metric-label">Snapped Pts</span>
+                <span class="metric-value" id="metric-snapped-points">0</span>
+              </div>
+              <div class="metric-card">
+                <span class="metric-label">Road Segments</span>
+                <span class="metric-value" id="metric-road-segments">0</span>
+              </div>
+              <div class="metric-card">
+                <span class="metric-label">Mean Offset</span>
+                <span class="metric-value" id="metric-snap-offset">--</span>
+              </div>
+            </div>
+
+            <div class="trace-legend-row">
+              <span class="trace-chip">
+                <span class="line-sample dashed-orange"></span>
+                Raw Noisy GPS
+              </span>
+              <span class="trace-chip">
+                <span class="line-sample solid-cyan"></span>
+                Roads API Snapped
+              </span>
+              <span class="api-status-text" id="roads-status-text">Ready</span>
+            </div>
+          </section>
+
+          <!-- Section 3: Multi-Stop Dispatch & Route Matrix -->
+          <section class="panel-section" data-testid="dispatch-matrix-panel" id="dispatch-matrix-panel">
+            <div class="panel-header">
+              <div>
+                <h2 class="panel-title">Multi-Stop Dispatch &amp; Matrix</h2>
+                <p class="panel-caption" id="dispatch-hubs-caption">
+                  Dallas Depot &amp; Live Places Hubs
+                </p>
+              </div>
+              <span class="api-status-text" id="dispatch-status-text">Initializing</span>
+            </div>
+
+            <div class="dispatch-controls">
+              <label class="checkbox-label">
+                <input
+                  type="checkbox"
+                  data-testid="optimize-waypoints-toggle"
+                  id="optimize-waypoints-toggle"
+                  checked
+                />
+                <span>Optimize stop order</span>
+              </label>
+              <button
+                type="button"
+                class="primary-btn"
+                data-testid="calculate-dispatch-route-btn"
+                id="calculate-dispatch-route-btn"
+              >
+                Compute Dispatch
+              </button>
+            </div>
+
+            <div class="dispatch-summary" id="dispatch-summary">
+              <div class="summary-stat">
+                <span class="metric-label">Total Corridor</span>
+                <span class="metric-value" id="dispatch-total-distance">--</span>
+              </div>
+              <div class="summary-stat">
+                <span class="metric-label">Total ETA</span>
+                <span class="metric-value" id="dispatch-total-duration">--</span>
+              </div>
+              <div class="summary-stat">
+                <span class="metric-label">Active Stops</span>
+                <span class="metric-value" id="dispatch-stop-count">0</span>
+              </div>
+            </div>
+
+            <div class="hub-sequence" id="hub-sequence-list"></div>
+
+            <div class="matrix-table-wrap">
+              <h3 class="sub-heading">Depot-to-Hub Travel-Time Matrix</h3>
+              <div id="route-matrix-table-container"></div>
+            </div>
+          </section>
+        </aside>
+
+        <section class="map-stage" aria-label="Dallas Logistics Corridor Map">
+          <div class="map-canvas" data-testid="map-container" id="map-container"></div>
+
+          <div class="map-legend" aria-label="Map Legend">
+            <div class="legend-title">Corridor Legend</div>
+            <div class="legend-item">
+              <span class="status-dot dot-en-route"></span>
+              <span>En Route Unit</span>
+            </div>
+            <div class="legend-item">
+              <span class="status-dot dot-delayed"></span>
+              <span>Delayed Unit</span>
+            </div>
+            <div class="legend-item">
+              <span class="status-dot dot-idle"></span>
+              <span>Idle Unit</span>
+            </div>
+            <div class="legend-item">
+              <span class="hub-dot">D</span>
+              <span>Depot / Drop-off Hub</span>
+            </div>
+            <div class="legend-item">
+              <span class="line-sample dashed-orange"></span>
+              <span>Raw GPS Breadcrumbs</span>
+            </div>
+            <div class="legend-item">
+              <span class="line-sample solid-cyan"></span>
+              <span>Road-Snapped Trace</span>
+            </div>
+            <div class="legend-item">
+              <span class="line-sample solid-indigo"></span>
+              <span>Multi-Stop Dispatch Route</span>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="/static/app.js"></script>
+  </body>
+</html>

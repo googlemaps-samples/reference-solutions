@@ -1,0 +1,32 @@
+{
+  "name": "live-order-tracking-nodejs-web",
+  "version": "1.0.0",
+  "description": "On-Demand Delivery Checkout, Zone Validation & Live Tracker in Chicago built with Node.js, Express, TypeScript, and modern Google Maps Platform APIs.",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js --host 127.0.0.1 --port 3000",
+    "dev": "tsc && node dist/server.js --host 127.0.0.1 --port 3000",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "google-maps-platform",
+    "live-order-tracking",
+    "address-validation-api",
+    "routes-api",
+    "places-api-new",
+    "maps-static-api",
+    "express",
+    "typescript"
+  ],
+  "license": "Apache-2.0",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2"
+  }
+}

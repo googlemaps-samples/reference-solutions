@@ -1,0 +1,95 @@
+{
+  "solution_id": "store-locator",
+  "solution_title": "Multi-Branch Store, ATM & Inventory Locator",
+  "summary": "Split-screen New York City multi-branch store, express kiosk, and 24/7 ATM locator built strictly with modern, zero-deprecation Google Maps Platform APIs. On initial load, the app executes live Places API (New) Text Searches across NYC (Manhattan/Midtown center 40.7549, -73.9840, zoom 12) for real retail storefronts, coffee/food kiosks, and 24/7 ATMs, deterministically classifying each live Place into Flagship Store, Express Kiosk, or 24/7 ATM with inventory/service availability tags (Click & Collect, Express Espresso, Cash Deposit, Open 24h) while preserving live Google Place names, addresses, coordinates, ratings, and regularOpeningHours.weekdayDescriptions (never calling beta-only place.isOpen() on the weekly channel, and never hardcoding fake place data). A default NYC starting origin (e.g., Midtown / Penn Station 40.7506, -73.9935) is initialized immediately so the Routes API Route Matrix (RouteMatrix.computeRouteMatrix via importLibrary('routes') on client-only stacks; /api/routes/matrix on full-stack BFF stacks) computes live road ETAs and distances for all candidate branches on load and ranks the Fastest Nearby branch. Users can search a new starting origin using Places API (New) Autocomplete (AutocompleteSuggestion.fetchAutocompleteSuggestions + AutocompleteSessionToken + Place.fetchFields, with Geocoder fallback), switch travel modes (DRIVE, WALK, TRANSIT), and filter by branch type and service availability. Nearby markers are grouped cleanly at zoom 12 via @googlemaps/markerclusterer (MarkerClusterer + SuperClusterAlgorithm + custom AdvancedMarkerElement cluster renderer) and expand into distinct, custom-styled AdvancedMarkerElements (required mapId: 'DEMO_MAP_ID' and internalUsageAttributionIds: ['gmp_git_agentsamples_v1.0.0']) when zoomed in or when a cluster is clicked. Selecting any branch card, marker, or the 'Route to Fastest' CTA highlights the branch and renders the live route polyline via Route.computeRoutes (createPolylines()) or /api/routes/compute.",
+  "gmp_products_used": [
+    "Maps JavaScript API",
+    "Places API (New)",
+    "Routes API",
+    "Geocoding API"
+  ],
+  "js_libraries_to_import": [
+    "core",
+    "maps",
+    "marker",
+    "places",
+    "routes",
+    "geocoding",
+    "geometry"
+  ],
+  "matched_sub_skills": [
+    "google-maps-platform",
+    "compliance-review",
+    "gmp-common-api-keys",
+    "maps-javascript-api-javascript",
+    "gmp-framework-react",
+    "places-api-web-api",
+    "routes-api-web-api"
+  ],
+  "uses_3d_map": false,
+  "initial_center_lat": 40.7549,
+  "initial_center_lng": -73.984,
+  "initial_zoom": 12,
+  "seed_search_query": "flagship retail store, espresso kiosk, and 24/7 ATM in Manhattan, New York",
+  "ui_layout_summary": "Responsive split-screen layout: (1) Top header bar (64px) featuring app branding, NYC starting-location Places Autocomplete search box (data-testid='origin-search-input') with prediction dropdown (data-testid='autocomplete-dropdown') and quick NYC origin preset, travel mode selector (DRIVE / WALK / TRANSIT), and 'Route to Fastest' CTA button; (2) Left scrollable sidebar (420px width on desktop, full-width drawer/panel on mobile) with branch-type filter chips (All, Flagship Store, Express Kiosk, 24/7 ATM), product/service availability toggles (Click & Collect, Express Espresso, Cash Deposit, Open 24h), active route summary banner showing selected/fastest branch ETA and distance, and interactive branch cards showing live Place name, address, type badge, inventory availability tags, live opening hours/rating, and live road ETA + distance; (3) Right full-height interactive Google Map container (flex-1, min-height: 560px, height: calc(100vh - 64px)) displaying MarkerClusterer clusters at city zoom, distinct custom AdvancedMarkerElement pins per branch type when zoomed in, origin pin, active route polyline, InfoWindow summary on selection, and a floating bottom-right legend + zoom hint.",
+  "interactive_controls": [
+    "app-header",
+    "origin-search-input",
+    "autocomplete-dropdown",
+    "travel-mode-select",
+    "route-fastest-button",
+    "filter-type-all",
+    "filter-type-flagship",
+    "filter-type-kiosk",
+    "filter-type-atm",
+    "filter-service-pickup",
+    "filter-service-coffee",
+    "filter-service-cash",
+    "filter-service-open24",
+    "branch-list",
+    "branch-card",
+    "fastest-branch-badge",
+    "branch-eta",
+    "branch-distance",
+    "route-summary-banner",
+    "map-container",
+    "map-legend"
+  ],
+  "backend_proxy_endpoints": [
+    {
+      "method": "POST",
+      "path": "/api/places/search",
+      "upstream_gmp_service": "places.googleapis.com/v1/places:searchText",
+      "field_mask": "places.id,places.displayName,places.formattedAddress,places.location,places.types,places.primaryType,places.rating,places.userRatingCount,places.regularOpeningHours.weekdayDescriptions,places.businessStatus",
+      "purpose": "Fetch live NYC candidate flagship stores, express kiosks, and 24/7 ATMs via Places API (New) Text Search on initial load and search refresh."
+    },
+    {
+      "method": "POST",
+      "path": "/api/places/autocomplete",
+      "upstream_gmp_service": "places.googleapis.com/v1/places:autocomplete",
+      "field_mask": "suggestions.placePrediction.placeId,suggestions.placePrediction.text,suggestions.placePrediction.structuredFormat",
+      "purpose": "Provide NYC-biased starting location autocomplete predictions via Places API (New) with sessionToken pass-through."
+    },
+    {
+      "method": "GET",
+      "path": "/api/places/details",
+      "upstream_gmp_service": "places.googleapis.com/v1/places/{placeId}",
+      "field_mask": "id,displayName,formattedAddress,location,regularOpeningHours.weekdayDescriptions,rating,userRatingCount,nationalPhoneNumber",
+      "purpose": "Resolve selected Place ID coordinates/address for the origin or fetch live branch opening hours and details."
+    },
+    {
+      "method": "POST",
+      "path": "/api/routes/matrix",
+      "upstream_gmp_service": "routes.googleapis.com/distanceMatrix/v2:computeRouteMatrix",
+      "field_mask": "originIndex,destinationIndex,status,condition,distanceMeters,duration,localizedValues",
+      "purpose": "Compute live road travel times and distances from the customer origin to all candidate branches to rank and badge the fastest nearby branch."
+    },
+    {
+      "method": "POST",
+      "path": "/api/routes/compute",
+      "upstream_gmp_service": "routes.googleapis.com/directions/v2:computeRoutes",
+      "field_mask": "routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline,routes.legs.duration,routes.legs.distanceMeters,routes.localizedValues",
+      "purpose": "Compute the optimal route geometry (encodedPolyline), travel duration, and distance from the customer origin to the selected branch."
+    }
+  ]
+}

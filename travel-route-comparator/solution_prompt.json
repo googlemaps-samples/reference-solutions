@@ -1,0 +1,35 @@
+{
+  "solution_id": "travel-route-comparator",
+  "id": "travel-route-comparator",
+  "title": "Multi-Modal Commute Comparator & Trail Elevation Tracker",
+  "name": "Multi-Modal Commute Comparator & Trail Elevation Tracker",
+  "category": "Travel, Navigation & Itineraries",
+  "user_prompt": "Create a smart multi-modal route comparator and outdoor cycling/running elevation tracker centered in Denver and Boulder. Let users enter origin and destination points via Places Autocomplete (pre-seeded on load), choose travel modes (Driving, Cycling, Walking, Transit), and toggle route preferences such as Avoid Tolls, Avoid Highways, and Eco-Friendly routing via the Routes API. Render alternative route polylines on the map with comparative travel time and distance cards. Along the active cycling or walking route, query the Elevation API for path samples and plot an interactive elevation-gain and slope profile chart synchronized with a hover marker on the map.",
+  "prompt": "Create a smart multi-modal route comparator and outdoor cycling/running elevation tracker centered in Denver and Boulder. Let users enter origin and destination points via Places Autocomplete (pre-seeded on load), choose travel modes (Driving, Cycling, Walking, Transit), and toggle route preferences such as Avoid Tolls, Avoid Highways, and Eco-Friendly routing via the Routes API. Render alternative route polylines on the map with comparative travel time and distance cards. Along the active cycling or walking route, query the Elevation API for path samples and plot an interactive elevation-gain and slope profile chart synchronized with a hover marker on the map.",
+  "expectations": [
+    "Origin/destination inputs, travel mode selector, and route modifier toggles (tolls/highways/eco) are functional",
+    "Route polylines, travel times, and distances render on load via Routes API",
+    "Elevation API profile chart displays elevation gain and syncs with the map",
+    "No console errors"
+  ],
+  "test_interactions": [
+    {
+      "description": "Origin/destination inputs, travel mode selector, and route modifier toggles (tolls/highways/eco) are functional",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Route polylines, travel times, and distances render on load via Routes API",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Elevation API profile chart displays elevation gain and syncs with the map",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    }
+  ]
+}

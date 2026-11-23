@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Multi-Day Trip Itinerary Planner, Hotels &amp; Time Zone Hub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="brand-group">
+        <div class="brand-mark" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 21s-7-5.6-7-11a7 7 0 1 1 14 0c0 5.4-7 11-7 11z" />
+            <circle cx="12" cy="10" r="2.5" />
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1 class="app-title">Itinerary Hub</h1>
+          <span class="app-subtitle">Multi-Day Trip Planner</span>
+        </div>
+      </div>
+
+      <div class="header-search-group">
+        <div id="destination-search-mount" class="destination-search-mount"></div>
+        <select
+          id="destination-quick-select"
+          class="quick-select"
+          data-testid="destination-quick-select"
+          aria-label="Quick destination selector"
+        >
+          <option value="tokyo">Tokyo, Japan</option>
+          <option value="kyoto">Kyoto, Japan</option>
+          <option value="paris">Paris, France</option>
+          <option value="london">London, UK</option>
+          <option value="new_york">New York, USA</option>
+          <option value="sydney">Sydney, Australia</option>
+        </select>
+      </div>
+
+      <div class="timezone-hub" id="timezone-hub" data-testid="timezone-hub" aria-live="polite">
+        <div class="tz-clock-row">
+          <span class="tz-dot" aria-hidden="true"></span>
+          <span class="tz-city" id="tz-city">Tokyo</span>
+          <span class="tz-time" id="tz-time">--:--:--</span>
+          <span class="tz-offset-badge" id="tz-offset">UTC+09:00</span>
+        </div>
+        <div class="tz-meta-row" id="tz-name">Loading destination time zone...</div>
+      </div>
+    </header>
+
+    <div id="status-banner" class="status-banner hidden" role="status"></div>
+
+    <main class="workspace">
+      <aside class="sidebar" aria-label="Itinerary and place discovery">
+        <section class="panel-section itinerary-section">
+          <div class="section-header">
+            <h2 class="section-title">Trip Itinerary</h2>
+            <span class="destination-pill" id="active-destination-pill">Tokyo</span>
+          </div>
+
+          <div class="day-tabs" id="itinerary-day-tabs" data-testid="itinerary-day-tabs" role="tablist">
+            <button
+              type="button"
+              class="day-tab active"
+              data-day="1"
+              role="tab"
+              aria-selected="true"
+            >
+              <span class="day-swatch day-1-swatch"></span>
+              <span>Day 1</span>
+              <span class="day-count" id="day-1-count">0</span>
+            </button>
+            <button
+              type="button"
+              class="day-tab"
+              data-day="2"
+              role="tab"
+              aria-selected="false"
+            >
+              <span class="day-swatch day-2-swatch"></span>
+              <span>Day 2</span>
+              <span class="day-count" id="day-2-count">0</span>
+            </button>
+          </div>
+
+          <div class="route-controls">
+            <label class="control-label" for="travel-mode-select">Mode</label>
+            <select
+              id="travel-mode-select"
+              class="mode-select"
+              data-testid="travel-mode-select"
+              aria-label="Travel mode"
+            >
+              <option value="DRIVE">Drive</option>
+              <option value="WALK">Walk</option>
+              <option value="TRANSIT">Transit</option>
+            </select>
+            <button
+              type="button"
+              id="optimize-route-btn"
+              class="btn-optimize"
+              data-testid="optimize-route-btn"
+            >
+              Optimize Order
+            </button>
+          </div>
+
+          <div class="route-summary-bar" id="route-summary-bar" data-testid="route-summary-bar">
+            Add at least 2 stops to compute a multi-stop route.
+          </div>
+
+          <ol
+            class="stops-list"
+            id="itinerary-stops-list"
+            data-testid="itinerary-stops-list"
+          ></ol>
+        </section>
+
+        <section class="panel-section discovery-section">
+          <div class="section-header">
+            <h2 class="section-title">Place Discovery</h2>
+            <span class="section-hint">Places API (New)</span>
+          </div>
+
+          <div
+            class="category-tabs"
+            id="discovery-category-tabs"
+            data-testid="discovery-category-tabs"
+            role="tablist"
+          >
+            <button
+              type="button"
+              class="category-tab active"
+              data-category="attractions"
+              role="tab"
+              aria-selected="true"
+            >
+              Attractions
+            </button>
+            <button
+              type="button"
+              class="category-tab"
+              data-category="restaurants"
+              role="tab"
+              aria-selected="false"
+            >
+              Restaurants
+            </button>
+            <button
+              type="button"
+              class="category-tab"
+              data-category="hotels"
+              role="tab"
+              aria-selected="false"
+            >
+              Hotels
+            </button>
+          </div>
+
+          <div
+            class="discovery-results-list"
+            id="discovery-results-list"
+            data-testid="discovery-results-list"
+          ></div>
+        </section>
+      </aside>
+
+      <section class="right-workspace" aria-label="Interactive map and Street View preview">
+        <div id="map" class="map-container" data-testid="map-container"></div>
+
+        <div class="street-view-panel" id="street-view-panel" data-testid="street-view-panel">
+          <div class="street-view-header">
+            <div class="sv-title-group">
+              <span class="sv-badge">Street View Preview</span>
+              <strong id="street-view-title">Select a landmark or hotel to inspect</strong>
+            </div>
+            <span class="sv-meta" id="street-view-meta">Ready</span>
+          </div>
+          <div class="street-view-body">
+            <div id="street-view-pano" class="street-view-pano"></div>
+            <div id="street-view-empty" class="street-view-empty hidden">
+              Street View panorama unavailable for this exact coordinate.
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

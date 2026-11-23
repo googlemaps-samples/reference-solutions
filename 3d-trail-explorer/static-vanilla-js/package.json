@@ -1,0 +1,16 @@
+{
+  "name": "lake-tahoe-3d-trail-explorer-static-vanilla-js",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Photorealistic 3D Map Explorer, Camera Tour & 3D Trail Route in Lake Tahoe built with Static HTML, Vanilla ES Modules, and Google Maps Platform (Maps 3D, Places API New, Elevation API).",
+  "scripts": {
+    "start": "node server.mjs --host 127.0.0.1 --port 3000",
+    "dev": "node server.mjs --host 127.0.0.1 --port 3000",
+    "typecheck": "node --check app.js && node --check server.mjs",
+    "build": "node --check app.js && node --check server.mjs && node -e \"import('node:fs').then(fs => { for (const f of ['index.html', 'app.js', 'styles.css', 'server.mjs']) { if (!fs.existsSync(f)) throw new Error('Missing static asset: ' + f); } console.log('Static build verification passed.'); })\""
+  },
+  "dependencies": {
+    "@googlemaps/js-api-loader": "^2.0.1"
+  }
+}

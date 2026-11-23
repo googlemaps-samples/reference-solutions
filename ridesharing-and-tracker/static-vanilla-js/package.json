@@ -1,0 +1,15 @@
+{
+  "name": "ridesharing-and-tracker-static-vanilla-js",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Los Angeles Rideshare Booking, Fare Estimator & Live Driver Tracking built with Static HTML, Vanilla JavaScript (ES Modules), and modern Google Maps Platform APIs.",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs --host 127.0.0.1 --port 3000",
+    "typecheck": "node --check app.js && node --check server.mjs",
+    "build": "node --check app.js && node --check server.mjs && node -e \"import('node:fs').then(fs => { const required = ['index.html', 'app.js', 'styles.css', 'server.mjs', 'package.json']; for (const file of required) { if (!fs.existsSync(file)) throw new Error('Missing required asset: ' + file); } console.log('Build verified: syntax valid and all static assets present.'); })\""
+  },
+  "dependencies": {
+    "@googlemaps/js-api-loader": "^2.0.0"
+  }
+}

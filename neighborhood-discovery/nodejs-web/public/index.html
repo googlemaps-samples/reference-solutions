@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>London Hyperlocal Neighborhood Directory &amp; Spot Mapper</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-badge" aria-hidden="true">LDN</span>
+        <div class="brand-text">
+          <h1>Neighborhood Discovery</h1>
+          <p class="brand-subtitle">Central London · 5km Hyperlocal Directory</p>
+        </div>
+      </div>
+
+      <div class="topbar-controls">
+        <div class="search-group">
+          <div
+            id="neighborhood-autocomplete-input"
+            class="autocomplete-slot"
+            aria-label="Search London address or neighborhood"
+          ></div>
+          <button id="address-geocode-button" type="button" class="btn btn-primary">
+            Geocode
+          </button>
+        </div>
+
+        <label class="preset-label" for="neighborhood-preset-select">
+          <span class="sr-only">Neighborhood Preset</span>
+          <select id="neighborhood-preset-select" class="select-control" aria-label="Neighborhood Preset">
+            <option value="covent-garden">Covent Garden (Default)</option>
+            <option value="soho">Soho</option>
+            <option value="south-bank">South Bank</option>
+            <option value="bloomsbury">Bloomsbury</option>
+            <option value="shoreditch">Shoreditch</option>
+          </select>
+        </label>
+
+        <button
+          id="radius-toggle-circle"
+          type="button"
+          class="btn btn-pill active"
+          aria-pressed="true"
+          title="Toggle 5km discovery radius circle"
+        >
+          5km Radius: On
+        </button>
+
+        <button id="pin-community-spot-button" type="button" class="btn btn-outline" title="Click anywhere on the map to reverse-geocode and pin a spot">
+          + Pin Spot
+        </button>
+
+        <button id="toggle-comparison-button" type="button" class="btn btn-secondary">
+          Compare (<span id="compare-count">0</span>/3)
+        </button>
+      </div>
+    </header>
+
+    <div id="status-banner" class="status-banner hidden" role="status" aria-live="polite"></div>
+
+    <main class="workspace">
+      <aside class="sidebar" aria-label="Neighborhood Directory Sidebar">
+        <div class="sidebar-header">
+          <div class="category-chips" role="group" aria-label="Filter places by category">
+            <button id="category-filter-all" type="button" class="chip chip-active" data-category="all">
+              All
+            </button>
+            <button id="category-filter-restaurant" type="button" class="chip" data-category="restaurant">
+              Restaurants
+            </button>
+            <button id="category-filter-cafe" type="button" class="chip" data-category="cafe">
+              Cafes
+            </button>
+            <button id="category-filter-museum" type="button" class="chip" data-category="museum">
+              Museums
+            </button>
+            <button id="category-filter-park" type="button" class="chip" data-category="park">
+              Parks
+            </button>
+          </div>
+
+          <form id="text-search-form" class="text-search-form" autocomplete="off">
+            <input
+              id="text-search-input"
+              type="search"
+              class="text-search-input"
+              placeholder="Filter within 5km (e.g. ramen, espresso, gallery)..."
+              aria-label="Text search within 5km radius"
+            />
+            <button id="text-search-submit" type="submit" class="btn btn-sm btn-secondary">Search</button>
+            <button id="text-search-clear" type="button" class="btn btn-sm btn-ghost hidden">Reset</button>
+          </form>
+
+          <div class="directory-meta">
+            <span id="active-neighborhood-label" class="meta-badge">Covent Garden · 51.5118, -0.1280</span>
+            <span id="results-count-label" class="meta-count">Loading places...</span>
+          </div>
+        </div>
+
+        <div class="sidebar-scroll">
+          <section aria-label="Discovered Places">
+            <div id="places-results-list" class="results-list" role="list"></div>
+          </section>
+
+          <section id="community-spots-section" class="community-section">
+            <div class="community-header">
+              <h2>Community Spots (Session)</h2>
+              <span id="community-spots-count" class="count-pill">0</span>
+            </div>
+            <p class="community-hint">Click anywhere on the map to reverse-geocode an address and pin a local spot.</p>
+            <div id="community-spots-list" class="community-list"></div>
+          </section>
+        </div>
+      </aside>
+
+      <section class="map-stage" aria-label="Interactive Map Stage">
+        <div id="map-canvas" class="map-canvas" aria-label="Interactive Central London Map"></div>
+
+        <div class="map-legend" aria-label="Marker category legend">
+          <span class="legend-item"><span class="legend-dot dot-restaurant"></span>Restaurant</span>
+          <span class="legend-item"><span class="legend-dot dot-cafe"></span>Cafe</span>
+          <span class="legend-item"><span class="legend-dot dot-museum"></span>Museum</span>
+          <span class="legend-item"><span class="legend-dot dot-park"></span>Park</span>
+          <span class="legend-item"><span class="legend-dot dot-community"></span>Community</span>
+        </div>
+
+        <aside id="place-details-drawer" class="details-drawer hidden" aria-label="Place Details and Reverse Geocode Inspector">
+          <div class="drawer-topbar">
+            <span id="drawer-mode-badge" class="drawer-badge">Place Details</span>
+            <button id="close-drawer-button" type="button" class="icon-btn" aria-label="Close drawer">
+              ✕
+            </button>
+          </div>
+
+          <div id="place-details-view" class="drawer-body hidden">
+            <div id="drawer-photo-wrap" class="drawer-photo-wrap hidden">
+              <img id="drawer-photo" class="drawer-photo" alt="" />
+              <p id="drawer-photo-attribution" class="photo-attribution hidden"></p>
+            </div>
+
+            <div class="drawer-title-row">
+              <span id="drawer-category-pill" class="category-pill"></span>
+              <h2 id="drawer-place-title" class="drawer-title"></h2>
+            </div>
+
+            <div id="drawer-rating-row" class="drawer-rating-row"></div>
+            <p id="drawer-address" class="drawer-address"></p>
+
+            <div class="drawer-actions">
+              <button id="drawer-compare-button" type="button" class="btn btn-secondary">+ Compare</button>
+              <a id="drawer-maps-link" class="btn btn-outline hidden" target="_blank" rel="noopener noreferrer">
+                Open in Google Maps
+              </a>
+            </div>
+
+            <div id="drawer-contact-block" class="drawer-section hidden">
+              <h3>Contact &amp; Links</h3>
+              <div id="drawer-contact-items" class="contact-items"></div>
+            </div>
+
+            <div id="drawer-hours-block" class="drawer-section">
+              <h3>Opening Hours</h3>
+              <ul id="drawer-hours-list" class="hours-list"></ul>
+            </div>
+
+            <div id="drawer-reviews-block" class="drawer-section">
+              <h3>Live Customer Reviews</h3>
+              <div id="drawer-reviews-list" class="reviews-list"></div>
+            </div>
+          </div>
+
+          <div id="reverse-geocode-inspector" class="reverse-inspector hidden">
+            <h2 class="drawer-title">Map Pin &amp; Reverse Geocode</h2>
+            <p class="inspector-subtitle">Resolved live via Google Maps Geocoding API</p>
+
+            <div class="geocode-card">
+              <div class="geocode-field">
+                <span class="geocode-label">Street Address</span>
+                <p id="rg-formatted-address" class="geocode-value">Resolving address...</p>
+              </div>
+              <div class="geocode-grid">
+                <div class="geocode-field">
+                  <span class="geocode-label">Coordinates</span>
+                  <p id="rg-coordinates" class="geocode-mono"></p>
+                </div>
+                <div class="geocode-field">
+                  <span class="geocode-label">Place ID</span>
+                  <p id="rg-place-id" class="geocode-mono"></p>
+                </div>
+              </div>
+              <div id="rg-plus-code-wrap" class="geocode-field hidden">
+                <span class="geocode-label">Plus Code</span>
+                <p id="rg-plus-code" class="geocode-mono"></p>
+              </div>
+            </div>
+
+            <form id="community-spot-form" class="spot-form">
+              <h3>Pin Community Spot Here</h3>
+              <label class="form-field">
+                <span>Spot Name</span>
+                <input
+                  id="community-spot-name-input"
+                  type="text"
+                  required
+                  maxlength="80"
+                  placeholder="e.g. Hidden Courtyard Bench"
+                />
+              </label>
+
+              <label class="form-field">
+                <span>Category</span>
+                <select id="community-spot-category-select">
+                  <option value="community">Community Highlight</option>
+                  <option value="restaurant">Restaurant / Food</option>
+                  <option value="cafe">Cafe / Coffee</option>
+                  <option value="museum">Museum / Culture</option>
+                  <option value="park">Park / Green Space</option>
+                </select>
+              </label>
+
+              <label class="form-field">
+                <span>Local Tip / Note</span>
+                <textarea
+                  id="community-spot-note-input"
+                  rows="3"
+                  maxlength="240"
+                  placeholder="Share why neighbors love this spot..."
+                ></textarea>
+              </label>
+
+              <button id="save-community-spot-button" type="submit" class="btn btn-primary btn-full">
+                Save Community Spot
+              </button>
+            </form>
+          </div>
+        </aside>
+
+        <section id="comparison-panel" class="comparison-panel hidden" aria-label="Side-by-Side Place Comparison">
+          <div class="comparison-header">
+            <div>
+              <h2>Side-by-Side Comparison</h2>
+              <p class="comparison-subtitle">Compare up to 3 places across ratings, price, opening hours, and reviews</p>
+            </div>
+            <div class="comparison-header-actions">
+              <button id="clear-comparison-button" type="button" class="btn btn-sm btn-ghost">Clear All</button>
+              <button id="close-comparison-button" type="button" class="icon-btn" aria-label="Close comparison panel">
+                ✕
+              </button>
+            </div>
+          </div>
+          <div id="comparison-grid" class="comparison-grid"></div>
+        </section>
+      </section>
+    </main>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

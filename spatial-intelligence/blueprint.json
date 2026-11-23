@@ -1,0 +1,70 @@
+{
+  "solution_id": "spatial-intelligence",
+  "solution_title": "Enterprise GIS Workbench, GeoJSON Zones & Deck.gl Analytics",
+  "summary": "Enterprise Web GIS spatial analytics workbench centered on New York City (40.73061, -73.98661) integrating a 2D/Vector Google Map (mapId: DEMO_MAP_ID, internalUsageAttributionIds: ['gmp_git_agentsamples_v1.0.0']) with a live basemap switcher (roadmap, satellite, hybrid, terrain), a GeoJSON Data Layer rendering NYC infrastructure districts styled by capacity metrics with smooth fitBounds zoom-on-select, a WebGL-accelerated deck.gl GoogleMapsOverlay (ScatterplotLayer and HexagonLayer toggleable for ~2,400 infrastructure sensor points with graceful WebGL2 availability checks so headless environments emit zero console errors), an interactive Terra Draw polygon toolbar (terra-draw + terra-draw-google-maps-adapter) for custom study-zone filtering and point-in-polygon metrics computation, live Elevation API terrain profiling (ElevationService on client-only stacks; /api/elevation BFF proxy on full-stack frameworks), and live Places API (New) civic reference anchors (Place.searchByText / PlaceAutocompleteElement on client-only stacks; /api/places/search BFF proxy on full-stack frameworks) rendered via AdvancedMarkerElement.",
+  "gmp_products_used": [
+    "Maps JavaScript API",
+    "Elevation API",
+    "Places API (New)"
+  ],
+  "js_libraries_to_import": [
+    "core",
+    "maps",
+    "marker",
+    "places",
+    "elevation"
+  ],
+  "matched_sub_skills": [
+    "google-maps-platform",
+    "compliance-review",
+    "gmp-common-api-keys",
+    "maps-javascript-api-javascript",
+    "gmp-framework-react",
+    "places-api-web-api",
+    "elevation-api-web-api"
+  ],
+  "uses_3d_map": false,
+  "initial_center_lat": 40.73061,
+  "initial_center_lng": -73.98661,
+  "initial_zoom": 12,
+  "seed_search_query": "New York City civic transit hub",
+  "ui_layout_summary": "Full-viewport split-screen GIS workbench (100vh, overflow-hidden on desktop; stacked responsive layout on narrow screens). Top bar (data-testid='workbench-header', 56px height) houses the brand title, live PlaceAutocompleteElement location jumper, basemap segmented switcher (data-testid='basemap-switcher': roadmap, satellite, hybrid, terrain), and deck.gl / GeoJSON layer toggles (data-testid='deckgl-layer-controls'). Left analytical sidebar (380px width, scrollable) contains: (1) Zone Analytics KPI card (data-testid='zone-analytics-panel') showing active scope (Citywide, Selected District, or Custom Terra Draw Zone), filtered sensor count, average/peak capacity load, and polygon area; (2) Terrain Elevation Inspector (data-testid='elevation-inspector-card') displaying min/mean/max elevation in meters and resolution from the Elevation API with a manual sample trigger (data-testid='sample-elevation-btn'); (3) NYC District Capacity Directory (data-testid='district-selector-list') where selecting a district smoothly calls map.fitBounds() and updates analytics; and (4) Live NYC Civic Reference Hubs (data-testid='live-places-panel') populated from the seed_search_query. Main right pane hosts the explicitly sized map container (data-testid='map-canvas', min-height: 560px, height: 100%) with a floating top-left Terra Draw study-zone toolbar (data-testid='terradraw-toolbar': Draw Polygon, Select/Edit, Clear Zone) and bottom-left capacity legend.",
+  "interactive_controls": [
+    "workbench-header",
+    "basemap-switcher",
+    "basemap-btn-roadmap",
+    "basemap-btn-satellite",
+    "basemap-btn-hybrid",
+    "basemap-btn-terrain",
+    "deckgl-layer-controls",
+    "deckgl-mode-scatterplot",
+    "deckgl-mode-hexagon",
+    "toggle-geojson-btn",
+    "terradraw-toolbar",
+    "terradraw-polygon-btn",
+    "terradraw-select-btn",
+    "terradraw-clear-btn",
+    "district-selector-list",
+    "zone-analytics-panel",
+    "elevation-inspector-card",
+    "sample-elevation-btn",
+    "live-places-panel",
+    "map-canvas"
+  ],
+  "backend_proxy_endpoints": [
+    {
+      "method": "POST",
+      "path": "/api/places/search",
+      "upstream_gmp_service": "places.googleapis.com/v1/places:searchText",
+      "field_mask": "places.id,places.displayName,places.formattedAddress,places.location,places.types",
+      "purpose": "Server-side BFF proxy for live NYC civic infrastructure seed query and spatial reference search via Places API (New) with X-Goog-Api-Key and explicit X-Goog-FieldMask, avoiding client-side CORS issues and key exposure."
+    },
+    {
+      "method": "POST",
+      "path": "/api/elevation",
+      "upstream_gmp_service": "maps.googleapis.com/maps/api/elevation/json",
+      "field_mask": "results.elevation,results.location,results.resolution,status",
+      "purpose": "Server-side BFF proxy for querying terrain elevation (meters above mean sea level) across Terra Draw polygon vertices, zone centroids, and sampled points via the Elevation API REST endpoint, projecting only elevation, location, resolution, and status."
+    }
+  ]
+}

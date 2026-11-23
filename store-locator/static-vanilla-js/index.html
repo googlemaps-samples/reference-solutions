@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Multi-Branch Store, ATM &amp; Inventory Locator — NYC</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231d4ed8'/%3E%3Ctext x='16' y='21' text-anchor='middle' font-family='sans-serif' font-size='14' font-weight='bold' fill='white'%3EMG%3C/text%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+    <script>
+      window.process = window.process || { env: { NODE_ENV: 'production' } };
+    </script>
+    <script src="/env-config.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "@googlemaps/js-api-loader": "/node_modules/@googlemaps/js-api-loader/dist/index.js",
+          "@googlemaps/markerclusterer": "/node_modules/@googlemaps/markerclusterer/dist/index.esm.mjs",
+          "fast-equals": "/node_modules/fast-equals/dist/es/index.mjs",
+          "supercluster": "/node_modules/supercluster/index.js",
+          "kdbush": "/node_modules/kdbush/index.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="app-header" data-testid="app-header">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">MG</div>
+          <div class="brand-text">
+            <h1 class="brand-title">MetroGrid NYC Locator</h1>
+            <p class="brand-subtitle">Flagship Stores, Express Kiosks &amp; 24/7 ATMs</p>
+          </div>
+        </div>
+
+        <div class="header-controls">
+          <div class="search-box-wrap">
+            <input
+              id="origin-search-input"
+              class="origin-search-input"
+              data-testid="origin-search-input"
+              type="text"
+              placeholder="Search NYC starting address or landmark..."
+              aria-label="Search NYC starting location"
+              autocomplete="off"
+            />
+            <button
+              id="preset-origin-button"
+              class="preset-origin-btn"
+              type="button"
+              title="Cycle quick NYC starting locations"
+            >
+              Penn Stn
+            </button>
+            <ul
+              id="autocomplete-dropdown"
+              class="autocomplete-dropdown hidden"
+              data-testid="autocomplete-dropdown"
+              role="listbox"
+              aria-label="Location suggestions"
+            ></ul>
+          </div>
+
+          <select
+            id="travel-mode-select"
+            class="travel-mode-select"
+            data-testid="travel-mode-select"
+            aria-label="Travel mode"
+          >
+            <option value="DRIVE">Drive</option>
+            <option value="WALK">Walk</option>
+            <option value="TRANSIT">Transit</option>
+          </select>
+
+          <button
+            id="route-fastest-button"
+            class="btn-primary"
+            data-testid="route-fastest-button"
+            type="button"
+          >
+            Route to Fastest
+          </button>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <aside class="sidebar" aria-label="Branch directory and filters">
+          <div class="filters-panel">
+            <div>
+              <div class="filter-group-label">Branch Type</div>
+              <div class="chip-row" role="group" aria-label="Filter by branch type">
+                <button
+                  type="button"
+                  class="filter-chip is-active"
+                  data-type="all"
+                  data-testid="filter-type-all"
+                >
+                  All
+                </button>
+                <button
+                  type="button"
+                  class="filter-chip"
+                  data-type="flagship"
+                  data-testid="filter-type-flagship"
+                >
+                  Flagship Store
+                </button>
+                <button
+                  type="button"
+                  class="filter-chip"
+                  data-type="kiosk"
+                  data-testid="filter-type-kiosk"
+                >
+                  Express Kiosk
+                </button>
+                <button
+                  type="button"
+                  class="filter-chip"
+                  data-type="atm"
+                  data-testid="filter-type-atm"
+                >
+                  24/7 ATM
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <div class="filter-group-label">Product &amp; Service Availability</div>
+              <div class="chip-row" role="group" aria-label="Filter by product or service availability">
+                <button
+                  type="button"
+                  class="filter-chip service-toggle"
+                  data-service="pickup"
+                  data-testid="filter-service-pickup"
+                >
+                  Click &amp; Collect
+                </button>
+                <button
+                  type="button"
+                  class="filter-chip service-toggle"
+                  data-service="coffee"
+                  data-testid="filter-service-coffee"
+                >
+                  Express Espresso
+                </button>
+                <button
+                  type="button"
+                  class="filter-chip service-toggle"
+                  data-service="cash"
+                  data-testid="filter-service-cash"
+                >
+                  Cash Deposit
+                </button>
+                <button
+                  type="button"
+                  class="filter-chip service-toggle"
+                  data-service="open24"
+                  data-testid="filter-service-open24"
+                >
+                  Open 24h
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <section
+            id="route-summary-banner"
+            class="route-summary-banner"
+            data-testid="route-summary-banner"
+            aria-live="polite"
+          >
+            <div class="route-summary-kicker">Origin &amp; Route Summary</div>
+            <div id="route-summary-title" class="route-summary-title">
+              Loading NYC branch network...
+            </div>
+            <div id="route-summary-meta" class="route-summary-meta">
+              Origin: Penn Station, Midtown Manhattan
+            </div>
+          </section>
+
+          <div id="status-banner" class="status-banner hidden" role="status"></div>
+
+          <div class="list-header">
+            <span id="branch-count-label">Locations</span>
+            <span id="matrix-status-label">Calculating live road ETAs...</span>
+          </div>
+
+          <div id="branch-list" class="branch-list" data-testid="branch-list"></div>
+        </aside>
+
+        <section class="map-pane" aria-label="Interactive NYC branch map">
+          <div id="map" class="map-container" data-testid="map-container"></div>
+
+          <div class="map-legend" data-testid="map-legend">
+            <div class="legend-title">NYC Branch Legend</div>
+            <div class="legend-items">
+              <div class="legend-item">
+                <span class="legend-dot legend-dot--flagship"></span>
+                <span>Flagship Store</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-dot legend-dot--kiosk"></span>
+                <span>Express Kiosk</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-dot legend-dot--atm"></span>
+                <span>24/7 ATM</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-dot legend-dot--origin"></span>
+                <span>Your Origin</span>
+              </div>
+            </div>
+            <div class="legend-hint">
+              Zoom in or click a cluster bubble to inspect individual branch pins.
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

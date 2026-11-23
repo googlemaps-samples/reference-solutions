@@ -1,0 +1,27 @@
+{
+  "name": "storefront-sample-nextjs",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Single-Venue Storefront, Booking & Get Directions Hub built with Next.js App Router, TypeScript, @vis.gl/react-google-maps, and Google Maps Platform",
+  "scripts": {
+    "dev": "next dev --hostname 127.0.0.1 --port 3000",
+    "build": "next build",
+    "start": "next start --hostname 127.0.0.1 --port 3000",
+    "typecheck": "tsc --noEmit",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@vis.gl/react-google-maps": "^1.10.2",
+    "lucide-react": "^0.503.0",
+    "next": "^16.4.6",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/google.maps": "^3.66.10",
+    "@types/node": "^22.15.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "typescript": "^5.8.3"
+  }
+}

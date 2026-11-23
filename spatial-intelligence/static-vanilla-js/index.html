@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NYC Spatial Intelligence — Enterprise GIS Workbench</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232563eb'/%3E%3Ctext x='16' y='21' font-family='sans-serif' font-size='13' font-weight='bold' text-anchor='middle' fill='white'%3EGIS%3C/text%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "@googlemaps/js-api-loader": "/node_modules/@googlemaps/js-api-loader/dist/index.js",
+          "terra-draw": "/node_modules/terra-draw/dist/terra-draw.modern.js",
+          "terra-draw-google-maps-adapter": "/node_modules/terra-draw-google-maps-adapter/dist/terra-draw-google-maps-adapter.modern.js"
+        }
+      }
+    </script>
+    <script src="/env-config.js"></script>
+    <script src="/node_modules/deck.gl/dist.min.js" defer></script>
+    <script type="module" src="./app.js"></script>
+  </head>
+  <body>
+    <div class="workbench-shell">
+      <header class="workbench-header" data-testid="workbench-header">
+        <div class="brand-group">
+          <div class="brand-badge" aria-hidden="true">GIS</div>
+          <div class="brand-text">
+            <h1>NYC Spatial Intelligence</h1>
+            <span class="brand-subtitle">GeoJSON Zones · deck.gl · Terra Draw</span>
+          </div>
+        </div>
+
+        <div class="header-search-slot" id="autocomplete-slot" aria-label="Search NYC location"></div>
+
+        <div class="header-controls">
+          <div
+            class="segmented-group"
+            role="group"
+            aria-label="Basemap switcher"
+            data-testid="basemap-switcher"
+          >
+            <button
+              type="button"
+              class="seg-btn active"
+              data-basemap="roadmap"
+              data-testid="basemap-btn-roadmap"
+              aria-pressed="true"
+            >
+              Roadmap
+            </button>
+            <button
+              type="button"
+              class="seg-btn"
+              data-basemap="satellite"
+              data-testid="basemap-btn-satellite"
+              aria-pressed="false"
+            >
+              Satellite
+            </button>
+            <button
+              type="button"
+              class="seg-btn"
+              data-basemap="hybrid"
+              data-testid="basemap-btn-hybrid"
+              aria-pressed="false"
+            >
+              Hybrid
+            </button>
+            <button
+              type="button"
+              class="seg-btn"
+              data-basemap="terrain"
+              data-testid="basemap-btn-terrain"
+              aria-pressed="false"
+            >
+              Terrain
+            </button>
+          </div>
+
+          <div
+            class="segmented-group"
+            role="group"
+            aria-label="Spatial layer controls"
+            data-testid="deckgl-layer-controls"
+          >
+            <button
+              type="button"
+              class="seg-btn active"
+              data-deck-mode="scatterplot"
+              data-testid="deckgl-mode-scatterplot"
+              aria-pressed="true"
+            >
+              Scatterplot
+            </button>
+            <button
+              type="button"
+              class="seg-btn"
+              data-deck-mode="hexagon"
+              data-testid="deckgl-mode-hexagon"
+              aria-pressed="false"
+            >
+              Hexagon
+            </button>
+            <button
+              type="button"
+              class="seg-btn active"
+              id="toggle-geojson-btn"
+              data-testid="toggle-geojson-btn"
+              aria-pressed="true"
+            >
+              Districts
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main class="workbench-main">
+        <aside class="analytical-sidebar" aria-label="Spatial analytics sidebar">
+          <section class="panel-card" data-testid="zone-analytics-panel">
+            <div class="panel-header">
+              <div>
+                <p class="panel-eyebrow">Zone Analytics</p>
+                <h2 class="panel-title" id="active-scope-title">Citywide NYC Grid</h2>
+              </div>
+              <button
+                type="button"
+                class="ghost-btn hidden"
+                id="reset-scope-btn"
+              >
+                Reset
+              </button>
+            </div>
+
+            <div class="kpi-grid">
+              <div class="kpi-box">
+                <span class="kpi-label">Active Sensors</span>
+                <strong class="kpi-value" id="kpi-sensor-count">—</strong>
+              </div>
+              <div class="kpi-box">
+                <span class="kpi-label">Avg Capacity Load</span>
+                <strong class="kpi-value" id="kpi-avg-load">—</strong>
+              </div>
+              <div class="kpi-box">
+                <span class="kpi-label">Peak Load</span>
+                <strong class="kpi-value" id="kpi-peak-load">—</strong>
+              </div>
+              <div class="kpi-box">
+                <span class="kpi-label" id="kpi-area-label">Total Demand</span>
+                <strong class="kpi-value" id="kpi-area-value">—</strong>
+              </div>
+            </div>
+
+            <div class="status-bar-wrap">
+              <div class="status-bar" id="status-bar" aria-hidden="true"></div>
+              <div class="status-legend-row" id="status-counts"></div>
+            </div>
+          </section>
+
+          <section class="panel-card" data-testid="elevation-inspector-card">
+            <div class="panel-header">
+              <div>
+                <p class="panel-eyebrow">Elevation API</p>
+                <h2 class="panel-title">Terrain Elevation Profile</h2>
+              </div>
+              <button
+                type="button"
+                class="primary-sm-btn"
+                id="sample-elevation-btn"
+                data-testid="sample-elevation-btn"
+              >
+                Sample Elevation
+              </button>
+            </div>
+
+            <div class="elev-metrics">
+              <div class="elev-stat">
+                <span>Min</span>
+                <strong id="elev-min">—</strong>
+              </div>
+              <div class="elev-stat">
+                <span>Mean</span>
+                <strong id="elev-mean">—</strong>
+              </div>
+              <div class="elev-stat">
+                <span>Max</span>
+                <strong id="elev-max">—</strong>
+              </div>
+              <div class="elev-stat">
+                <span>Resolution</span>
+                <strong id="elev-res">—</strong>
+              </div>
+            </div>
+
+            <div class="elev-chart-wrap" id="elev-chart-wrap"></div>
+            <p class="panel-caption" id="elev-status-text">
+              Ready to sample terrain elevation for active study zone.
+            </p>
+          </section>
+
+          <section class="panel-card">
+            <div class="panel-header">
+              <div>
+                <p class="panel-eyebrow">GeoJSON Boundaries</p>
+                <h2 class="panel-title">NYC District Capacity</h2>
+              </div>
+              <span class="pill-tag">6 Zones</span>
+            </div>
+            <div
+              class="district-list"
+              id="district-selector-list"
+              data-testid="district-selector-list"
+            ></div>
+          </section>
+
+          <section class="panel-card">
+            <div class="panel-header">
+              <div>
+                <p class="panel-eyebrow">Places API (New)</p>
+                <h2 class="panel-title">NYC Civic Reference Hubs</h2>
+              </div>
+              <span class="pill-tag" id="places-count-badge">Live</span>
+            </div>
+            <div
+              class="places-list"
+              id="live-places-panel"
+              data-testid="live-places-panel"
+            ></div>
+          </section>
+        </aside>
+
+        <section class="map-viewport-pane">
+          <div class="map-canvas" id="map" data-testid="map-canvas"></div>
+
+          <div
+            class="terradraw-toolbar"
+            role="toolbar"
+            aria-label="Terra Draw study zone tools"
+            data-testid="terradraw-toolbar"
+          >
+            <span class="toolbar-label">Study Zone</span>
+            <button
+              type="button"
+              class="draw-btn"
+              id="terradraw-polygon-btn"
+              data-testid="terradraw-polygon-btn"
+              aria-pressed="false"
+            >
+              Draw Polygon
+            </button>
+            <button
+              type="button"
+              class="draw-btn"
+              id="terradraw-select-btn"
+              data-testid="terradraw-select-btn"
+              aria-pressed="false"
+            >
+              Select / Edit
+            </button>
+            <button
+              type="button"
+              class="draw-btn danger"
+              id="terradraw-clear-btn"
+              data-testid="terradraw-clear-btn"
+            >
+              Clear Zone
+            </button>
+          </div>
+
+          <div class="map-status-banner hidden" id="map-status-banner" role="status"></div>
+
+          <div class="map-legend" aria-label="Capacity load legend">
+            <div class="legend-title">District &amp; Sensor Load</div>
+            <div class="legend-scale">
+              <span class="legend-chip nominal">Nominal (&lt;65%)</span>
+              <span class="legend-chip elevated">Elevated (65–84%)</span>
+              <span class="legend-chip critical">Critical (85%+)</span>
+            </div>
+            <div class="legend-meta" id="deckgl-status-badge">
+              deck.gl overlay initializing…
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

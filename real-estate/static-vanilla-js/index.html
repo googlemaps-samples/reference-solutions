@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SF Real Estate, Parcel &amp; Commute Explorer</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="./styles.css" />
+    <script>
+      window.process = window.process || { env: { NODE_ENV: 'production' } };
+    </script>
+    <script src="/env-config.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "@googlemaps/js-api-loader": "/node_modules/@googlemaps/js-api-loader/dist/index.js",
+          "@googlemaps/markerclusterer": "/node_modules/@googlemaps/markerclusterer/dist/index.esm.mjs",
+          "fast-equals": "/node_modules/fast-equals/dist/es/index.mjs",
+          "supercluster": "/node_modules/supercluster/index.js",
+          "kdbush": "/node_modules/kdbush/index.js",
+          "terra-draw": "/node_modules/terra-draw/dist/terra-draw.module.js",
+          "terra-draw-google-maps-adapter": "/node_modules/terra-draw-google-maps-adapter/dist/terra-draw-google-maps-adapter.module.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="app-shell">
+      <header id="top-bar">
+        <div class="brand">
+          <span class="brand-badge" aria-hidden="true">SF</span>
+          <div class="brand-text">
+            <h1>BayParcel Explorer</h1>
+            <span class="brand-sub">San Francisco Homes, Lots &amp; Commutes</span>
+          </div>
+        </div>
+
+        <div class="search-filter-controls">
+          <div
+            id="location-search-input"
+            class="autocomplete-slot"
+            aria-label="Search San Francisco neighborhoods or addresses"
+          ></div>
+
+          <label class="sr-only" for="filter-max-price">Max Price</label>
+          <select id="filter-max-price" class="filter-select" aria-label="Maximum price">
+            <option value="all">Any Price</option>
+            <option value="1500000">Up to $1.5M</option>
+            <option value="2000000">Up to $2.0M</option>
+            <option value="2500000">Up to $2.5M</option>
+            <option value="3000000">Up to $3.0M</option>
+            <option value="4500000">Up to $4.5M</option>
+          </select>
+
+          <label class="sr-only" for="filter-min-beds">Min Beds</label>
+          <select id="filter-min-beds" class="filter-select" aria-label="Minimum bedrooms">
+            <option value="0">Any Beds</option>
+            <option value="1">1+ Beds</option>
+            <option value="2">2+ Beds</option>
+            <option value="3">3+ Beds</option>
+            <option value="4">4+ Beds</option>
+          </select>
+
+          <label class="sr-only" for="filter-property-type">Property Type</label>
+          <select id="filter-property-type" class="filter-select" aria-label="Property type">
+            <option value="all">All Types</option>
+            <option value="Single Family">Single Family</option>
+            <option value="Condo">Condo</option>
+            <option value="Townhouse">Townhouse</option>
+            <option value="Loft">Loft</option>
+          </select>
+
+          <span id="results-count" class="results-badge" aria-live="polite">
+            12 homes
+          </span>
+        </div>
+      </header>
+
+      <main class="split-workspace">
+        <section class="map-pane" aria-label="Interactive property map">
+          <div id="map-container"></div>
+
+          <div class="map-floating-controls">
+            <button id="draw-area-btn" class="map-control-btn" type="button">
+              Draw Search Area
+            </button>
+            <button id="clear-area-btn" class="map-control-btn" type="button" disabled>
+              Clear Area
+            </button>
+            <button id="map-type-toggle" class="map-control-btn" type="button" aria-pressed="false">
+              Satellite
+            </button>
+          </div>
+
+          <div id="map-status-pill" class="map-status-pill" aria-live="polite">
+            Click a price pill or card to inspect parcel outline &amp; commute
+          </div>
+
+          <div id="api-status-banner" class="api-status-banner" hidden>
+            <strong id="api-status-title">Google Maps API Key Required</strong>
+            <p id="api-status-message"></p>
+          </div>
+        </section>
+
+        <aside class="left-column" aria-label="Listings and property details">
+          <div class="list-section-header">
+            <h2>San Francisco Listings</h2>
+            <button id="reset-filters-btn" class="text-link-btn" type="button" hidden>
+              Reset filters
+            </button>
+          </div>
+
+          <div id="property-list" class="property-list" role="list"></div>
+
+          <section id="listing-detail-panel" class="detail-panel" aria-live="polite">
+            <div class="detail-header">
+              <div>
+                <div class="detail-eyebrow" id="detail-neighborhood">Neighborhood</div>
+                <h3 id="detail-title">Select a property</h3>
+                <p id="detail-address" class="detail-address"></p>
+              </div>
+              <div class="detail-price-box">
+                <div id="detail-price" class="detail-price"></div>
+                <div id="detail-specs" class="detail-specs"></div>
+              </div>
+            </div>
+
+            <div class="parcel-meta-grid" aria-label="Cadastral parcel metadata">
+              <div class="meta-chip">
+                <span class="meta-label">APN</span>
+                <strong id="detail-apn">—</strong>
+              </div>
+              <div class="meta-chip">
+                <span class="meta-label">Zoning</span>
+                <strong id="detail-zoning">—</strong>
+              </div>
+              <div class="meta-chip">
+                <span class="meta-label">Lot Area</span>
+                <strong id="detail-lot-sqft">—</strong>
+              </div>
+              <div class="meta-chip">
+                <span class="meta-label">Year Built</span>
+                <strong id="detail-year-built">—</strong>
+              </div>
+            </div>
+
+            <p id="detail-description" class="detail-description"></p>
+            <div id="detail-highlights" class="detail-highlights"></div>
+
+            <div class="subpanel">
+              <div class="subpanel-header">
+                <h4>Street View Neighborhood Preview</h4>
+                <span id="street-view-status" class="subpanel-meta">Loading panorama…</span>
+              </div>
+              <div
+                id="street-view-container"
+                class="street-view-box"
+                aria-label="Interactive Google Street View panorama"
+              ></div>
+            </div>
+
+            <div id="nearby-amenities-panel" class="subpanel">
+              <div class="subpanel-header">
+                <h4>Nearby Amenities (5 km)</h4>
+                <span id="amenities-status" class="subpanel-meta">Places API (New)</span>
+              </div>
+              <div class="amenity-tabs" role="tablist" aria-label="Amenity categories">
+                <button
+                  id="amenity-tab-all"
+                  class="amenity-tab active"
+                  type="button"
+                  data-category="all"
+                  role="tab"
+                  aria-selected="true"
+                >
+                  All
+                </button>
+                <button
+                  id="amenity-tab-schools"
+                  class="amenity-tab"
+                  type="button"
+                  data-category="schools"
+                  role="tab"
+                  aria-selected="false"
+                >
+                  Schools
+                </button>
+                <button
+                  id="amenity-tab-groceries"
+                  class="amenity-tab"
+                  type="button"
+                  data-category="groceries"
+                  role="tab"
+                  aria-selected="false"
+                >
+                  Groceries
+                </button>
+                <button
+                  id="amenity-tab-transit"
+                  class="amenity-tab"
+                  type="button"
+                  data-category="transit"
+                  role="tab"
+                  aria-selected="false"
+                >
+                  Transit
+                </button>
+              </div>
+              <ul id="nearby-amenities-list" class="amenities-list"></ul>
+            </div>
+
+            <div id="commute-calculator-panel" class="subpanel commute-panel">
+              <div class="subpanel-header">
+                <h4>Workplace Commute Calculator</h4>
+                <span class="subpanel-meta">Routes API Matrix</span>
+              </div>
+              <form id="commute-form" class="commute-form">
+                <label class="sr-only" for="workplace-input">Workplace destination</label>
+                <input
+                  id="workplace-input"
+                  type="text"
+                  value="Salesforce Tower, San Francisco, CA"
+                  placeholder="Enter workplace address or landmark..."
+                  autocomplete="off"
+                />
+                <button id="calculate-commute-btn" class="primary-btn" type="submit">
+                  Calculate
+                </button>
+              </form>
+              <div class="workplace-presets" aria-label="Quick workplace destinations">
+                <button type="button" class="preset-chip" data-dest="Salesforce Tower, San Francisco, CA">
+                  Salesforce Tower
+                </button>
+                <button type="button" class="preset-chip" data-dest="Ferry Building, San Francisco, CA">
+                  Ferry Building
+                </button>
+                <button type="button" class="preset-chip" data-dest="UCSF Mission Bay, San Francisco, CA">
+                  UCSF Mission Bay
+                </button>
+              </div>
+              <div class="commute-results">
+                <div class="eta-card">
+                  <span class="eta-mode">Driving (Traffic-Aware)</span>
+                  <strong id="commute-drive-eta" class="eta-value">—</strong>
+                  <span id="commute-drive-dist" class="eta-sub">Select destination</span>
+                </div>
+                <div class="eta-card">
+                  <span class="eta-mode">Public Transit</span>
+                  <strong id="commute-transit-eta" class="eta-value">—</strong>
+                  <span id="commute-transit-dist" class="eta-sub">Select destination</span>
+                </div>
+              </div>
+              <div id="commute-status" class="commute-status" aria-live="polite"></div>
+            </div>
+          </section>
+        </aside>
+      </main>
+    </div>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

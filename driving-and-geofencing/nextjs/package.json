@@ -1,0 +1,28 @@
+{
+  "name": "austin-field-workforce-geofencing-nextjs",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Field Workforce Geofenced Attendance & Site Audit Router built with Next.js App Router, @vis.gl/react-google-maps, Terra Draw, Places API (New), Routes API v2, and Geocoding API v4.",
+  "scripts": {
+    "dev": "next dev --hostname 127.0.0.1 --port 3000",
+    "build": "next build",
+    "start": "next start --hostname 127.0.0.1 --port 3000",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@vis.gl/react-google-maps": "^1.10.2",
+    "lucide-react": "^0.511.0",
+    "next": "^15.3.3",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "terra-draw": "^1.40.0",
+    "terra-draw-google-maps-adapter": "^1.7.0"
+  },
+  "devDependencies": {
+    "@types/google.maps": "^3.58.1",
+    "@types/node": "^22.15.0",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "typescript": "^5.8.3"
+  }
+}

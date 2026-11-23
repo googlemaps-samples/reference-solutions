@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Multi-Modal Commute Comparator &amp; Trail Elevation Tracker</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="/styles.css" />
+    <script>
+      window.process = window.process || { env: { NODE_ENV: 'production' } };
+    </script>
+    <script src="/env-config.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "@googlemaps/js-api-loader": "/node_modules/@googlemaps/js-api-loader/dist/index.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="app-header">
+        <div class="header-brand">
+          <div class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 17l6-6 4 4 8-8" />
+              <path d="M17 7h4v4" />
+            </svg>
+          </div>
+          <div>
+            <h1 class="header-title">Multi-Modal Commute Comparator &amp; Trail Elevation Tracker</h1>
+            <p class="header-subtitle">Front Range Corridor · Denver &amp; Boulder, CO</p>
+          </div>
+        </div>
+
+        <div class="header-kpis">
+          <span class="corridor-badge">Denver ⇄ Boulder</span>
+          <div class="kpi-pill">
+            <span class="kpi-label">Active ETA</span>
+            <strong id="header-kpi-eta" class="kpi-value">--</strong>
+          </div>
+          <div class="kpi-pill">
+            <span class="kpi-label">Distance</span>
+            <strong id="header-kpi-distance" class="kpi-value">--</strong>
+          </div>
+          <div class="kpi-pill">
+            <span class="kpi-label">Elev Gain</span>
+            <strong id="header-kpi-gain" class="kpi-value">--</strong>
+          </div>
+        </div>
+      </header>
+
+      <div id="config-alert" class="config-alert hidden" role="alert"></div>
+
+      <main class="workspace">
+        <aside class="sidebar" aria-label="Route Controls and Comparison">
+          <section class="panel-section endpoints-section">
+            <div class="section-header-row">
+              <h2 class="section-title">Origin &amp; Destination</h2>
+              <button
+                id="swap-locations-btn"
+                type="button"
+                class="swap-btn"
+                title="Swap origin and destination"
+                aria-label="Swap origin and destination"
+              >
+                ⇅ Swap
+              </button>
+            </div>
+
+            <div class="endpoint-field">
+              <label class="field-label" for="origin-autocomplete-input">
+                <span class="dot dot-origin" aria-hidden="true"></span>
+                Origin
+              </label>
+              <div id="origin-autocomplete-slot" class="autocomplete-slot"></div>
+              <div id="origin-chip" class="place-chip">
+                <span class="place-chip-name">Resolving Denver Union Station...</span>
+                <span class="place-chip-addr">Denver, CO</span>
+              </div>
+            </div>
+
+            <div class="endpoint-field">
+              <label class="field-label" for="destination-autocomplete-input">
+                <span class="dot dot-destination" aria-hidden="true"></span>
+                Destination
+              </label>
+              <div id="destination-autocomplete-slot" class="autocomplete-slot"></div>
+              <div id="destination-chip" class="place-chip">
+                <span class="place-chip-name">Resolving Chautauqua Park...</span>
+                <span class="place-chip-addr">Boulder, CO</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel-section">
+            <h2 class="section-title">Travel Modes</h2>
+            <div class="mode-grid" role="tablist" aria-label="Travel modes">
+              <button id="mode-drive-btn" type="button" class="mode-btn" data-mode="DRIVING" role="tab" aria-selected="false">
+                <span class="mode-name">Driving</span>
+                <span class="mode-eta" data-mode-eta="DRIVING">--</span>
+              </button>
+              <button id="mode-bicycle-btn" type="button" class="mode-btn is-active" data-mode="BICYCLING" role="tab" aria-selected="true">
+                <span class="mode-name">Cycling</span>
+                <span class="mode-eta" data-mode-eta="BICYCLING">--</span>
+              </button>
+              <button id="mode-walk-btn" type="button" class="mode-btn" data-mode="WALKING" role="tab" aria-selected="false">
+                <span class="mode-name">Walking</span>
+                <span class="mode-eta" data-mode-eta="WALKING">--</span>
+              </button>
+              <button id="mode-transit-btn" type="button" class="mode-btn" data-mode="TRANSIT" role="tab" aria-selected="false">
+                <span class="mode-name">Transit</span>
+                <span class="mode-eta" data-mode-eta="TRANSIT">--</span>
+              </button>
+            </div>
+          </section>
+
+          <section class="panel-section">
+            <div class="section-header-row">
+              <h2 class="section-title">Route Preferences</h2>
+              <span class="modifier-scope-note">Driving options</span>
+            </div>
+            <div class="modifiers-list">
+              <label class="toggle-row" for="avoid-tolls-toggle">
+                <span class="toggle-text">
+                  <span class="toggle-title">Avoid Tolls</span>
+                  <span class="toggle-sub">Bypass US-36 Express Lanes &amp; E-470 tolls</span>
+                </span>
+                <input id="avoid-tolls-toggle" type="checkbox" class="toggle-input" />
+              </label>
+
+              <label class="toggle-row" for="avoid-highways-toggle">
+                <span class="toggle-text">
+                  <span class="toggle-title">Avoid Highways</span>
+                  <span class="toggle-sub">Prefer scenic arterials over US-36 / I-25</span>
+                </span>
+                <input id="avoid-highways-toggle" type="checkbox" class="toggle-input" />
+              </label>
+
+              <label class="toggle-row" for="eco-friendly-toggle">
+                <span class="toggle-text">
+                  <span class="toggle-title">Eco-Friendly Routing</span>
+                  <span class="toggle-sub">Compute FUEL_EFFICIENT reference route</span>
+                </span>
+                <input id="eco-friendly-toggle" type="checkbox" class="toggle-input" checked />
+              </label>
+            </div>
+          </section>
+
+          <section class="panel-section routes-section">
+            <div class="section-header-row">
+              <h2 class="section-title">Route Options</h2>
+              <span id="route-count-badge" class="count-badge">0 routes</span>
+            </div>
+            <div id="beta-trail-advisory" class="beta-advisory" role="status">
+              Beta Notice: Cycling and walking routes are in beta. Use caution — trail surfaces, bike lanes, and seasonal closures may vary.
+            </div>
+            <div id="route-cards-list" class="route-cards-list" aria-live="polite"></div>
+          </section>
+        </aside>
+
+        <section class="map-and-elevation" aria-label="Interactive Map and Elevation Profile">
+          <div class="map-stage">
+            <div id="map-canvas" class="map-canvas" aria-label="Denver to Boulder Interactive Route Map"></div>
+            <div id="map-overlay-status" class="map-overlay-status hidden" role="status"></div>
+            <div class="map-legend" aria-label="Map layer indicator">
+              <span id="active-layer-pill" class="legend-pill">Bike Paths Layer Active</span>
+            </div>
+          </div>
+
+          <section class="elevation-panel" aria-label="Elevation and Slope Profile">
+            <div class="elevation-header">
+              <div class="elevation-title-group">
+                <h2 class="elevation-title">Elevation &amp; Slope Profile</h2>
+                <span id="elevation-route-label" class="elevation-subtitle">64 equidistant samples via Elevation API</span>
+              </div>
+
+              <div class="elevation-stats">
+                <span class="elev-stat">Gain <strong id="elev-gain-stat">--</strong></span>
+                <span class="elev-stat">Loss <strong id="elev-loss-stat">--</strong></span>
+                <span class="elev-stat">Range <strong id="elev-range-stat">--</strong></span>
+                <span class="elev-stat">Max Grade <strong id="elev-grade-stat">--</strong></span>
+              </div>
+
+              <div id="elevation-hover-readout" class="hover-readout">
+                Hover chart to scrub route elevation
+              </div>
+            </div>
+
+            <div id="elevation-profile-chart" class="elevation-chart-wrap" aria-label="Interactive Elevation Profile Chart"></div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

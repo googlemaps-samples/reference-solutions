@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Field Workforce Geofenced Attendance &amp; Site Audit Router</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "@googlemaps/js-api-loader": "/vendor/js-api-loader.js",
+          "terra-draw": "/vendor/terra-draw.js",
+          "terra-draw-google-maps-adapter": "/vendor/terra-draw-google-maps-adapter.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="header-brand">
+        <div class="brand-badge" aria-hidden="true">GW</div>
+        <div class="brand-titles">
+          <h1>Field Workforce Geofenced Attendance &amp; Site Audit Router</h1>
+        </div>
+        <span class="district-pill">Austin, TX District</span>
+      </div>
+      <div class="header-metrics">
+        <span id="header-geofence-count" class="metric-pill">3 Active Geofences</span>
+        <span id="header-clockin-pill" class="metric-pill status-locked">Clock-In Locked</span>
+        <span id="header-route-summary" class="metric-pill route-pill">Route: Loading...</span>
+      </div>
+    </header>
+
+    <div id="config-banner" class="config-banner hidden" role="alert">
+      <span id="config-banner-text"></span>
+      <a
+        href="https://mapsplatform.google.com/maps-demo-key?utm_campaign=gmp_git_agentsamples_v1.0.0"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Get Maps Demo Key
+      </a>
+    </div>
+
+    <main class="workspace">
+      <aside class="sidebar" aria-label="Operations Sidebar">
+        <!-- Card 1: Worker GPS & Geofenced Attendance -->
+        <section class="panel-card" aria-labelledby="worker-card-title">
+          <div class="card-header">
+            <h2 id="worker-card-title">1. Worker GPS &amp; Attendance</h2>
+            <span id="verified-clockin-badge" class="status-badge locked">
+              Clock-In Locked
+            </span>
+          </div>
+
+          <div class="field-group">
+            <label for="worker-preset-select">Simulated Worker GPS Position</label>
+            <select id="worker-preset-select" class="select-input">
+              <option value="downtown-inside">
+                Inside Zone A — Downtown Congress (30.2666, -97.7435)
+              </option>
+              <option value="outside-zilker">
+                Outside Geofences — Zilker Park West (30.2669, -97.7729)
+              </option>
+              <option value="soco-inside">
+                Inside Zone B — South Congress SoCo (30.2494, -97.7495)
+              </option>
+              <option value="mueller-inside">
+                Inside Zone C — Mueller Market (30.2981, -97.7054)
+              </option>
+              <option value="outside-east-cesar">
+                Outside Geofences — East Cesar Chavez (30.2554, -97.7215)
+              </option>
+            </select>
+          </div>
+
+          <div class="status-row">
+            <span class="field-label">Geofence Detection</span>
+            <span id="geofence-status-badge" class="geofence-pill">
+              Checking zone...
+            </span>
+          </div>
+
+          <div class="address-box">
+            <div class="field-label">Reverse-Geocoded Site Address</div>
+            <div id="worker-address" class="address-value">Resolving Austin address...</div>
+            <div id="worker-coords" class="coords-subtext">30.2666, -97.7435</div>
+          </div>
+
+          <div class="clockin-actions">
+            <button id="clockin-action-btn" class="btn btn-primary" type="button" disabled>
+              Verify &amp; Clock In
+            </button>
+            <div id="clockin-feedback" class="helper-text" aria-live="polite">
+              Move worker inside an active geofence polygon to unlock clock-in.
+            </div>
+          </div>
+
+          <ul id="clockin-log" class="clockin-log" aria-label="Attendance Log"></ul>
+        </section>
+
+        <!-- Card 2: Geofence Zones & Terra Draw Controls -->
+        <section class="panel-card" aria-labelledby="geofence-card-title">
+          <div class="card-header">
+            <h2 id="geofence-card-title">2. Geofence Zones (Terra Draw)</h2>
+            <span id="zone-count-label" class="count-chip">3 zones</span>
+          </div>
+
+          <p class="helper-text">
+            Draw new client geofence polygons directly on the map or edit drawn zones.
+          </p>
+
+          <div class="toolbar-sync-grid">
+            <button
+              id="sidebar-draw-btn"
+              class="btn btn-secondary"
+              type="button"
+              data-draw-action="polygon"
+            >
+              Draw Polygon
+            </button>
+            <button
+              id="sidebar-select-btn"
+              class="btn btn-secondary"
+              type="button"
+              data-draw-action="select"
+            >
+              Select / Edit
+            </button>
+            <button
+              id="sidebar-clear-btn"
+              class="btn btn-outline-danger"
+              type="button"
+              data-draw-action="clear"
+            >
+              Clear Drawn
+            </button>
+          </div>
+
+          <ul id="geofence-list" class="zone-list" aria-label="Active Geofence Zones"></ul>
+        </section>
+
+        <!-- Card 3: Multi-Stop Audit Router -->
+        <section class="panel-card" aria-labelledby="router-card-title">
+          <div class="card-header">
+            <h2 id="router-card-title">3. Multi-Stop Audit Router</h2>
+            <span id="stops-count-label" class="count-chip">0 stops</span>
+          </div>
+
+          <div class="field-group">
+            <label for="site-search-input">Discover Austin Audit Sites (Places Text Search)</label>
+            <div class="search-row">
+              <input
+                id="site-search-input"
+                class="text-input"
+                type="text"
+                value="retail stores in Austin, TX"
+                placeholder="Search Austin sites..."
+              />
+              <button id="site-search-btn" class="btn btn-secondary" type="button">
+                Search
+              </button>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label>Add Individual Stop (Place Autocomplete)</label>
+            <div id="place-autocomplete-container" class="autocomplete-slot"></div>
+          </div>
+
+          <div class="router-actions">
+            <button id="optimize-route-btn" class="btn btn-accent" type="button">
+              Optimize Multi-Stop Route
+            </button>
+          </div>
+
+          <div id="route-summary" class="route-summary-box">
+            Computing optimized audit itinerary...
+          </div>
+
+          <ol id="audit-stops-list" class="stops-list" aria-label="Optimized Audit Stops"></ol>
+        </section>
+      </aside>
+
+      <section class="map-section" aria-label="Austin Operations Map">
+        <div id="terra-draw-toolbar" class="terra-draw-toolbar" role="toolbar" aria-label="Terra Draw Polygon Toolbar">
+          <button
+            id="draw-polygon-btn"
+            class="toolbar-btn"
+            type="button"
+            aria-pressed="false"
+          >
+            Draw Polygon
+          </button>
+          <button
+            id="select-mode-btn"
+            class="toolbar-btn"
+            type="button"
+            aria-pressed="false"
+          >
+            Select / Edit
+          </button>
+          <button
+            id="clear-drawn-btn"
+            class="toolbar-btn toolbar-btn-danger"
+            type="button"
+          >
+            Clear Drawn
+          </button>
+          <span id="draw-mode-hint" class="toolbar-hint">View Mode</span>
+        </div>
+
+        <div id="map-container" class="map-canvas"></div>
+      </section>
+    </main>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

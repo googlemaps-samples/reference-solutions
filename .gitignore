@@ -1,0 +1,27 @@
+# Secrets & Environment Variables
+.env
+.env.*
+!.env.example
+
+# OS / Editor
+.DS_Store
+.vscode/
+.idea/
+
+# Builder Runtime Artifacts (never publish standalone)
+*/.gmp-results/
+*/*/skills/
+
+# Regenerable Dependencies & Build Outputs
+node_modules/
+dist/
+build/
+out/
+.next/
+.svelte-kit/
+.angular/
+.vite/
+.venv/
+venv/
+__pycache__/
+*.tsbuildinfo

@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LondonSpotter — Hyperlocal Neighborhood Directory &amp; Spot Mapper</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231a73e8'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-family='sans-serif' font-size='16' font-weight='bold'%3ELS%3C/text%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "@googlemaps/js-api-loader": "/node_modules/@googlemaps/js-api-loader/dist/index.js"
+        }
+      }
+    </script>
+    <script src="/env-config.js"></script>
+    <script type="module" src="./app.js"></script>
+  </head>
+  <body>
+    <header id="app-header" class="app-header">
+      <div class="brand-block">
+        <div class="brand-mark" aria-hidden="true">LS</div>
+        <div class="brand-text">
+          <h1 class="brand-title">LondonSpotter</h1>
+          <span class="brand-subtitle">Central London Neighborhood Directory</span>
+        </div>
+      </div>
+
+      <div class="header-search-group">
+        <div
+          id="neighborhood-autocomplete-input"
+          class="autocomplete-slot"
+          aria-label="Search address or London neighborhood"
+        ></div>
+        <button
+          id="address-geocode-button"
+          type="button"
+          class="btn btn-primary"
+          title="Geocode entered address and center map"
+        >
+          Geocode
+        </button>
+      </div>
+
+      <div class="header-controls-group">
+        <label class="sr-only" for="neighborhood-preset-select">
+          Select Central London neighborhood
+        </label>
+        <select
+          id="neighborhood-preset-select"
+          class="select-control"
+          aria-label="Central London neighborhood preset"
+        >
+          <option value="covent-garden">Covent Garden (51.5118, -0.1280)</option>
+          <option value="soho">Soho (51.5136, -0.1365)</option>
+          <option value="south-bank">South Bank (51.5055, -0.1140)</option>
+          <option value="bloomsbury">Bloomsbury (51.5229, -0.1263)</option>
+        </select>
+
+        <button
+          id="radius-toggle-circle"
+          type="button"
+          class="btn btn-pill active"
+          aria-pressed="true"
+          title="Toggle 5km search radius circle"
+        >
+          5 km Radius: On
+        </button>
+
+        <button
+          id="toggle-comparison-button"
+          type="button"
+          class="btn btn-outline"
+          aria-expanded="false"
+        >
+          Compare (0/3)
+        </button>
+
+        <button
+          id="mobile-sidebar-toggle"
+          type="button"
+          class="btn btn-outline mobile-only"
+          aria-expanded="true"
+        >
+          Directory
+        </button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <aside id="directory-sidebar" class="directory-sidebar" aria-label="Neighborhood Directory">
+        <div class="sidebar-top">
+          <div class="filter-chips" role="group" aria-label="Filter places by category">
+            <button
+              id="category-filter-all"
+              type="button"
+              class="chip active"
+              data-category="all"
+              aria-pressed="true"
+            >
+              All
+            </button>
+            <button
+              id="category-filter-restaurant"
+              type="button"
+              class="chip"
+              data-category="restaurant"
+              aria-pressed="false"
+            >
+              <span class="dot dot-restaurant" aria-hidden="true"></span>
+              Restaurants
+            </button>
+            <button
+              id="category-filter-cafe"
+              type="button"
+              class="chip"
+              data-category="cafe"
+              aria-pressed="false"
+            >
+              <span class="dot dot-cafe" aria-hidden="true"></span>
+              Cafes
+            </button>
+            <button
+              id="category-filter-museum"
+              type="button"
+              class="chip"
+              data-category="museum"
+              aria-pressed="false"
+            >
+              <span class="dot dot-museum" aria-hidden="true"></span>
+              Museums
+            </button>
+            <button
+              id="category-filter-park"
+              type="button"
+              class="chip"
+              data-category="park"
+              aria-pressed="false"
+            >
+              <span class="dot dot-park" aria-hidden="true"></span>
+              Parks
+            </button>
+          </div>
+
+          <div id="status-bar" class="status-bar" aria-live="polite">
+            <span id="status-neighborhood">Covent Garden</span>
+            <span id="status-count">Initializing directory...</span>
+          </div>
+
+          <div id="config-banner" class="config-banner hidden" role="status"></div>
+        </div>
+
+        <div class="sidebar-scroll">
+          <section aria-label="Discovered places">
+            <ul id="places-results-list" class="places-list"></ul>
+          </section>
+
+          <section id="community-spots-section" class="community-section">
+            <div class="section-header">
+              <h2>Community Spots (Session)</h2>
+              <span id="community-spots-count" class="count-badge">0</span>
+            </div>
+            <p class="section-hint">
+              Click anywhere on the map to reverse-geocode an address and pin a spot.
+            </p>
+            <ul id="community-spots-list" class="community-list"></ul>
+          </section>
+        </div>
+      </aside>
+
+      <section class="map-stage" aria-label="Interactive Map and Inspectors">
+        <div id="map-canvas" class="map-canvas"></div>
+
+        <div class="map-hint-bar" aria-hidden="true">
+          <span class="legend-item"><span class="dot dot-restaurant"></span>Restaurant</span>
+          <span class="legend-item"><span class="dot dot-cafe"></span>Cafe</span>
+          <span class="legend-item"><span class="dot dot-museum"></span>Museum</span>
+          <span class="legend-item"><span class="dot dot-park"></span>Park</span>
+          <span class="legend-item"><span class="dot dot-community"></span>Community Spot</span>
+          <span class="legend-sep">|</span>
+          <span>Click map to reverse-geocode &amp; pin</span>
+        </div>
+
+        <aside
+          id="place-details-drawer"
+          class="details-drawer hidden"
+          aria-label="Place Details and Reverse-Geocode Inspector"
+        >
+          <div class="drawer-header">
+            <h2 id="drawer-title" class="drawer-title">Details</h2>
+            <button
+              id="drawer-close-button"
+              type="button"
+              class="btn-icon"
+              aria-label="Close details drawer"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div id="place-details-view" class="drawer-body hidden">
+            <div id="drawer-photos" class="drawer-photos"></div>
+            <div class="drawer-meta-row">
+              <span id="drawer-category-badge" class="category-badge"></span>
+              <span id="drawer-price-badge" class="price-badge"></span>
+            </div>
+            <div id="drawer-rating-row" class="drawer-rating-row"></div>
+            <p id="drawer-address" class="drawer-address"></p>
+            <div id="drawer-contact-links" class="drawer-contact-links"></div>
+
+            <div class="drawer-actions">
+              <button
+                id="drawer-compare-button"
+                type="button"
+                class="btn btn-primary"
+              >
+                Add to Compare
+              </button>
+              <button
+                id="pin-community-spot-button"
+                type="button"
+                class="btn btn-outline"
+              >
+                Pin as Community Spot
+              </button>
+            </div>
+
+            <div class="drawer-section">
+              <h3>Opening Hours</h3>
+              <ul id="drawer-hours-list" class="hours-list"></ul>
+            </div>
+
+            <div class="drawer-section">
+              <h3>Customer Reviews</h3>
+              <div id="drawer-reviews-list" class="reviews-list"></div>
+            </div>
+          </div>
+
+          <div id="reverse-geocode-inspector" class="drawer-body hidden">
+            <div class="inspector-card">
+              <div class="inspector-label">Human-Readable Street Address</div>
+              <div id="inspector-address" class="inspector-value">
+                Click on the map to inspect an address.
+              </div>
+
+              <div class="inspector-grid">
+                <div>
+                  <div class="inspector-label">Coordinates</div>
+                  <div id="inspector-coords" class="inspector-mono">—</div>
+                </div>
+                <div>
+                  <div class="inspector-label">Place ID</div>
+                  <div id="inspector-place-id" class="inspector-mono">—</div>
+                </div>
+              </div>
+            </div>
+
+            <form id="community-spot-form" class="spot-form">
+              <h3>Pin a Community Spot</h3>
+              <label class="form-label" for="community-spot-name-input">
+                Spot Name
+              </label>
+              <input
+                id="community-spot-name-input"
+                type="text"
+                class="text-input"
+                placeholder="e.g., Hidden Courtyard Bench"
+                maxlength="80"
+                required
+              />
+
+              <label class="form-label" for="community-spot-category-select">
+                Category Tag
+              </label>
+              <select id="community-spot-category-select" class="text-input">
+                <option value="community">Community Favorite</option>
+                <option value="restaurant">Restaurant Tip</option>
+                <option value="cafe">Cafe / Espresso</option>
+                <option value="museum">Art / Culture</option>
+                <option value="park">Green Space / Walk</option>
+              </select>
+
+              <label class="form-label" for="community-spot-note-input">
+                Community Note
+              </label>
+              <textarea
+                id="community-spot-note-input"
+                class="text-input textarea-input"
+                rows="3"
+                maxlength="240"
+                placeholder="Share why neighbors love this spot..."
+              ></textarea>
+
+              <button
+                id="save-community-spot-button"
+                type="submit"
+                class="btn btn-primary full-width"
+              >
+                Save Community Spot
+              </button>
+            </form>
+          </div>
+        </aside>
+
+        <section
+          id="comparison-panel"
+          class="comparison-panel hidden"
+          aria-label="Side-by-Side Place Comparison"
+        >
+          <div class="comparison-header">
+            <div>
+              <h2>Side-by-Side Comparison</h2>
+              <span class="comparison-subtitle">
+                Compare up to 3 discovered places across ratings, price, hours, and location.
+              </span>
+            </div>
+            <div class="comparison-header-actions">
+              <button id="clear-comparison-button" type="button" class="btn btn-ghost">
+                Clear All
+              </button>
+              <button id="close-comparison-button" type="button" class="btn btn-outline">
+                Hide
+              </button>
+            </div>
+          </div>
+          <div id="comparison-grid" class="comparison-grid"></div>
+        </section>
+      </section>
+    </main>
+  </body>
+</html>

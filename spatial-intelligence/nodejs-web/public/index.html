@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NYC Spatial Intelligence — Enterprise GIS Workbench</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="workbench-shell">
+      <header class="workbench-header" data-testid="workbench-header">
+        <div class="header-brand">
+          <div class="brand-mark" aria-hidden="true">3D</div>
+          <div class="brand-copy">
+            <h1>NYC Spatial Intelligence</h1>
+            <span class="brand-subtitle">Enterprise GIS &amp; Grid Capacity Workbench</span>
+          </div>
+        </div>
+
+        <div class="header-search" id="autocomplete-mount" aria-label="Place search">
+          <span class="search-placeholder-note">Search NYC civic hubs &amp; coordinates</span>
+        </div>
+
+        <div class="header-controls">
+          <div
+            class="segmented-group"
+            role="group"
+            aria-label="Basemap switcher"
+            data-testid="basemap-switcher"
+          >
+            <button
+              type="button"
+              class="seg-btn active"
+              data-testid="basemap-btn-roadmap"
+              data-basemap="roadmap"
+              aria-pressed="true"
+            >
+              Roadmap
+            </button>
+            <button
+              type="button"
+              class="seg-btn"
+              data-testid="basemap-btn-satellite"
+              data-basemap="satellite"
+              aria-pressed="false"
+            >
+              Satellite
+            </button>
+            <button
+              type="button"
+              class="seg-btn"
+              data-testid="basemap-btn-hybrid"
+              data-basemap="hybrid"
+              aria-pressed="false"
+            >
+              Hybrid
+            </button>
+            <button
+              type="button"
+              class="seg-btn"
+              data-testid="basemap-btn-terrain"
+              data-basemap="terrain"
+              aria-pressed="false"
+            >
+              Terrain
+            </button>
+          </div>
+
+          <div
+            class="segmented-group"
+            role="group"
+            aria-label="Deck.gl and GeoJSON layer controls"
+            data-testid="deckgl-layer-controls"
+          >
+            <button
+              type="button"
+              class="seg-btn active"
+              data-testid="deckgl-mode-scatterplot"
+              data-deck-mode="scatterplot"
+              aria-pressed="true"
+            >
+              Scatterplot
+            </button>
+            <button
+              type="button"
+              class="seg-btn"
+              data-testid="deckgl-mode-hexagon"
+              data-deck-mode="hexagon"
+              aria-pressed="false"
+            >
+              Hexagon
+            </button>
+            <button
+              type="button"
+              class="seg-btn active"
+              data-testid="toggle-geojson-btn"
+              aria-pressed="true"
+            >
+              Districts
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div class="workbench-body">
+        <aside class="analytics-sidebar" aria-label="Spatial analytics sidebar">
+          <section class="panel-card" data-testid="zone-analytics-panel">
+            <div class="panel-header">
+              <div>
+                <p class="panel-eyebrow">Zone Telemetry</p>
+                <h2 id="zone-scope-title">Citywide NYC Grid</h2>
+              </div>
+              <button
+                type="button"
+                id="reset-scope-btn"
+                class="ghost-btn hidden"
+              >
+                Reset
+              </button>
+            </div>
+            <div id="zone-scope-pill" class="scope-pill scope-citywide">
+              Active Scope: All 8 Infrastructure Districts
+            </div>
+            <div class="kpi-grid">
+              <div class="kpi-tile">
+                <span class="kpi-label">Active Sensors</span>
+                <strong class="kpi-value" id="kpi-sensor-count">--</strong>
+              </div>
+              <div class="kpi-tile">
+                <span class="kpi-label">Avg Load</span>
+                <strong class="kpi-value" id="kpi-avg-load">--</strong>
+              </div>
+              <div class="kpi-tile">
+                <span class="kpi-label">Peak Load</span>
+                <strong class="kpi-value" id="kpi-peak-load">--</strong>
+              </div>
+              <div class="kpi-tile">
+                <span class="kpi-label">Zone Area</span>
+                <strong class="kpi-value" id="kpi-zone-area">--</strong>
+              </div>
+            </div>
+            <p class="panel-footnote" id="deckgl-runtime-note">
+              2,400 infrastructure sensors indexed across NYC boroughs.
+            </p>
+          </section>
+
+          <section class="panel-card" data-testid="elevation-inspector-card">
+            <div class="panel-header">
+              <div>
+                <p class="panel-eyebrow">Elevation API</p>
+                <h2>Terrain Profile Inspector</h2>
+              </div>
+              <button
+                type="button"
+                class="primary-mini-btn"
+                data-testid="sample-elevation-btn"
+                id="sample-elevation-btn"
+              >
+                Sample Terrain
+              </button>
+            </div>
+            <div class="elevation-metrics">
+              <div class="elev-stat">
+                <span>Min</span>
+                <strong id="elev-min">-- m</strong>
+              </div>
+              <div class="elev-stat">
+                <span>Mean</span>
+                <strong id="elev-mean">-- m</strong>
+              </div>
+              <div class="elev-stat">
+                <span>Max</span>
+                <strong id="elev-max">-- m</strong>
+              </div>
+              <div class="elev-stat">
+                <span>Resolution</span>
+                <strong id="elev-res">-- m</strong>
+              </div>
+            </div>
+            <div id="elevation-bars" class="elevation-bars" aria-label="Elevation profile samples"></div>
+            <p class="panel-footnote" id="elevation-status-text">
+              Click Sample Terrain or draw a study polygon to inspect elevation.
+            </p>
+          </section>
+
+          <section class="panel-card">
+            <div class="panel-header">
+              <div>
+                <p class="panel-eyebrow">GeoJSON Zones</p>
+                <h2>NYC Capacity Directory</h2>
+              </div>
+              <span class="count-badge" id="district-count-badge">8 Zones</span>
+            </div>
+            <div
+              class="district-list"
+              id="district-selector-list"
+              data-testid="district-selector-list"
+            ></div>
+          </section>
+
+          <section class="panel-card" data-testid="live-places-panel">
+            <div class="panel-header">
+              <div>
+                <p class="panel-eyebrow">Places API (New)</p>
+                <h2>Civic Reference Hubs</h2>
+              </div>
+              <button type="button" id="refresh-places-btn" class="ghost-btn">
+                Refresh
+              </button>
+            </div>
+            <div id="places-list" class="places-list"></div>
+          </section>
+        </aside>
+
+        <main class="map-workspace">
+          <div
+            id="map-canvas"
+            class="map-canvas"
+            data-testid="map-canvas"
+            role="region"
+            aria-label="Interactive NYC Spatial Map"
+          ></div>
+
+          <div class="terradraw-toolbar" data-testid="terradraw-toolbar">
+            <span class="toolbar-label">Study Zone</span>
+            <button
+              type="button"
+              class="draw-btn"
+              data-testid="terradraw-polygon-btn"
+              data-draw-action="polygon"
+              aria-pressed="false"
+            >
+              Draw Polygon
+            </button>
+            <button
+              type="button"
+              class="draw-btn"
+              data-testid="terradraw-select-btn"
+              data-draw-action="select"
+              aria-pressed="false"
+            >
+              Select / Edit
+            </button>
+            <button
+              type="button"
+              class="draw-btn draw-btn-danger"
+              data-testid="terradraw-clear-btn"
+              data-draw-action="clear"
+            >
+              Clear Zone
+            </button>
+          </div>
+
+          <div class="map-legend" aria-label="District capacity utilization legend">
+            <div class="legend-title">Grid Capacity Utilization</div>
+            <div class="legend-items">
+              <span class="legend-chip"><i class="swatch swatch-optimal"></i>&lt; 50% Optimal</span>
+              <span class="legend-chip"><i class="swatch swatch-moderate"></i>50–64% Moderate</span>
+              <span class="legend-chip"><i class="swatch swatch-high"></i>65–79% High</span>
+              <span class="legend-chip"><i class="swatch swatch-critical"></i>&ge; 80% Critical</span>
+            </div>
+          </div>
+
+          <div id="map-status-banner" class="map-status-banner hidden" role="status"></div>
+        </main>
+      </div>
+    </div>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

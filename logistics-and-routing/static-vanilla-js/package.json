@@ -1,0 +1,16 @@
+{
+  "name": "gmp-logistics-and-routing-static-vanilla-js",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Fleet Telematics, Road-Snapped GPS & Dispatch Dashboard using Static HTML + Vanilla ES Modules and modern Google Maps Platform APIs.",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs --host 127.0.0.1 --port 8080",
+    "dev": "node server.mjs --host 127.0.0.1 --port 8080",
+    "typecheck": "node --check app.js && node --check server.mjs",
+    "build": "node --check app.js && node --check server.mjs && node -e \"import('node:fs').then(fs => { const req = ['index.html','app.js','styles.css','server.mjs','.env.example','README.md','AGENTS.md']; for (const f of req) { if (!fs.existsSync(f)) throw new Error('Missing required file: ' + f); } console.log('Build check passed: all static assets and syntax verified.'); })\""
+  },
+  "dependencies": {
+    "@googlemaps/js-api-loader": "^2.0.2"
+  }
+}

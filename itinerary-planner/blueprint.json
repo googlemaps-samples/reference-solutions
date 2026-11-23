@@ -1,0 +1,95 @@
+{
+  "solution_id": "itinerary-planner",
+  "solution_title": "Multi-Day Trip Itinerary Planner, Hotels & Time Zone Hub",
+  "summary": "Shared architecture blueprint for the Multi-Day Trip Itinerary Planner, Hotels & Time Zone Hub across all 8 web stacks. Pre-seeds Tokyo on load with live Places API (New) discovery results (attractions, restaurants, hotels), a live Time Zone API destination clock and UTC offset hub, Day 1 and Day 2 itinerary tabs with numbered day-colored AdvancedMarkerElement pins, multi-stop route polylines and waypoint optimization via the Routes API, and an embedded Street View preview panel (StreetViewPanorama + StreetViewService). Pure client stacks use Maps JS importLibrary() (Place, PlaceAutocompleteElement, Route.computeRoutes, AdvancedMarkerElement, StreetViewPanorama) and Time Zone REST with graceful Place.utcOffsetMinutes fallback; full-stack stacks (Next.js, FastAPI, Node.js Express) additionally route Places, Routes, and Time Zone calls through secure 127.0.0.1 BFF proxy endpoints with explicit X-Goog-Api-Key and X-Goog-FieldMask headers.",
+  "gmp_products_used": [
+    "Maps JavaScript API (2D Vector Map, AdvancedMarkerElement, PinElement, Polyline, InfoWindow, StreetViewPanorama, StreetViewService)",
+    "Places API (New) (Place.searchByText, Place.searchNearby, PlaceAutocompleteElement, Place.fetchFields, Places Photo Media)",
+    "Routes API (Route.computeRoutes / routes.googleapis.com/directions/v2:computeRoutes with optimizeWaypointOrder)",
+    "Time Zone API (maps.googleapis.com/maps/api/timezone/json)",
+    "Street View Static / Maps JS Street View Service (StreetViewService.getPanorama & StreetViewPanorama)"
+  ],
+  "js_libraries_to_import": [
+    "maps",
+    "marker",
+    "places",
+    "routes",
+    "streetView",
+    "geometry",
+    "core"
+  ],
+  "matched_sub_skills": [
+    "google-maps-platform",
+    "compliance-review",
+    "gmp-common-api-keys",
+    "maps-javascript-api-javascript",
+    "gmp-framework-react",
+    "places-api-web-api",
+    "routes-api-web-api",
+    "time-zone-api-web-api"
+  ],
+  "uses_3d_map": false,
+  "initial_center_lat": 35.6812,
+  "initial_center_lng": 139.7671,
+  "initial_zoom": 12,
+  "seed_search_query": "top tourist attractions in Tokyo",
+  "ui_layout_summary": "Two-column responsive split-screen workspace beneath a full-width top header bar. Top Header (64px): App title, destination PlaceAutocompleteElement search bar (data-testid=\"destination-search-input\"), quick destination selector (data-testid=\"destination-quick-select\"), and live Time Zone Hub pill (data-testid=\"timezone-hub\") displaying destination local time, timeZoneName, and UTC offset. Left Sidebar (420px fixed on desktop, scrollable): split into (1) Day 1 / Day 2 itinerary switcher tabs (data-testid=\"itinerary-day-tabs\") with day-color badges (Day 1 Teal #0F766E, Day 2 Amber #D97706), travel mode selector (DRIVE/WALK/TRANSIT, data-testid=\"travel-mode-select\"), Optimize Order button (data-testid=\"optimize-route-btn\"), route summary bar (data-testid=\"route-summary-bar\"), and numbered itinerary stops list (data-testid=\"itinerary-stops-list\"); and (2) Place Discovery section with Attractions / Restaurants / Hotels category tabs (data-testid=\"discovery-category-tabs\") and live Places API (New) cards (data-testid=\"discovery-results-list\") showing live photo, rating, review count, regularOpeningHours weekday summary, Add to Day 1/2 buttons, and Inspect Street View button. Right Workspace (flex-1): Primary interactive 2D Google Map (data-testid=\"map-container\", min-height 520px, mapId=\"DEMO_MAP_ID\", internalUsageAttributionIds=[\"gmp_git_agentsamples_v1.0.0\"]) rendering numbered day-colored AdvancedMarkerElement pins and active-day Routes API polyline, paired with a docked Street View preview panel (data-testid=\"street-view-panel\", height 240px) below/beside the map showing the live StreetViewPanorama for the currently selected hotel or landmark.",
+  "interactive_controls": [
+    "destination-search-input",
+    "destination-quick-select",
+    "timezone-hub",
+    "discovery-category-tabs",
+    "discovery-results-list",
+    "itinerary-day-tabs",
+    "optimize-route-btn",
+    "travel-mode-select",
+    "itinerary-stops-list",
+    "route-summary-bar",
+    "map-container",
+    "street-view-panel"
+  ],
+  "backend_proxy_endpoints": [
+    {
+      "method": "POST",
+      "path": "/api/places/search",
+      "upstream_gmp_service": "places.googleapis.com/v1/places:searchText",
+      "field_mask": "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.regularOpeningHours,places.photos,places.primaryTypeDisplayName,places.priceLevel,places.googleMapsUri",
+      "purpose": "Search top-rated attractions, restaurants, hotels, and destination landmarks via Places API (New) Text Search with server-side X-Goog-Api-Key and explicit X-Goog-FieldMask."
+    },
+    {
+      "method": "POST",
+      "path": "/api/places/nearby",
+      "upstream_gmp_service": "places.googleapis.com/v1/places:searchNearby",
+      "field_mask": "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.regularOpeningHours,places.photos,places.primaryTypeDisplayName,places.priceLevel,places.googleMapsUri",
+      "purpose": "Discover nearby hotels, restaurants, and attractions around the active destination or selected landmark via Places API (New) Nearby Search."
+    },
+    {
+      "method": "GET",
+      "path": "/api/places/details",
+      "upstream_gmp_service": "places.googleapis.com/v1/places/{placeId}",
+      "field_mask": "id,displayName,formattedAddress,location,viewport,rating,userRatingCount,regularOpeningHours,photos,primaryTypeDisplayName,googleMapsUri,utcOffsetMinutes",
+      "purpose": "Fetch rich Place Details (viewport, opening hours, rating, photos) for a selected Place ID using Places API (New)."
+    },
+    {
+      "method": "GET",
+      "path": "/api/places/photo",
+      "upstream_gmp_service": "places.googleapis.com/v1/{photoName}/media",
+      "field_mask": "N/A (media endpoint returning JSON photoUri via skipHttpRedirect=true or proxied image bytes)",
+      "purpose": "Resolve and proxy Places API (New) photo media URLs without exposing the server API key in image src attributes."
+    },
+    {
+      "method": "POST",
+      "path": "/api/routes/compute",
+      "upstream_gmp_service": "routes.googleapis.com/directions/v2:computeRoutes",
+      "field_mask": "routes.distanceMeters,routes.duration,routes.polyline.encodedPolyline,routes.optimizedIntermediateWaypointIndex,routes.legs.distanceMeters,routes.legs.duration,routes.legs.startLocation,routes.legs.endLocation,routes.viewport",
+      "purpose": "Compute multi-stop day routes, leg durations/distances, encoded polylines, and optional optimizeWaypointOrder stop reordering via Routes API v2."
+    },
+    {
+      "method": "GET",
+      "path": "/api/timezone",
+      "upstream_gmp_service": "maps.googleapis.com/maps/api/timezone/json",
+      "field_mask": "N/A (query-parameter REST API returning timeZoneId,timeZoneName,rawOffset,dstOffset,status)",
+      "purpose": "Fetch destination IANA time zone ID, localized time zone name, raw UTC offset, and DST offset from the Time Zone API for live destination clock calculation."
+    }
+  ]
+}

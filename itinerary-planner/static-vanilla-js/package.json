@@ -1,0 +1,15 @@
+{
+  "name": "itinerary-planner-static-vanilla-js",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Multi-Day Trip Itinerary Planner, Hotels & Time Zone Hub built with Static HTML + Vanilla JavaScript (Zero-Bundler ES Modules) and modern Google Maps Platform APIs.",
+  "scripts": {
+    "start": "node server.mjs --host 127.0.0.1 --port 3000",
+    "typecheck": "node --check app.js && node --check server.mjs",
+    "build": "node --check app.js && node --check server.mjs && node -e \"import('node:fs').then((fs)=>{for (const f of ['index.html','app.js','styles.css','server.mjs','package.json','.env.example','.gitignore','README.md','AGENTS.md']){if(!fs.existsSync(f))throw new Error('Missing '+f);}}).catch((e)=>{console.error(e);process.exit(1);})\""
+  },
+  "dependencies": {
+    "@googlemaps/js-api-loader": "^2.0.2"
+  }
+}

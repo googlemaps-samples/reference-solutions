@@ -1,0 +1,23 @@
+import { sveltekit } from '@sveltejs/kit/vite';
+import { defineConfig } from 'vite';
+
+export default defineConfig({
+  plugins: [sveltekit()],
+  server: {
+    host: '127.0.0.1',
+    port: 5173
+  },
+  preview: {
+    host: '127.0.0.1',
+    port: 4173,
+    strictPort: true
+  },
+  ssr: {
+    noExternal: [
+      '@deck.gl/core',
+      '@deck.gl/layers',
+      '@deck.gl/aggregation-layers',
+      '@deck.gl/google-maps'
+    ]
+  }
+});

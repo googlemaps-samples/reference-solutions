@@ -1,0 +1,85 @@
+{
+  "solution_id": "neighborhood-discovery",
+  "solution_title": "Hyperlocal Neighborhood Directory & Spot Mapper",
+  "summary": "Cohesive Phase 2 architecture for the Hyperlocal Neighborhood Directory & Spot Mapper pre-seeded in Central London (Covent Garden / West End, 51.5118, -0.1280, zoom 13) across all 8 standalone web stacks. On initial load, the app renders a 2D vector Google Map (mapId: \"DEMO_MAP_ID\", internalUsageAttributionIds: [\"gmp_git_agentsamples_v1.0.0\"]) with a 5km (5000m) radius circle and executes a live Places API (New) Nearby Search across four core categories (restaurant, cafe, museum, park), rendering color-coded AdvancedMarkerElement + PinElement pins and populating the directory sidebar. Users can search addresses or neighborhoods via PlaceAutocompleteElement (<gmp-place-autocomplete>, listening to gmp-select and calling event.placePrediction.toPlace().fetchFields()) or forward Geocoding, filter by category within the 5km radius, inspect live ratings, priceLevel, regularOpeningHours.weekdayDescriptions (avoiding beta-only Place.isOpen() on the weekly channel), and customer reviews in a slide-over details drawer, compare up to 3 places side-by-side, and click anywhere on the map to reverse-geocode human-readable street addresses and coordinates to inspect or pin session-scoped community spots. Pure client stacks (static-vanilla-js, react-vite, sveltekit, vue-vite, angular) call Maps JS importLibrary() classes exclusively (Place.searchNearby, Place.searchByText, Place.fetchFields, PlaceAutocompleteElement, Geocoder) with zero CORS traps; full-stack frameworks (nextjs, python-fastapi, nodejs-web) additionally route Places API (New) and Geocoding REST calls through local /api/... BFF endpoints with explicit X-Goog-Api-Key, X-Goog-FieldMask, X-Content-Type-Options: nosniff, and X-Frame-Options: SAMEORIGIN headers, bound strictly to 127.0.0.1. All stacks strictly enforce zero deprecated APIs (no Marker, PlacesService, Autocomplete, DirectionsService, DistanceMatrixService, HeatmapLayer, drawing, or gmpx-*), no hardcoded API keys, no innerHTML DOM sinks, and no LLM-fabricated place data.",
+  "gmp_products_used": [
+    "Maps JavaScript API (2D Vector Map, AdvancedMarkerElement, PinElement, InfoWindow, Circle)",
+    "Places API (New) — PlaceAutocompleteElement, Place.searchNearby, Place.searchByText, Place.fetchFields",
+    "Places API (New) Web Service REST (places:searchNearby, places:searchText, places/{placeId}) for full-stack BFF routes",
+    "Geocoding API (Maps JS Geocoder and REST /maps/api/geocode/json) for forward and reverse geocoding"
+  ],
+  "js_libraries_to_import": [
+    "maps",
+    "marker",
+    "places",
+    "geocoding",
+    "core"
+  ],
+  "matched_sub_skills": [
+    "google-maps-platform",
+    "compliance-review",
+    "gmp-common-api-keys",
+    "maps-javascript-api-javascript",
+    "gmp-framework-react",
+    "places-api-web-api",
+    "geocoding-api-web-api"
+  ],
+  "uses_3d_map": false,
+  "initial_center_lat": 51.5118,
+  "initial_center_lng": -0.128,
+  "initial_zoom": 13,
+  "seed_search_query": "restaurants, cafes, museums, and parks in Central London",
+  "ui_layout_summary": "Split-screen desktop / responsive mobile layout: (1) Fixed 64px top header bar with app title, PlaceAutocompleteElement address/neighborhood search input + Geocode button, quick Central London neighborhood preset selector (Covent Garden, Soho, South Bank, Bloomsbury), 5km radius badge/circle toggle, and Comparison panel toggle button with active count. (2) Left directory sidebar (400px width on desktop, collapsible bottom/top drawer on mobile) containing category filter chips (All, Restaurants, Cafes, Museus/Museums, Parks), live place count & active neighborhood status bar, scrollable directory cards showing live rating, review count, price level, today's opening hours, Compare toggle, and Inspect action, plus a session-scoped Community Spots list. (3) Main full-height interactive 2D vector map canvas (height: calc(100vh - 64px), min-height: 520px) displaying the 5km search radius circle and categorized AdvancedMarkerElement PinElement markers with standard click listeners (weekly-channel safe). (4) Right-side floating Place Details Drawer / Map-Click Reverse-Geocode Inspector showing live ratings, priceLevel, weekdayDescriptions, reviews, photos, and a form to pin reverse-geocoded community spots. (5) Docked bottom side-by-side Comparison Panel comparing up to 3 selected places across rating, review volume, price level, category, hours, and address.",
+  "interactive_controls": [
+    "map-canvas",
+    "neighborhood-autocomplete-input",
+    "address-geocode-button",
+    "neighborhood-preset-select",
+    "category-filter-all",
+    "category-filter-restaurant",
+    "category-filter-cafe",
+    "category-filter-museum",
+    "category-filter-park",
+    "radius-toggle-circle",
+    "places-results-list",
+    "place-details-drawer",
+    "drawer-compare-button",
+    "pin-community-spot-button",
+    "toggle-comparison-button",
+    "comparison-panel",
+    "reverse-geocode-inspector",
+    "community-spot-name-input",
+    "community-spot-note-input",
+    "save-community-spot-button"
+  ],
+  "backend_proxy_endpoints": [
+    {
+      "method": "POST",
+      "path": "/api/places/nearby",
+      "upstream_gmp_service": "places.googleapis.com/v1/places:searchNearby",
+      "field_mask": "places.id,places.displayName,places.formattedAddress,places.location,places.primaryType,places.primaryTypeDisplayName,places.types,places.rating,places.userRatingCount,places.priceLevel,places.regularOpeningHours,places.photos,places.googleMapsUri",
+      "purpose": "Server-side BFF proxy for Places API (New) Nearby Search within a 5km (5000m) circular locationRestriction around the active Central London or user-selected neighborhood center, filtered by restaurant, cafe, museum, and park types."
+    },
+    {
+      "method": "POST",
+      "path": "/api/places/search",
+      "upstream_gmp_service": "places.googleapis.com/v1/places:searchText",
+      "field_mask": "places.id,places.displayName,places.formattedAddress,places.location,places.primaryType,places.primaryTypeDisplayName,places.types,places.rating,places.userRatingCount,places.priceLevel,places.regularOpeningHours,places.photos,places.googleMapsUri",
+      "purpose": "Server-side BFF proxy for Places API (New) Text Search with a 5km circular locationBias for free-text neighborhood/category discovery queries."
+    },
+    {
+      "method": "GET",
+      "path": "/api/places/details",
+      "upstream_gmp_service": "places.googleapis.com/v1/places/{placeId}",
+      "field_mask": "id,displayName,formattedAddress,location,primaryType,primaryTypeDisplayName,types,rating,userRatingCount,priceLevel,regularOpeningHours,reviews,photos,websiteUri,internationalPhoneNumber,googleMapsUri",
+      "purpose": "Server-side BFF proxy for Places API (New) Place Details (GET /v1/places/{placeId}) retrieving live ratings, userRatingCount, priceLevel, weekly opening hours, customer reviews, and photo references for the details drawer and side-by-side comparison cards."
+    },
+    {
+      "method": "GET",
+      "path": "/api/geocode",
+      "upstream_gmp_service": "maps.googleapis.com/maps/api/geocode/json",
+      "field_mask": "N/A (Geocoding API REST returns standard JSON; BFF projects formatted_address, place_id, geometry.location, address_components, and plus_code)",
+      "purpose": "Server-side BFF proxy for forward geocoding (address/neighborhood string to coordinates) and reverse geocoding (map-click lat,lng to human-readable street address and place_id) without browser CORS exposure."
+    }
+  ]
+}

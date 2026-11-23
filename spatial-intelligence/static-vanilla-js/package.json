@@ -1,0 +1,19 @@
+{
+  "name": "gmp-3d-spatial-intelligence-static-vanilla-js",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Enterprise GIS Workbench, GeoJSON Zones & Deck.gl Analytics built with Static HTML + Vanilla JavaScript (Zero-Bundler ES Modules) and Google Maps Platform.",
+  "scripts": {
+    "start": "node server.mjs --host 127.0.0.1 --port 4173",
+    "dev": "node server.mjs --host 127.0.0.1 --port 4173",
+    "typecheck": "node --check app.js && node --check nyc-data.js && node --check server.mjs",
+    "build": "node --check app.js && node --check nyc-data.js && node --check server.mjs && node -e \"import('node:fs').then(fs=>{for(const f of ['index.html','styles.css','app.js','nyc-data.js','server.mjs'])if(!fs.existsSync(f))throw new Error('Missing '+f);console.log('Static build verification passed.');})\""
+  },
+  "dependencies": {
+    "@googlemaps/js-api-loader": "^2.1.3",
+    "deck.gl": "^9.1.4",
+    "terra-draw": "^1.4.0",
+    "terra-draw-google-maps-adapter": "^1.4.0"
+  }
+}

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Miami Civic Hazard Monitor &amp; Safe Shelter Router</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f172a'/%3E%3Cpath d='M18 4L8 18h7l-1 10 10-14h-7l1-10z' fill='%23f97316'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="/static/styles.css" />
+    <!-- deck.gl & @deck.gl/google-maps for WebGL HeatmapLayer via GoogleMapsOverlay -->
+    <script src="https://unpkg.com/deck.gl@8.9.22/dist.min.js" defer></script>
+    <script src="https://unpkg.com/@deck.gl/google-maps@8.9.22/dist.min.js" defer></script>
+    <script src="/static/app.js" type="module"></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <!-- Top Command Header Bar (56px) -->
+      <header class="top-header">
+        <div class="header-left">
+          <button
+            id="mobile-sidebar-toggle"
+            class="icon-btn mobile-only"
+            type="button"
+            aria-label="Toggle control panel"
+          >
+            ☰
+          </button>
+          <div class="brand-badge" aria-hidden="true">⚡</div>
+          <div class="brand-text">
+            <h1 class="portal-title">Miami Hazard Heatmap &amp; Shelter Router</h1>
+          </div>
+          <div id="header-weather-pill" class="weather-pill" aria-live="polite">
+            <span class="pill-dot"></span>
+            <span id="header-weather-text">Loading Miami weather…</span>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <label class="toggle-chip" for="layer-toggle-heatmap">
+            <input id="layer-toggle-heatmap" type="checkbox" checked />
+            <span>HeatmapLayer</span>
+          </label>
+          <label class="toggle-chip" for="layer-toggle-polygons">
+            <input id="layer-toggle-polygons" type="checkbox" checked />
+            <span>Flood Zones</span>
+          </label>
+          <button id="find-shelter-btn" class="primary-cta" type="button">
+            Find Safe Shelter
+          </button>
+        </div>
+      </header>
+
+      <!-- Main Split-Screen Workspace -->
+      <main class="workspace">
+        <!-- Left Control Sidebar -->
+        <aside id="control-sidebar" class="sidebar" aria-label="Civic Incident and Shelter Controls">
+          <div id="api-key-banner" class="alert-banner hidden" role="alert">
+            <strong id="api-key-banner-title">Google Maps API Key Required</strong>
+            <p id="api-key-banner-body"></p>
+          </div>
+
+          <!-- Card A: Civic Incident Reporter -->
+          <section id="incident-report-panel" class="panel-card">
+            <div class="panel-header">
+              <h2>Civic Incident Reporter</h2>
+              <span id="incident-count-badge" class="count-badge">0 reports</span>
+            </div>
+            <p class="panel-hint">
+              Click anywhere on the Miami map to geotag an incident with live address, elevation &amp; storm conditions.
+            </p>
+
+            <div class="enrichment-grid">
+              <div class="metric-box">
+                <span class="metric-label">Coordinates</span>
+                <span id="incident-coords" class="metric-value">25.77430, -80.19370 (Center)</span>
+              </div>
+              <div class="metric-box">
+                <span class="metric-label">Terrain Elevation</span>
+                <span id="incident-elevation" class="metric-value">Click map to sample</span>
+              </div>
+              <div class="metric-box full-span">
+                <span class="metric-label">Reverse-Geocoded Address</span>
+                <span id="incident-address" class="metric-value">Downtown Miami Civic Command</span>
+              </div>
+              <div class="metric-box full-span">
+                <span class="metric-label">Live Wind &amp; Precipitation</span>
+                <span id="incident-weather" class="metric-value">Sampling live Weather API…</span>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <label class="field-label" for="incident-type-select">Hazard Classification</label>
+              <select id="incident-type-select" class="select-input">
+                <option value="Street Flooding">Street Flooding (Severe)</option>
+                <option value="Storm Surge">Storm Surge / Seawall Breach</option>
+                <option value="Blocked Storm Drain">Blocked Storm Drain</option>
+                <option value="Downed Power Line">Downed Power Line</option>
+                <option value="Wind Debris">Wind Debris / Road Obstruction</option>
+              </select>
+            </div>
+
+            <div class="form-actions">
+              <button id="incident-submit-btn" class="secondary-cta" type="button">
+                Log Hazard Report to Heatmap
+              </button>
+              <span id="incident-feedback" class="inline-status" aria-live="polite"></span>
+            </div>
+          </section>
+
+          <!-- Card B: Safe Shelter Evacuation Route Summary -->
+          <section id="route-summary-card" class="panel-card">
+            <div class="panel-header">
+              <h2>Evacuation Route Summary</h2>
+              <label class="inline-toggle" for="avoid-flood-toggle">
+                <input id="avoid-flood-toggle" type="checkbox" checked />
+                <span>Avoid Flood Zones</span>
+              </label>
+            </div>
+
+            <div id="route-status-badge" class="status-pill neutral">
+              Ready — Select a shelter or click Find Safe Shelter
+            </div>
+
+            <div class="route-metrics">
+              <div class="route-stat">
+                <span class="metric-label">Target Shelter</span>
+                <strong id="route-shelter-name" class="route-stat-val">—</strong>
+              </div>
+              <div class="route-stat-row">
+                <div class="route-stat">
+                  <span class="metric-label">Est. Travel Time</span>
+                  <strong id="route-eta" class="route-stat-val">—</strong>
+                </div>
+                <div class="route-stat">
+                  <span class="metric-label">Route Distance</span>
+                  <strong id="route-distance" class="route-stat-val">—</strong>
+                </div>
+              </div>
+            </div>
+
+            <ol id="route-steps-list" class="steps-list"></ol>
+          </section>
+
+          <!-- Card C: Live Nearby Emergency Shelters List -->
+          <section class="panel-card shelters-card">
+            <div class="panel-header">
+              <h2>Emergency Shelters &amp; Hospitals</h2>
+              <span id="shelter-count-badge" class="count-badge">0 found</span>
+            </div>
+
+            <div class="search-row">
+              <input
+                id="shelter-search-input"
+                class="text-input"
+                type="text"
+                value="hospital and community center in Miami, FL"
+                placeholder="Search hospitals or community centers…"
+                aria-label="Search emergency shelters"
+              />
+              <button id="shelter-search-btn" class="compact-btn" type="button">Search</button>
+            </div>
+
+            <div class="chip-row">
+              <button class="filter-chip" type="button" data-query="hospital and community center in Miami, FL">
+                All Shelters
+              </button>
+              <button class="filter-chip" type="button" data-query="emergency hospital in Miami, FL">
+                Hospitals
+              </button>
+              <button class="filter-chip" type="button" data-query="community center shelter in Miami, FL">
+                Community Centers
+              </button>
+            </div>
+
+            <ul id="shelter-list" class="shelter-list" aria-live="polite"></ul>
+          </section>
+        </aside>
+
+        <!-- Right Interactive Map Canvas -->
+        <section class="map-stage" aria-label="Interactive Miami Hazard Map">
+          <div id="map-container" class="map-canvas"></div>
+
+          <!-- Compact Bottom-Left Map Legend & Compliance Disclaimer -->
+          <div class="map-legend" role="region" aria-label="Map Legend">
+            <div class="legend-title">
+              <strong>Hazard &amp; Evacuation Legend</strong>
+              <span id="heatmap-engine-tag" class="engine-tag">deck.gl WebGL</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-ramp" aria-hidden="true"></span>
+              <span>Incident Density Heatmap</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-swatch zone-severe" aria-hidden="true"></span>
+              <span>Active Flood-Hazard Zone</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-swatch shelter-pin" aria-hidden="true"></span>
+              <span>Emergency Shelter / Hospital</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-line route-line" aria-hidden="true"></span>
+              <span>Safe Bypass Evacuation Route</span>
+            </div>
+            <p class="legend-disclaimer">
+              Civic situational awareness tool powered by Google Maps Platform. In an active emergency, follow Miami-Dade Emergency Management &amp; call 911.
+            </p>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,76 @@
+{
+  "solution_id": "3d-trail-explorer",
+  "solution_title": "Photorealistic 3D Map Explorer, Camera Tour & 3D Trail Route",
+  "summary": "Phase 2 Shared Solution Architecture Blueprint for a Photorealistic 3D Lake Tahoe Trail Explorer & Camera Tour application across all 8 web framework stacks. Uses the Maps JavaScript API maps3d library (Map3DElement / <gmp-map-3d> with mode SATELLITE or HYBRID and internalUsageAttributionIds=['gmp_git_agentsamples_v1.0.0']), renders an extruded bright-red 3D hiking trail route (Polyline3DElement with strokeColor: 'rgb(255, 0, 0)', strokeWidth: 8, altitudeMode: 'RELATIVE_TO_GROUND', extruded: true), interactive 3D trailhead and viewpoint markers (Marker3DInteractiveElement with PinElement using glyphText and gmp-click listeners), smooth 3D camera storytelling animations (map3d.flyCameraTo adjusting center, tilt, heading, and range), live Elevation API path sampling for the interactive elevation profile chart and gain/loss metrics (ElevationService.getElevationAlongPath on client stacks; /api/elevation/profile BFF proxy on full-stack stacks), and live Places API (New) landmark search (PlaceAutocompleteElement listening to gmp-select + Place.searchByText for the initial seed search 'Emerald Bay State Park, Lake Tahoe'). Strictly enforces zero deprecated APIs, explicit non-zero map dimensions, and ToS/security compliance.",
+  "gmp_products_used": [
+    "Maps JavaScript API (Photorealistic 3D Maps: Map3DElement, Polyline3DElement, Marker3DInteractiveElement, PopoverElement)",
+    "Maps JavaScript API (Marker Library: PinElement)",
+    "Elevation API (ElevationService.getElevationAlongPath & getElevationForLocations / Elevation REST API)",
+    "Places API (New) (PlaceAutocompleteElement, Place.searchByText, Place.fetchFields)",
+    "Map Tiles API (Photorealistic 3D Tiles rendered via maps3d)"
+  ],
+  "js_libraries_to_import": [
+    "maps3d",
+    "marker",
+    "places",
+    "elevation"
+  ],
+  "matched_sub_skills": [
+    "google-maps-platform",
+    "compliance-review",
+    "gmp-common-api-keys",
+    "maps-javascript-api-javascript",
+    "gmp-framework-react",
+    "places-api-web-api",
+    "elevation-api-web-api",
+    "map-tiles-api-web-api"
+  ],
+  "uses_3d_map": true,
+  "initial_center_lat": 38.9542,
+  "initial_center_lng": -120.1103,
+  "initial_zoom": 14,
+  "seed_search_query": "Emerald Bay State Park, Lake Tahoe",
+  "ui_layout_summary": "Full-viewport dark-slate alpine explorer layout (100vh, min-height 600px, zero scrollbars on desktop). Top floating glassmorphic header bar houses the app title ('Lake Tahoe 3D Trail Explorer'), the Places landmark search bar (PlaceAutocompleteElement + fallback/BFF search input for full-stack parity), and live 3D camera telemetry readout (heading, tilt, range). Left floating sidebar (360px wide on desktop, collapsible bottom drawer on mobile) contains: (1) Guided Chapter Tour preset buttons ('1. Emerald Bay Overview', '2. Eagle Falls Trailhead', '3. Rubicon Ridge', '4. Eagle Point Overlook', '5. Tahoe Summit Panorama') plus an Auto-Play Tour toggle that executes smooth map3d.flyCameraTo() transitions; (2) Active Viewpoint / Searched Landmark detail card populated with live Places API (New) and Elevation API data; and (3) Interactive SVG Elevation Profile chart & trail metrics strip (total distance, min/max elevation, total ascent/descent) sampled live via Elevation API—hovering or clicking a chart sample highlights the corresponding elevation point and can pan/focus the 3D camera. Right/main canvas (flex-1, min-height: 520px, min-width: 300px) renders the full-bleed <gmp-map-3d> / Map3DElement with the extruded red RGB(255, 0, 0) 3D trail polyline and interactive 3D viewpoint markers.",
+  "interactive_controls": [
+    "data-testid=\"trail-explorer-app\"",
+    "data-testid=\"map-3d-container\"",
+    "data-testid=\"gmp-map-3d\"",
+    "data-testid=\"landmark-search-input\"",
+    "data-testid=\"landmark-search-submit\"",
+    "data-testid=\"chapter-tour-panel\"",
+    "data-testid=\"chapter-btn-overview\"",
+    "data-testid=\"chapter-btn-trailhead\"",
+    "data-testid=\"chapter-btn-ridge\"",
+    "data-testid=\"chapter-btn-overlook\"",
+    "data-testid=\"chapter-btn-summit\"",
+    "data-testid=\"tour-autoplay-toggle\"",
+    "data-testid=\"camera-telemetry-badge\"",
+    "data-testid=\"elevation-profile-panel\"",
+    "data-testid=\"elevation-profile-chart\"",
+    "data-testid=\"trail-metrics-summary\"",
+    "data-testid=\"selected-viewpoint-card\""
+  ],
+  "backend_proxy_endpoints": [
+    {
+      "method": "POST",
+      "path": "/api/places/search",
+      "upstream_gmp_service": "places.googleapis.com/v1/places:searchText",
+      "field_mask": "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.googleMapsUri",
+      "purpose": "Server-side BFF proxy for Places API (New) Text Search to locate Lake Tahoe landmarks and viewpoints without exposing server keys or hitting browser CORS limits."
+    },
+    {
+      "method": "POST",
+      "path": "/api/places/autocomplete",
+      "upstream_gmp_service": "places.googleapis.com/v1/places:autocomplete",
+      "field_mask": "suggestions.placePrediction.placeId,suggestions.placePrediction.text,suggestions.placePrediction.structuredFormat",
+      "purpose": "Server-side BFF proxy for Places API (New) Autocomplete suggestions to support landmark search on full-stack frameworks."
+    },
+    {
+      "method": "POST",
+      "path": "/api/elevation/profile",
+      "upstream_gmp_service": "maps.googleapis.com/maps/api/elevation/json",
+      "field_mask": "results.elevation,results.location,results.resolution",
+      "purpose": "Server-side BFF proxy to sample equidistant elevation points along the Lake Tahoe hiking trail path and query point elevations for searched landmarks via the Elevation API."
+    }
+  ]
+}

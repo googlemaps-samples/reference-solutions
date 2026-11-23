@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Enterprise GIS Workbench — NYC GeoJSON Zones &amp; Deck.gl Analytics</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%230284c7'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="/static/styles.css" />
+    <script src="https://unpkg.com/deck.gl@8.9.22/dist.min.js"></script>
+    <script src="https://unpkg.com/@deck.gl/google-maps@8.9.22/dist.min.js"></script>
+    <script src="https://unpkg.com/terra-draw@latest/dist/terra-draw.umd.js"></script>
+    <script src="https://unpkg.com/terra-draw-google-maps-adapter@latest/dist/terra-draw-google-maps-adapter.umd.js"></script>
+  </head>
+  <body>
+    <div class="workbench-shell">
+      <header class="workbench-header" data-testid="workbench-header">
+        <div class="brand-group">
+          <div class="brand-mark" aria-hidden="true">GIS</div>
+          <div class="brand-titles">
+            <span class="brand-title">NYC Spatial Intelligence Workbench</span>
+            <span class="brand-subtitle">GeoJSON Zones • Deck.gl • Terra Draw • Elevation &amp; Places</span>
+          </div>
+        </div>
+
+        <div class="header-controls">
+          <div id="place-autocomplete-host" class="autocomplete-host">
+            <span class="autocomplete-fallback" id="autocomplete-status">Place Jumper Ready</span>
+          </div>
+
+          <div class="segmented-control" data-testid="basemap-switcher" role="group" aria-label="Basemap switcher">
+            <button type="button" class="seg-btn active" data-testid="basemap-btn-roadmap" data-maptype="roadmap">Roadmap</button>
+            <button type="button" class="seg-btn" data-testid="basemap-btn-satellite" data-maptype="satellite">Satellite</button>
+            <button type="button" class="seg-btn" data-testid="basemap-btn-hybrid" data-maptype="hybrid">Hybrid</button>
+            <button type="button" class="seg-btn" data-testid="basemap-btn-terrain" data-maptype="terrain">Terrain</button>
+          </div>
+
+          <div class="segmented-control" data-testid="deckgl-layer-controls" role="group" aria-label="Deck.gl and GeoJSON layer controls">
+            <button type="button" class="seg-btn active" data-testid="deckgl-mode-scatterplot" data-layer="scatterplot">Scatterplot</button>
+            <button type="button" class="seg-btn" data-testid="deckgl-mode-hexagon" data-layer="hexagon">Hexagon</button>
+          </div>
+
+          <button type="button" id="toggle-geojson-btn" class="layer-toggle-btn active" data-testid="toggle-geojson-btn" aria-pressed="true">
+            GeoJSON Zones: ON
+          </button>
+        </div>
+      </header>
+
+      <main class="workbench-body">
+        <aside class="sidebar" aria-label="Spatial Analytics Sidebar">
+          <section class="panel-card" data-testid="zone-analytics-panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Zone Analytics</h2>
+              <span class="scope-pill" id="active-scope-pill">Citywide (8 Zones)</span>
+            </div>
+            <div class="kpi-grid">
+              <div class="kpi-cell">
+                <div class="kpi-label">Filtered Sensors</div>
+                <div class="kpi-value" id="kpi-sensor-count">2,400</div>
+                <div class="kpi-sub" id="kpi-sensor-share">100.0% of grid</div>
+              </div>
+              <div class="kpi-cell">
+                <div class="kpi-label">Avg Capacity Load</div>
+                <div class="kpi-value" id="kpi-avg-load">--%</div>
+                <div class="kpi-sub" id="kpi-peak-load">Peak: --%</div>
+              </div>
+              <div class="kpi-cell">
+                <div class="kpi-label">Total Capacity</div>
+                <div class="kpi-value" id="kpi-total-mw">-- MW</div>
+                <div class="kpi-sub">Active infrastructure</div>
+              </div>
+              <div class="kpi-cell">
+                <div class="kpi-label">Study Zone Area</div>
+                <div class="kpi-value" id="kpi-area-km2">-- km²</div>
+                <div class="kpi-sub" id="kpi-density">-- sensors/km²</div>
+              </div>
+            </div>
+            <div class="panel-header">
+              <span class="status-note" id="zone-filter-note">Showing all 8 NYC planning zones.</span>
+              <button type="button" class="ghost-btn hidden" id="reset-scope-btn">Reset Scope</button>
+            </div>
+          </section>
+
+          <section class="panel-card" data-testid="elevation-inspector-card">
+            <div class="panel-header">
+              <h2 class="panel-title">Terrain Elevation Inspector</h2>
+              <button type="button" class="action-btn" data-testid="sample-elevation-btn" id="sample-elevation-btn">
+                Sample Terrain
+              </button>
+            </div>
+            <div class="elevation-stats">
+              <div class="elev-stat">
+                <div class="elev-stat-label">Min (m)</div>
+                <div class="elev-stat-val" id="elev-min">--</div>
+              </div>
+              <div class="elev-stat">
+                <div class="elev-stat-label">Mean (m)</div>
+                <div class="elev-stat-val" id="elev-mean">--</div>
+              </div>
+              <div class="elev-stat">
+                <div class="elev-stat-label">Max (m)</div>
+                <div class="elev-stat-val" id="elev-max">--</div>
+              </div>
+            </div>
+            <p class="status-note" id="elevation-status-text">
+              Samples Elevation API across active zone vertices &amp; centroid.
+            </p>
+          </section>
+
+          <section class="panel-card">
+            <div class="panel-header">
+              <h2 class="panel-title">NYC District Capacity Directory</h2>
+              <span class="status-note">Click to fit bounds</span>
+            </div>
+            <div class="district-list" data-testid="district-selector-list" id="district-selector-list"></div>
+          </section>
+
+          <section class="panel-card" data-testid="live-places-panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Live NYC Civic Reference Hubs</h2>
+              <span class="status-note" id="places-status-badge">Places API (New)</span>
+            </div>
+            <div class="places-list" id="live-places-list">
+              <p class="status-note">Loading live civic hubs via /api/places/search...</p>
+            </div>
+          </section>
+        </aside>
+
+        <section class="map-pane" aria-label="Interactive GIS Map">
+          <div class="terradraw-toolbar" data-testid="terradraw-toolbar" role="toolbar" aria-label="Terra Draw Polygon Tools">
+            <button type="button" class="td-btn" data-testid="terradraw-polygon-btn" id="terradraw-polygon-btn">
+              Draw Polygon
+            </button>
+            <button type="button" class="td-btn" data-testid="terradraw-select-btn" id="terradraw-select-btn">
+              Select / Edit
+            </button>
+            <button type="button" class="td-btn danger" data-testid="terradraw-clear-btn" id="terradraw-clear-btn">
+              Clear Zone
+            </button>
+          </div>
+
+          <div id="map" class="map-canvas" data-testid="map-canvas"></div>
+
+          <div id="map-setup-banner" class="map-notice-banner hidden">
+            <div class="map-notice-card">
+              <h2>Google Maps API Key Required</h2>
+              <p>
+                Configure <code>GOOGLE_MAPS_API_KEY</code> in your local <code>.env</code> file to enable the live Google Map,
+                <code>PlaceAutocompleteElement</code>, Elevation API terrain profiling, and Places API (New) civic hubs.
+              </p>
+              <p>
+                Get a free zero-billing prototyping key from the
+                <a href="https://mapsplatform.google.com/maps-demo-key?utm_campaign=gmp_git_agentsamples_v1.0.0" target="_blank"
+                  rel="noopener noreferrer">
+                  Google Maps Demo Key Console
+                </a>.
+              </p>
+            </div>
+          </div>
+
+          <div class="map-legend" aria-label="Capacity Legend">
+            <div class="legend-title">District &amp; Sensor Capacity</div>
+            <div class="legend-items">
+              <div class="legend-row"><span class="swatch" style="background:#ef4444;"></span>Critical (&ge;90%)</div>
+              <div class="legend-row"><span class="swatch" style="background:#f97316;"></span>High (78–89%)</div>
+              <div class="legend-row"><span class="swatch" style="background:#eab308;"></span>Elevated (65–77%)</div>
+              <div class="legend-row"><span class="swatch" style="background:#10b981;"></span>Nominal (&lt;65%)</div>
+            </div>
+            <div class="legend-status" id="deckgl-status-text">Initializing spatial layers...</div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/static/nyc-data.js"></script>
+    <script src="/static/app.js"></script>
+  </body>
+</html>

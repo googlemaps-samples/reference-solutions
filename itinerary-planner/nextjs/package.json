@@ -1,0 +1,27 @@
+{
+  "name": "itinerary-planner-nextjs",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Multi-Day Trip Itinerary Planner, Hotels & Time Zone Hub built with Next.js App Router, TypeScript, @vis.gl/react-google-maps, and Google Maps Platform REST Route Handlers.",
+  "scripts": {
+    "dev": "next dev --hostname 127.0.0.1 --port 3000",
+    "build": "next build",
+    "start": "next start --hostname 127.0.0.1 --port 3000",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@vis.gl/react-google-maps": "^1.5.2",
+    "lucide-react": "^0.475.0",
+    "next": "^15.2.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/google.maps": "^3.58.1",
+    "@types/node": "^22.13.0",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "typescript": "^5.7.3"
+  }
+}

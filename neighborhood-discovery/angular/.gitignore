@@ -1,0 +1,47 @@
+# See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
+
+# Dependencies & Build Outputs
+node_modules/
+dist/
+build/
+.next/
+.svelte-kit/
+.venv/
+/tmp
+/out-tsc
+/bazel-out
+/.angular/cache
+.sass-cache/
+/connect.lock
+/coverage
+/typings
+__screenshots__/
+
+# Environment Files
+.env
+.env.local
+.env.*.local
+
+# Logs & OS
+npm-debug.log
+yarn-error.log
+/libpeerconnection.log
+testem.log
+.DS_Store
+Thumbs.db
+
+# IDEs and editors
+.idea/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/mcp.json
+.history/*

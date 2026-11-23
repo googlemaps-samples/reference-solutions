@@ -1,0 +1,295 @@
+<div class="app-shell">
+  <header class="app-header" data-testid="app-header">
+    <div class="brand">
+      <div class="brand__mark" aria-hidden="true">M</div>
+      <div class="brand__text">
+        <span class="brand__title">MetroGrid NYC</span>
+        <span class="brand__subtitle">Store, Express Kiosk &amp; 24/7 ATM Locator</span>
+      </div>
+    </div>
+
+    <div class="header-controls">
+      <form class="origin-search-form" (ngSubmit)="onOriginSubmit()">
+        <div class="search-box">
+          <input
+            type="text"
+            class="search-input"
+            data-testid="origin-search-input"
+            placeholder="Search NYC starting address or landmark..."
+            aria-label="Search starting NYC location"
+            [ngModel]="originInput()"
+            (ngModelChange)="onOriginInputChanged($event)"
+            (blur)="clearDropdownDelayed()"
+            name="originQuery"
+            autocomplete="off"
+          />
+          @if (showDropdown() && suggestions().length > 0) {
+            <ul
+              class="autocomplete-dropdown"
+              data-testid="autocomplete-dropdown"
+              role="listbox"
+            >
+              @for (item of suggestions(); track item.placeId) {
+                <li
+                  class="autocomplete-item"
+                  role="option"
+                  (mousedown)="onSelectSuggestion(item)"
+                >
+                  <span class="autocomplete-item__main">{{ item.mainText }}</span>
+                  @if (item.secondaryText) {
+                    <span class="autocomplete-item__sub">{{ item.secondaryText }}</span>
+                  }
+                </li>
+              }
+            </ul>
+          }
+        </div>
+        <button type="submit" class="btn btn--secondary">Set Origin</button>
+      </form>
+
+      <select
+        class="preset-select"
+        aria-label="Quick NYC origin preset"
+        [ngModel]="origin().label"
+        (ngModelChange)="onPresetOriginSelected($event)"
+      >
+        @for (preset of presetOrigins; track preset.label) {
+          <option [value]="preset.label">{{ preset.label }}</option>
+        }
+      </select>
+
+      <select
+        class="mode-select"
+        data-testid="travel-mode-select"
+        aria-label="Travel mode"
+        [ngModel]="travelMode()"
+        (ngModelChange)="onTravelModeChanged($event)"
+      >
+        <option value="DRIVE">Drive</option>
+        <option value="WALK">Walk</option>
+        <option value="TRANSIT">Transit</option>
+      </select>
+
+      <button
+        type="button"
+        class="btn btn--primary"
+        data-testid="route-fastest-button"
+        [disabled]="!fastestBranch() || loadingRoute()"
+        (click)="routeToFastest()"
+      >
+        @if (loadingRoute()) {
+          Routing...
+        } @else {
+          Route to Fastest
+        }
+      </button>
+    </div>
+  </header>
+
+  <main class="split-layout">
+    <aside class="sidebar">
+      <section class="filters-panel">
+        <div class="filter-group">
+          <div class="filter-group__label">Branch Type</div>
+          <div class="chip-row">
+            <button
+              type="button"
+              class="chip"
+              data-testid="filter-type-all"
+              [class.chip--active]="selectedTypeFilter() === 'all'"
+              (click)="setTypeFilter('all')"
+            >
+              All ({{ branches().length }})
+            </button>
+            <button
+              type="button"
+              class="chip chip--flagship"
+              data-testid="filter-type-flagship"
+              [class.chip--active]="selectedTypeFilter() === 'flagship'"
+              (click)="setTypeFilter('flagship')"
+            >
+              Flagship Store
+            </button>
+            <button
+              type="button"
+              class="chip chip--kiosk"
+              data-testid="filter-type-kiosk"
+              [class.chip--active]="selectedTypeFilter() === 'kiosk'"
+              (click)="setTypeFilter('kiosk')"
+            >
+              Express Kiosk
+            </button>
+            <button
+              type="button"
+              class="chip chip--atm"
+              data-testid="filter-type-atm"
+              [class.chip--active]="selectedTypeFilter() === 'atm'"
+              (click)="setTypeFilter('atm')"
+            >
+              24/7 ATM
+            </button>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <div class="filter-group__label">Product &amp; Service Availability</div>
+          <div class="chip-row">
+            @for (svc of serviceOptions; track svc.key) {
+              <button
+                type="button"
+                class="chip chip--service"
+                [attr.data-testid]="svc.testId"
+                [class.chip--active]="isServiceFilterActive(svc.key)"
+                (click)="toggleServiceFilter(svc.key)"
+              >
+                {{ svc.label }}
+              </button>
+            }
+          </div>
+        </div>
+      </section>
+
+      <section class="route-summary-banner" data-testid="route-summary-banner">
+        @if (activeRoute(); as route) {
+          <div class="banner__top">
+            <span class="banner__pill">Active Route ({{ route.travelMode }})</span>
+            <span class="banner__metrics">
+              {{ route.etaText }} · {{ route.distanceText }}
+            </span>
+          </div>
+          <div class="banner__title">{{ route.branchName }}</div>
+          <div class="banner__sub">
+            From {{ origin().label }} → {{ route.branchTypeLabel }}
+          </div>
+          @if (route.travelMode === 'WALK') {
+            <div class="banner__disclaimer">
+              Walking directions are in beta; always follow NYC pedestrian signals and crosswalks.
+            </div>
+          }
+        } @else if (fastestBranch(); as fastest) {
+          <div class="banner__top">
+            <span class="banner__pill banner__pill--fastest">Fastest Nearby</span>
+            <span class="banner__metrics">
+              {{ fastest.etaText }} · {{ fastest.distanceText }}
+            </span>
+          </div>
+          <div class="banner__title">{{ fastest.name }}</div>
+          <div class="banner__sub">
+            Click a branch or "Route to Fastest" to draw the live route polyline.
+          </div>
+        } @else {
+          <div class="banner__sub">
+            Origin: {{ origin().label }} · Calculating live NYC routes...
+          </div>
+        }
+      </section>
+
+      @if (errorMessage()) {
+        <div class="status-alert">{{ errorMessage() }}</div>
+      }
+
+      <div class="list-header">
+        <span>Showing {{ filteredBranches().length }} NYC locations</span>
+        @if (loadingMatrix()) {
+          <span class="matrix-syncing">Updating ETAs...</span>
+        }
+      </div>
+
+      <section class="branch-list" data-testid="branch-list">
+        @if (loadingBranches()) {
+          <div class="empty-state">
+            Searching live Manhattan stores, kiosks, and 24/7 ATMs via Places API (New)...
+          </div>
+        } @else if (filteredBranches().length === 0) {
+          <div class="empty-state">
+            No branches match your active type and service filters.
+          </div>
+        } @else {
+          @for (branch of filteredBranches(); track branch.id) {
+            <article
+              class="branch-card"
+              data-testid="branch-card"
+              [class.branch-card--selected]="branch.id === selectedBranchId()"
+              (click)="selectBranch(branch)"
+            >
+              <div class="branch-card__top">
+                <span class="type-badge type-badge--{{ branch.type }}">
+                  {{ branch.typeLabel }}
+                </span>
+
+                @if (fastestBranch()?.id === branch.id) {
+                  <span class="fastest-badge" data-testid="fastest-branch-badge">
+                    Fastest Nearby
+                  </span>
+                }
+              </div>
+
+              <h3 class="branch-card__name">{{ branch.name }}</h3>
+              <p class="branch-card__address">{{ branch.address }}</p>
+
+              <div class="branch-card__tags">
+                @for (svc of branch.serviceLabels; track svc) {
+                  <span class="service-tag">{{ svc }}</span>
+                }
+              </div>
+
+              <div class="branch-card__footer">
+                <div class="branch-card__route-stats">
+                  <span class="eta-value" data-testid="branch-eta">
+                    {{ branch.etaText }}
+                  </span>
+                  <span class="dist-value" data-testid="branch-distance">
+                    {{ branch.distanceText }}
+                  </span>
+                </div>
+
+                <div class="branch-card__place-meta">
+                  @if (branch.rating !== null) {
+                    <span class="rating-pill">
+                      ★ {{ branch.rating.toFixed(1) }}
+                      @if (branch.userRatingCount !== null) {
+                        ({{ branch.userRatingCount }})
+                      }
+                    </span>
+                  }
+                </div>
+              </div>
+
+              @if (branch.weekdayDescriptions.length > 0) {
+                <div class="branch-card__hours">
+                  {{ branch.weekdayDescriptions[0] }}
+                </div>
+              }
+            </article>
+          }
+        }
+      </section>
+    </aside>
+
+    <section class="map-pane">
+      @if (mapsReady()) {
+        <app-locator-map
+          [branches]="filteredBranches()"
+          [origin]="origin()"
+          [selectedBranchId]="selectedBranchId()"
+          [fastestBranchId]="fastestBranch()?.id ?? null"
+          [activeRoute]="activeRoute()"
+          (branchSelected)="selectBranch($event)"
+        />
+      } @else if (errorMessage()) {
+        <div class="map-fallback">
+          <h2>Google Maps Initialization Required</h2>
+          <p>{{ errorMessage() }}</p>
+          <p>
+            Configure <code>GOOGLE_MAPS_API_KEY</code> in <code>.env</code> and run
+            <code>node serve-dist.mjs --host 127.0.0.1 --port 4200</code>.
+          </p>
+        </div>
+      } @else {
+        <div class="map-fallback">
+          Loading interactive Google Map...
+        </div>
+      }
+    </section>
+  </main>
+</div>

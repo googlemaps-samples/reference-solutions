@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>San Francisco Multi-Specialty Dental | Storefront, Booking & Directions</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%230f766e'/%3E%3Cpath d='M12 5v14M5 12h14' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/env-config.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "@googlemaps/js-api-loader": "/node_modules/@googlemaps/js-api-loader/dist/index.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <!-- Fixed 64px Header Bar -->
+      <header class="clinic-header">
+        <div class="header-brand">
+          <div class="brand-badge" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2v20M2 12h20" />
+            </svg>
+          </div>
+          <div class="brand-copy">
+            <h1 id="clinic-name" class="clinic-title">San Francisco Multi-Specialty Dental</h1>
+            <div class="header-meta">
+              <span id="open-now-badge" class="status-pill status-loading">Checking hours...</span>
+              <span id="clinic-rating" class="rating-summary">Loading Google rating...</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <button
+            id="coverage-overlay-toggle"
+            data-testid="coverage-overlay-toggle"
+            type="button"
+            class="toggle-btn is-active"
+            aria-pressed="true"
+          >
+            <span class="dot-indicator" aria-hidden="true"></span>
+            Home-Visit Radius (5 km)
+          </button>
+          <button
+            id="street-view-toggle"
+            data-testid="street-view-toggle"
+            type="button"
+            class="toggle-btn"
+            aria-pressed="false"
+          >
+            Street View Entrance
+          </button>
+        </div>
+      </header>
+
+      <!-- Main Split-Screen Workspace -->
+      <main class="workspace">
+        <!-- Left Scrollable Sidebar -->
+        <aside class="sidebar" aria-label="Clinic storefront, directions, and appointment booking">
+          <div id="api-key-banner" class="notice-banner is-hidden" role="alert"></div>
+
+          <!-- Card 1: Live Venue Storefront Details -->
+          <section
+            id="venue-details-panel"
+            data-testid="venue-details-panel"
+            class="card venue-card"
+            aria-labelledby="venue-heading"
+          >
+            <div class="hero-media" id="clinic-photo-wrap">
+              <div class="hero-placeholder" id="clinic-photo-placeholder">
+                <span>Loading clinic photo from Google Places...</span>
+              </div>
+              <img
+                id="clinic-photo"
+                class="hero-img is-hidden"
+                alt="San Francisco dental clinic storefront"
+              />
+              <span id="clinic-photo-attribution" class="photo-attribution is-hidden"></span>
+            </div>
+
+            <div class="card-body">
+              <div class="section-header-row">
+                <h2 id="venue-heading" class="card-title">Clinic Storefront &amp; Hours</h2>
+                <span class="coverage-chip">5 km Home-Visit Zone</span>
+              </div>
+
+              <dl class="venue-facts">
+                <div class="fact-row">
+                  <dt>Address</dt>
+                  <dd id="clinic-address">Searching live Google Places listing...</dd>
+                </div>
+                <div class="fact-row">
+                  <dt>Phone</dt>
+                  <dd id="clinic-phone">—</dd>
+                </div>
+                <div class="fact-row">
+                  <dt>Links</dt>
+                  <dd id="clinic-links" class="links-cell">—</dd>
+                </div>
+              </dl>
+
+              <div class="hours-block">
+                <h3 class="subheading">Opening Hours</h3>
+                <ul id="clinic-hours" class="hours-list">
+                  <li class="muted-item">Loading clinic hours...</li>
+                </ul>
+              </div>
+
+              <p class="coverage-note">
+                Same-week in-clinic consultations and mobile dental hygiene visits within a
+                <strong>5,000 m</strong> radius across San Francisco.
+              </p>
+            </div>
+          </section>
+
+          <!-- Card 2: Live Google Patient Reviews -->
+          <section class="card" aria-labelledby="reviews-heading">
+            <div class="card-body">
+              <div class="section-header-row">
+                <h2 id="reviews-heading" class="card-title">Google Patient Reviews</h2>
+                <span id="reviews-count-pill" class="meta-pill">Live</span>
+              </div>
+              <ul
+                id="venue-reviews-list"
+                data-testid="venue-reviews-list"
+                class="reviews-list"
+              >
+                <li class="muted-item">Loading verified Google Places reviews...</li>
+              </ul>
+            </div>
+          </section>
+
+          <!-- Card 3: Get Directions Panel -->
+          <section class="card" aria-labelledby="directions-heading">
+            <div class="card-body">
+              <h2 id="directions-heading" class="card-title">Get Directions to Clinic</h2>
+              <p class="card-subtitle">
+                Enter your starting point in San Francisco to preview live travel time, distance, and route polyline.
+              </p>
+
+              <div class="field-group">
+                <label class="field-label" for="origin-autocomplete-input">Starting Origin</label>
+                <div id="origin-autocomplete-slot" class="autocomplete-slot">
+                  <input
+                    id="origin-autocomplete-input"
+                    data-testid="origin-autocomplete-input"
+                    type="text"
+                    class="text-input"
+                    value="Ferry Building, San Francisco, CA"
+                    placeholder="Enter a San Francisco starting address"
+                    aria-label="Visitor starting origin address"
+                  />
+                </div>
+              </div>
+
+              <div class="mode-selector" role="group" aria-label="Travel mode">
+                <button
+                  id="travel-mode-drive"
+                  data-testid="travel-mode-drive"
+                  type="button"
+                  class="mode-pill is-active"
+                  data-mode="DRIVING"
+                  aria-pressed="true"
+                >
+                  Drive
+                </button>
+                <button
+                  id="travel-mode-transit"
+                  data-testid="travel-mode-transit"
+                  type="button"
+                  class="mode-pill"
+                  data-mode="TRANSIT"
+                  aria-pressed="false"
+                >
+                  Transit
+                </button>
+                <button
+                  id="travel-mode-walk"
+                  data-testid="travel-mode-walk"
+                  type="button"
+                  class="mode-pill"
+                  data-mode="WALKING"
+                  aria-pressed="false"
+                >
+                  Walk
+                </button>
+              </div>
+
+              <div
+                id="route-summary"
+                data-testid="route-summary"
+                class="route-summary"
+                aria-live="polite"
+              >
+                <div class="route-metric-row">
+                  <span class="route-mode-label">Ready</span>
+                  <span class="route-values">Resolving Ferry Building, San Francisco, CA...</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Card 4: Appointment Booking Form -->
+          <section class="card" aria-labelledby="booking-heading">
+            <div class="card-body">
+              <h2 id="booking-heading" class="card-title">Book an Appointment</h2>
+              <p class="card-subtitle">
+                Schedule an in-clinic specialist visit or request a mobile care team at your location.
+              </p>
+
+              <form id="booking-form" data-testid="booking-form" class="booking-form">
+                <div class="field-group">
+                  <label class="field-label" for="booking-name">Patient Full Name</label>
+                  <input
+                    id="booking-name"
+                    name="patientName"
+                    type="text"
+                    class="text-input"
+                    required
+                    placeholder="Alex Rivera"
+                  />
+                </div>
+
+                <div class="field-group">
+                  <label class="field-label" for="booking-contact">Email or Phone</label>
+                  <input
+                    id="booking-contact"
+                    name="patientContact"
+                    type="text"
+                    class="text-input"
+                    required
+                    placeholder="alex@example.com or (415) 555-0148"
+                  />
+                </div>
+
+                <div class="field-group">
+                  <label class="field-label" for="booking-specialty">Dental Specialty</label>
+                  <select id="booking-specialty" name="specialty" class="text-input">
+                    <option value="General & Preventive Dentistry">General &amp; Preventive Dentistry</option>
+                    <option value="Cosmetic & Veneers">Cosmetic &amp; Veneers</option>
+                    <option value="Orthodontics & Clear Aligners">Orthodontics &amp; Clear Aligners</option>
+                    <option value="Periodontics & Implants">Periodontics &amp; Implants</option>
+                    <option value="Pediatric Dentistry">Pediatric Dentistry</option>
+                    <option value="Urgent Dental Care">Urgent Dental Care</option>
+                  </select>
+                </div>
+
+                <fieldset class="field-group visit-fieldset">
+                  <legend class="field-label">Visit Type</legend>
+                  <div class="radio-grid">
+                    <label class="radio-card">
+                      <input type="radio" name="visitType" value="in-clinic" checked />
+                      <span>In-Clinic Visit</span>
+                    </label>
+                    <label class="radio-card">
+                      <input type="radio" name="visitType" value="home-visit" />
+                      <span>Home Visit (5 km)</span>
+                    </label>
+                  </div>
+                  <p id="home-visit-eligibility" class="eligibility-note is-hidden"></p>
+                </fieldset>
+
+                <div class="two-col-fields">
+                  <div class="field-group">
+                    <label class="field-label" for="booking-date">Preferred Date</label>
+                    <input id="booking-date" name="date" type="date" class="text-input" required />
+                  </div>
+                  <div class="field-group">
+                    <label class="field-label" for="booking-time">Time Slot</label>
+                    <select id="booking-time" name="timeSlot" class="text-input">
+                      <option value="09:00 AM">09:00 AM</option>
+                      <option value="10:30 AM" selected>10:30 AM</option>
+                      <option value="01:00 PM">01:00 PM</option>
+                      <option value="03:15 PM">03:15 PM</option>
+                      <option value="04:45 PM">04:45 PM</option>
+                    </select>
+                  </div>
+                </div>
+
+                <button
+                  id="booking-submit-btn"
+                  data-testid="booking-submit-btn"
+                  type="submit"
+                  class="primary-btn"
+                >
+                  Confirm Appointment Request
+                </button>
+              </form>
+
+              <div
+                id="booking-confirmation"
+                data-testid="booking-confirmation"
+                class="confirmation-banner is-hidden"
+                role="status"
+                aria-live="polite"
+              ></div>
+            </div>
+          </section>
+        </aside>
+
+        <!-- Right Map & Synchronized Street View Viewport -->
+        <section id="viewport-pane" class="viewport-pane" aria-label="Interactive clinic map and Street View">
+          <div
+            id="clinic-map"
+            data-testid="clinic-map"
+            class="map-canvas"
+            role="region"
+            aria-label="San Francisco Dental Clinic Map"
+          ></div>
+
+          <div
+            id="street-view-panel"
+            data-testid="street-view-panel"
+            class="street-view-panel is-hidden"
+            aria-label="Clinic Building Entrance Street View"
+          >
+            <div class="street-view-header">
+              <span class="street-view-title">Entrance Street View Inspection</span>
+              <span id="street-view-status" class="street-view-status">Loading panorama...</span>
+            </div>
+            <div id="street-view-pano" class="street-view-pano"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

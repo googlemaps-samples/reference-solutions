@@ -1,0 +1,22 @@
+{
+  "name": "lake-tahoe-3d-trail-explorer-nodejs-web",
+  "version": "1.0.0",
+  "description": "Photorealistic 3D Lake Tahoe Trail Explorer & Camera Tour powered by Google Maps Platform 3D Maps, Places API (New), and Elevation API on Node.js + Express + TypeScript.",
+  "private": true,
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "start": "node dist/server.js",
+    "dev": "tsc && node dist/server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.5",
+    "typescript": "^5.7.3"
+  }
+}

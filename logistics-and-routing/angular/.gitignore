@@ -1,0 +1,29 @@
+# Dependencies & Build Outputs
+node_modules/
+dist/
+build/
+.next/
+.svelte-kit/
+.venv/
+out-tsc/
+
+# Environment Secrets
+.env
+.env.local
+.env.*.local
+
+# Angular & Tooling Cache
+.angular/cache/
+npm-debug.log
+yarn-error.log
+coverage/
+
+# IDE & OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json

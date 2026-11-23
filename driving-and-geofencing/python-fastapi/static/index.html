@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Field Workforce Geofenced Attendance &amp; Site Audit Router</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231a73e8'/%3E%3Ctext x='16' y='21' text-anchor='middle' font-family='sans-serif' font-size='14' font-weight='700' fill='white'%3EGW%3C/text%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="/static/styles.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "terra-draw": "https://esm.sh/terra-draw@1",
+          "terra-draw-google-maps-adapter": "https://esm.sh/terra-draw-google-maps-adapter@1?external=terra-draw"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="header-brand">
+        <div class="brand-mark" aria-hidden="true">GW</div>
+        <div class="brand-text">
+          <h1>Field Workforce Geofenced Attendance &amp; Site Audit Router</h1>
+          <span class="district-badge">Austin District · TX</span>
+        </div>
+      </div>
+      <div class="header-metrics">
+        <span id="header-geofence-count" class="metric-pill">3 Active Zones</span>
+        <span id="header-clockin-pill" class="metric-pill status-neutral">Checking GPS...</span>
+        <span id="header-route-pill" class="metric-pill">Loading route...</span>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <aside class="operations-sidebar" aria-label="Field Operations Controls">
+        <!-- Card 1: Worker GPS & Geofenced Attendance -->
+        <section class="panel-card">
+          <div class="card-header">
+            <h2>1. Worker GPS &amp; Attendance</h2>
+            <span id="geofence-status-badge" class="status-badge status-neutral">Evaluating...</span>
+          </div>
+
+          <div class="field-group">
+            <label for="worker-preset-select">Simulated Worker GPS Position</label>
+            <select id="worker-preset-select" class="select-input">
+              <option value="inside-downtown">Inside · Downtown Congress Flagship (30.2672, -97.7431)</option>
+              <option value="inside-soco">Inside · South Congress Retail Strip (30.2488, -97.7495)</option>
+              <option value="inside-east6">Inside · East 6th Corridor (30.2648, -97.7240)</option>
+              <option value="outside-zilker">Outside · Zilker Park Staging Lot (30.2669, -97.7729)</option>
+              <option value="outside-airport">Outside · Austin-Bergstrom Gate (30.2025, -97.6664)</option>
+            </select>
+            <p class="helper-note">Tip: Select a preset or click anywhere on the map (in Pan mode) to relocate the worker marker.</p>
+          </div>
+
+          <div class="address-box">
+            <span class="field-label">Reverse-Geocoded Site Address</span>
+            <p id="worker-address" class="address-value">Resolving street address...</p>
+            <span id="worker-coords" class="coords-caption">30.26720, -97.74310</span>
+          </div>
+
+          <div class="clockin-row">
+            <div id="verified-clockin-badge" class="clockin-badge locked">
+              <span class="clockin-dot" aria-hidden="true"></span>
+              <span id="verified-clockin-text">Verified Clock-In Locked</span>
+            </div>
+            <button id="clockin-action-btn" type="button" class="btn btn-primary" disabled>
+              Clock In
+            </button>
+          </div>
+          <p id="clockin-feedback" class="clockin-feedback" hidden></p>
+        </section>
+
+        <!-- Card 2: Geofence Zones & Terra Draw Controls -->
+        <section class="panel-card">
+          <div class="card-header">
+            <h2>2. Geofence Zones (Terra Draw)</h2>
+            <span id="drawn-zone-count" class="subtle-count">0 drawn</span>
+          </div>
+
+          <div class="button-row">
+            <button type="button" class="btn btn-secondary" data-draw-action="polygon">
+              Draw Polygon
+            </button>
+            <button type="button" class="btn btn-secondary" data-draw-action="select">
+              Select / Edit
+            </button>
+            <button type="button" class="btn btn-danger-ghost" data-draw-action="clear">
+              Clear Drawn
+            </button>
+          </div>
+
+          <ul id="geofence-list" class="zone-list" aria-label="Active Geofence Zones"></ul>
+        </section>
+
+        <!-- Card 3: Multi-Stop Audit Router -->
+        <section class="panel-card">
+          <div class="card-header">
+            <h2>3. Multi-Stop Audit Router</h2>
+            <button id="optimize-route-btn" type="button" class="btn btn-accent btn-sm">
+              Optimize Route
+            </button>
+          </div>
+
+          <form id="site-search-form" class="search-row">
+            <input
+              id="site-search-input"
+              type="text"
+              class="text-input"
+              value="retail stores in Austin, TX"
+              placeholder="Search Austin audit sites..."
+              aria-label="Search audit sites"
+            />
+            <button id="site-search-btn" type="submit" class="btn btn-secondary">Search</button>
+          </form>
+
+          <div id="route-summary" class="route-summary">
+            <span>Computing optimized audit route...</span>
+          </div>
+
+          <ol id="audit-stops-list" class="stops-list" aria-label="Optimized Audit Stops"></ol>
+        </section>
+      </aside>
+
+      <section class="map-stage" aria-label="Interactive Austin Operations Map">
+        <div id="map-container" class="map-container"></div>
+
+        <div id="terra-draw-toolbar" class="terra-draw-toolbar" role="toolbar" aria-label="Geofence Drawing Tools">
+          <button id="draw-polygon-btn" type="button" class="toolbar-btn" title="Draw new geofence polygon">
+            Draw Polygon
+          </button>
+          <button id="select-mode-btn" type="button" class="toolbar-btn" title="Select or edit drawn polygons">
+            Select / Edit
+          </button>
+          <button id="pan-mode-btn" type="button" class="toolbar-btn active" title="Pan map &amp; click to move worker GPS">
+            Pan / GPS
+          </button>
+          <button id="clear-drawn-btn" type="button" class="toolbar-btn toolbar-btn-danger" title="Clear supervisor-drawn geofences">
+            Clear Drawn
+          </button>
+        </div>
+
+        <div id="map-status-banner" class="map-status-banner" hidden></div>
+      </section>
+    </main>
+
+    <script type="module" src="/static/app.js"></script>
+  </body>
+</html>

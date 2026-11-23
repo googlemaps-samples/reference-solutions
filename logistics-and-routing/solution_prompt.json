@@ -1,0 +1,42 @@
+{
+  "solution_id": "logistics-and-routing",
+  "id": "logistics-and-routing",
+  "title": "Fleet Telematics, Road-Snapped GPS & Dispatch Dashboard",
+  "name": "Fleet Telematics, Road-Snapped GPS & Dispatch Dashboard",
+  "category": "Logistics, Dispatch & Tracking",
+  "user_prompt": "Build a fleet telematics and multi-stop shuttle/freight dispatch dashboard in Dallas featuring a clean logistics map style that de-emphasizes distracting tourist POIs to focus on road corridors. Display active fleet vehicles using status-coded Advanced Markers (En Route, Delayed, Idle) alongside a telemetry sidebar showing vehicle speed, next stop, and ETA. Take noisy raw GPS breadcrumb coordinates from an active vehicle and snap them cleanly to road geometry using the Roads API, and allow dispatchers to calculate multi-stop corridor routes and travel-time matrices between a central depot and multiple drop-off hubs using the Routes API.",
+  "prompt": "Build a fleet telematics and multi-stop shuttle/freight dispatch dashboard in Dallas featuring a clean logistics map style that de-emphasizes distracting tourist POIs to focus on road corridors. Display active fleet vehicles using status-coded Advanced Markers (En Route, Delayed, Idle) alongside a telemetry sidebar showing vehicle speed, next stop, and ETA. Take noisy raw GPS breadcrumb coordinates from an active vehicle and snap them cleanly to road geometry using the Roads API, and allow dispatchers to calculate multi-stop corridor routes and travel-time matrices between a central depot and multiple drop-off hubs using the Routes API.",
+  "expectations": [
+    "Map renders with status-coded fleet Advanced Markers and telemetry sidebar",
+    "Raw GPS trace vs. Roads API road-snapped path is visualized on the map",
+    "Multi-stop dispatch route polyline and hub-to-stop ETAs/distances are displayed",
+    "Fleet status filtering (e.g., En Route, Delayed, Idle) works cleanly",
+    "No console errors"
+  ],
+  "test_interactions": [
+    {
+      "description": "Map renders with status-coded fleet Advanced Markers and telemetry sidebar",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Raw GPS trace vs. Roads API road-snapped path is visualized on the map",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Multi-stop dispatch route polyline and hub-to-stop ETAs/distances are displayed",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Fleet status filtering (e.g., En Route, Delayed, Idle) works cleanly",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    }
+  ]
+}

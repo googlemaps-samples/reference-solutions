@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Front Range Route Comparator &amp; Elevation Tracker</title>
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="top-header">
+        <div class="brand-group">
+          <div class="brand-badge" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 17l6-6 4 4 8-8" />
+              <path d="M14 7h7v7" />
+            </svg>
+          </div>
+          <div>
+            <h1 class="app-title">Front Range Route Comparator</h1>
+            <p class="app-subtitle">Multi-Modal Commute &amp; Trail Elevation Tracker</p>
+          </div>
+          <span class="corridor-pill">Denver &harr; Boulder</span>
+        </div>
+
+        <div class="header-kpis">
+          <div class="kpi-pill">
+            <span class="kpi-label">ETA</span>
+            <strong id="header-kpi-eta" class="kpi-value">--</strong>
+          </div>
+          <div class="kpi-pill">
+            <span class="kpi-label">Distance</span>
+            <strong id="header-kpi-distance" class="kpi-value">--</strong>
+          </div>
+          <div class="kpi-pill">
+            <span class="kpi-label">Elev. Gain</span>
+            <strong id="header-kpi-gain" class="kpi-value">--</strong>
+          </div>
+          <div id="beta-trail-notice" class="beta-notice" role="status">
+            <span class="beta-tag">Beta Paths</span>
+            <span>Cycling &amp; walking routes are in beta; verify trail signs and local conditions.</span>
+          </div>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <aside class="sidebar" aria-label="Route Controls and Comparison">
+          <section class="panel-section">
+            <div class="section-header">
+              <h2 class="section-title">Origin &amp; Destination</h2>
+              <button
+                id="reset-corridor-btn"
+                type="button"
+                class="text-action-btn"
+                title="Reset to Denver Union Station and Chautauqua Park"
+              >
+                Reset Seed
+              </button>
+            </div>
+
+            <div class="endpoints-stack">
+              <div class="endpoint-box">
+                <div class="endpoint-label-row">
+                  <span class="pin-dot pin-dot-origin">A</span>
+                  <label class="endpoint-label" for="origin-autocomplete-input">Origin</label>
+                </div>
+                <div id="origin-autocomplete-input" class="autocomplete-slot"></div>
+                <div id="origin-selected-chip" class="selected-place-chip">
+                  Resolving Denver Union Station...
+                </div>
+              </div>
+
+              <div class="swap-row">
+                <button
+                  id="swap-locations-btn"
+                  type="button"
+                  class="swap-btn"
+                  aria-label="Swap origin and destination"
+                  title="Swap origin and destination"
+                >
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M7 16V4m0 0L3 8m4-4l4 4" />
+                    <path d="M17 8v12m0 0l4-4m-4 4l-4-4" />
+                  </svg>
+                  <span>Swap A / B</span>
+                </button>
+              </div>
+
+              <div class="endpoint-box">
+                <div class="endpoint-label-row">
+                  <span class="pin-dot pin-dot-dest">B</span>
+                  <label class="endpoint-label" for="destination-autocomplete-input">Destination</label>
+                </div>
+                <div id="destination-autocomplete-input" class="autocomplete-slot"></div>
+                <div id="destination-selected-chip" class="selected-place-chip">
+                  Resolving Chautauqua Park, Boulder...
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel-section">
+            <div class="section-header">
+              <h2 class="section-title">Travel Modes</h2>
+              <span id="status-pill" class="status-pill">Loading...</span>
+            </div>
+
+            <div class="mode-grid" role="tablist" aria-label="Travel mode selector">
+              <button id="mode-drive-btn" type="button" class="mode-btn" data-mode="DRIVE" role="tab" aria-selected="false">
+                <span class="mode-name">Driving</span>
+                <span id="mode-drive-eta" class="mode-eta">--</span>
+                <span id="mode-drive-dist" class="mode-dist">--</span>
+              </button>
+              <button id="mode-bicycle-btn" type="button" class="mode-btn active" data-mode="BICYCLE" role="tab" aria-selected="true">
+                <span class="mode-name">Cycling</span>
+                <span id="mode-bicycle-eta" class="mode-eta">--</span>
+                <span id="mode-bicycle-dist" class="mode-dist">--</span>
+              </button>
+              <button id="mode-walk-btn" type="button" class="mode-btn" data-mode="WALK" role="tab" aria-selected="false">
+                <span class="mode-name">Walking</span>
+                <span id="mode-walk-eta" class="mode-eta">--</span>
+                <span id="mode-walk-dist" class="mode-dist">--</span>
+              </button>
+              <button id="mode-transit-btn" type="button" class="mode-btn" data-mode="TRANSIT" role="tab" aria-selected="false">
+                <span class="mode-name">Transit</span>
+                <span id="mode-transit-eta" class="mode-eta">--</span>
+                <span id="mode-transit-dist" class="mode-dist">--</span>
+              </button>
+            </div>
+          </section>
+
+          <section class="panel-section">
+            <div class="section-header">
+              <h2 class="section-title">Route Modifiers</h2>
+              <span class="modifier-scope">Applies to Drive</span>
+            </div>
+            <div class="toggles-row">
+              <label class="toggle-chip">
+                <input id="avoid-tolls-toggle" type="checkbox" />
+                <span>Avoid Tolls</span>
+              </label>
+              <label class="toggle-chip">
+                <input id="avoid-highways-toggle" type="checkbox" />
+                <span>Avoid Highways</span>
+              </label>
+              <label class="toggle-chip">
+                <input id="eco-friendly-toggle" type="checkbox" checked />
+                <span>Eco-Friendly</span>
+              </label>
+            </div>
+          </section>
+
+          <section class="panel-section routes-section">
+            <div class="section-header">
+              <h2 class="section-title">Route Alternatives</h2>
+              <span id="active-mode-badge" class="mode-badge">Cycling</span>
+            </div>
+            <div id="route-cards-list" class="route-cards-list"></div>
+          </section>
+        </aside>
+
+        <section class="map-and-chart" aria-label="Map and Elevation Profile">
+          <div class="map-stage">
+            <div id="map-canvas" class="map-canvas"></div>
+            <div id="map-banner" class="map-banner hidden" role="alert"></div>
+          </div>
+
+          <div class="elevation-panel" aria-label="Elevation and Slope Profile">
+            <div class="elevation-header">
+              <div class="elevation-title-group">
+                <h2 class="elevation-title">Trail &amp; Route Elevation Profile</h2>
+                <span id="elevation-mode-tag" class="elevation-mode-tag">64 Samples</span>
+              </div>
+              <div class="elevation-stats">
+                <span class="elev-stat">Gain: <strong id="elev-gain-stat">--</strong></span>
+                <span class="elev-stat">Loss: <strong id="elev-loss-stat">--</strong></span>
+                <span class="elev-stat">Range: <strong id="elev-range-stat">--</strong></span>
+                <span class="elev-stat">Max Grade: <strong id="elev-grade-stat">--</strong></span>
+              </div>
+              <div id="elevation-hover-readout" class="hover-readout">
+                Hover chart or route to inspect elevation
+              </div>
+            </div>
+
+            <div id="elevation-chart-container" class="elevation-chart-container">
+              <svg
+                id="elevation-profile-chart"
+                class="elevation-svg"
+                viewBox="0 0 800 130"
+                preserveAspectRatio="none"
+                role="img"
+                aria-label="Route elevation profile chart"
+              ></svg>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="/static/app.js"></script>
+  </body>
+</html>

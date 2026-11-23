@@ -1,0 +1,93 @@
+{
+  "solution_id": "real-estate",
+  "solution_title": "Split-Screen Real Estate Search, Parcel Polygon & Commute Explorer",
+  "summary": "Zillow-style split-screen San Francisco real estate search, cadastral lot-boundary, and neighborhood commute explorer across all 8 web stacks. Features synchronized filterable property cards and custom HTML price-pill AdvancedMarkerElement markers with @googlemaps/markerclusterer clustering and bidirectional hover highlighting, cadastral parcel google.maps.Polygon outlines on selected listings, Terra Draw polygon search-area filtering (via google.maps.geometry.poly.containsLocation), roadmap/satellite map type toggle, embedded StreetViewPanorama neighborhood preview, live 5km nearby schools/groceries/transit discovery via Places API (New) searchNearby, and a live Driving + Transit workplace Commute Time Calculator powered by Routes API RouteMatrix.computeRouteMatrix (with server-side BFF proxy routes on Next.js, FastAPI, and Node.js Express). All stacks enforce zero-deprecation APIs, explicit field masks, mapId: 'DEMO_MAP_ID', and internalUsageAttributionIds: ['gmp_git_agentsamples_v1.0.0'].",
+  "gmp_products_used": [
+    "Maps JavaScript API (Vector Map with mapId, Polygon cadastral boundaries, StreetViewPanorama, Geometry poly.containsLocation)",
+    "Advanced Markers (AdvancedMarkerElement) & Marker Clustering (@googlemaps/markerclusterer)",
+    "Places API (New) (Place.searchByText, Place.searchNearby, PlaceAutocompleteElement)",
+    "Routes API (RouteMatrix.computeRouteMatrix, Route.computeRoutes, distanceMatrix/v2:computeRouteMatrix, directions/v2:computeRoutes)",
+    "Geocoding API (Geocoder)",
+    "Terra Draw (terra-draw & terra-draw-google-maps-adapter)"
+  ],
+  "js_libraries_to_import": [
+    "maps",
+    "marker",
+    "places",
+    "routes",
+    "streetView",
+    "geometry",
+    "geocoding"
+  ],
+  "matched_sub_skills": [
+    "google-maps-platform",
+    "compliance-review",
+    "gmp-common-api-keys",
+    "maps-javascript-api-javascript",
+    "gmp-framework-react",
+    "places-api-web-api",
+    "routes-api-web-api"
+  ],
+  "uses_3d_map": false,
+  "initial_center_lat": 37.7749,
+  "initial_center_lng": -122.4194,
+  "initial_zoom": 13,
+  "seed_search_query": "San Francisco, CA",
+  "ui_layout_summary": "Full-viewport split-screen layout with a 64px top search/filter bar (location PlaceAutocompleteElement, max price, min beds, property type filters, and live count badge), a 440px scrollable left column containing synchronized property cards and the selected listing detail drawer (parcel metadata, embedded 220px+ Street View panorama, 5km nearby schools/groceries/transit tabs + live Places list, and workplace Commute Time Calculator showing Driving and Transit ETAs), and a flex-1 right map pane (min-height: 560px) hosting the vector Google Map, floating top-left Terra Draw 'Draw Search Area' / 'Clear Area' and 'Roadmap / Satellite' controls, clustered HTML price-pill AdvancedMarkerElement pins, and the selected property's cadastral parcel Polygon outline.",
+  "interactive_controls": [
+    "location-search-input",
+    "filter-max-price",
+    "filter-min-beds",
+    "filter-property-type",
+    "results-count",
+    "property-list",
+    "property-card",
+    "map-container",
+    "draw-area-btn",
+    "clear-area-btn",
+    "map-type-toggle",
+    "listing-detail-panel",
+    "street-view-container",
+    "nearby-amenities-panel",
+    "amenity-tab-all",
+    "amenity-tab-schools",
+    "amenity-tab-groceries",
+    "amenity-tab-transit",
+    "nearby-amenities-list",
+    "commute-calculator-panel",
+    "workplace-input",
+    "calculate-commute-btn",
+    "commute-drive-eta",
+    "commute-transit-eta"
+  ],
+  "backend_proxy_endpoints": [
+    {
+      "method": "POST",
+      "path": "/api/places/search-text",
+      "upstream_gmp_service": "places.googleapis.com/v1/places:searchText",
+      "field_mask": "places.id,places.displayName,places.formattedAddress,places.location,places.viewport",
+      "purpose": "Resolve neighborhood/address searches and workplace destinations via Places API (New) Text Search with explicit X-Goog-Api-Key and X-Goog-FieldMask headers."
+    },
+    {
+      "method": "POST",
+      "path": "/api/places/nearby",
+      "upstream_gmp_service": "places.googleapis.com/v1/places:searchNearby",
+      "field_mask": "places.id,places.displayName,places.formattedAddress,places.location,places.primaryType,places.rating,places.userRatingCount",
+      "purpose": "Discover nearby schools, grocery stores, and transit stations within a 5km radius of the selected property via Places API (New) Nearby Search."
+    },
+    {
+      "method": "POST",
+      "path": "/api/routes/matrix",
+      "upstream_gmp_service": "routes.googleapis.com/distanceMatrix/v2:computeRouteMatrix",
+      "field_mask": "originIndex,destinationIndex,status,condition,distanceMeters,duration,localizedValues",
+      "purpose": "Compute real-time driving (TRAFFIC_AWARE) and public transit commute ETAs and distances between the selected property and the workplace destination via Routes API Compute Route Matrix."
+    },
+    {
+      "method": "POST",
+      "path": "/api/routes/compute",
+      "upstream_gmp_service": "routes.googleapis.com/directions/v2:computeRoutes",
+      "field_mask": "routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline,routes.localizedValues",
+      "purpose": "Compute the encoded commute route polyline between the selected property and workplace destination for optional map overlay preview via Routes API Compute Routes."
+    }
+  ]
+}

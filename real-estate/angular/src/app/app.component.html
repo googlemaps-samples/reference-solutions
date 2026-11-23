@@ -1,0 +1,309 @@
+<div class="app-shell">
+  <!-- Top 64px Search & Filter Bar -->
+  <header class="top-bar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">BV</div>
+      <div class="brand-text">
+        <h1>BayView Estates</h1>
+        <span>San Francisco Parcel &amp; Commute Explorer</span>
+      </div>
+    </div>
+
+    <div class="filters-row">
+      <div class="search-slot">
+        <div
+          #locationSearchHost
+          id="location-search-input"
+          class="location-search-host"
+          aria-label="Search San Francisco location"
+        >
+          @if (!mapsReady()) {
+            <input
+              type="text"
+              class="fallback-search-input"
+              placeholder="Search San Francisco neighborhood or address..."
+              disabled
+            />
+          }
+        </div>
+        @if (searchBannerText()) {
+          <button type="button" class="reset-loc-btn" (click)="resetLocationView()" title="Reset to San Francisco overview">
+            Reset SF
+          </button>
+        }
+      </div>
+
+      <select
+        id="filter-max-price"
+        class="filter-select"
+        [ngModel]="maxPriceFilter()"
+        (ngModelChange)="maxPriceFilter.set(+$event)"
+        aria-label="Maximum price filter"
+      >
+        <option [value]="0">Any Price</option>
+        <option [value]="1500000">Up to $1.5M</option>
+        <option [value]="2000000">Up to $2.0M</option>
+        <option [value]="2750000">Up to $2.75M</option>
+        <option [value]="3500000">Up to $3.5M</option>
+        <option [value]="5000000">Up to $5.0M</option>
+      </select>
+
+      <select
+        id="filter-min-beds"
+        class="filter-select"
+        [ngModel]="minBedsFilter()"
+        (ngModelChange)="minBedsFilter.set(+$event)"
+        aria-label="Minimum bedrooms filter"
+      >
+        <option [value]="0">Any Beds</option>
+        <option [value]="1">1+ Beds</option>
+        <option [value]="2">2+ Beds</option>
+        <option [value]="3">3+ Beds</option>
+        <option [value]="4">4+ Beds</option>
+      </select>
+
+      <select
+        id="filter-property-type"
+        class="filter-select"
+        [ngModel]="propertyTypeFilter()"
+        (ngModelChange)="propertyTypeFilter.set($event)"
+        aria-label="Property type filter"
+      >
+        <option value="ALL">All Types</option>
+        <option value="Single Family">Single Family</option>
+        <option value="Condo">Condo</option>
+        <option value="Townhouse">Townhouse</option>
+        <option value="Victorian">Victorian</option>
+        <option value="Loft">Loft</option>
+      </select>
+
+      <span id="results-count" class="results-badge" aria-live="polite">
+        {{ filteredListings().length }} {{ filteredListings().length === 1 ? 'home' : 'homes' }}
+        @if (hasDrawnArea()) {
+          <span>in drawn area</span>
+        }
+      </span>
+    </div>
+  </header>
+
+  <!-- Split-Screen Body -->
+  <main class="split-main">
+    <!-- Left 440px Scrollable Column -->
+    <aside class="left-pane" aria-label="Property listings and selected listing details">
+      @if (selectedListing(); as activeListing) {
+        <app-listing-detail
+          [listing]="activeListing"
+          [mapsReady]="mapsReady()"
+          (closeDetail)="closeListingDetail()"
+          (amenitiesUpdated)="onAmenitiesUpdated($event)"
+          (amenityFocused)="onAmenityFocused($event)"
+          (commuteUpdated)="onCommuteUpdated($event)"
+        />
+      } @else {
+        <div class="list-header">
+          <div>
+            <h2>San Francisco Homes</h2>
+            <p class="list-subtitle">
+              Hover a card or map pin to preview lot boundaries · Click for parcel, Street View &amp; commute
+            </p>
+          </div>
+        </div>
+
+        <div id="property-list" class="property-list">
+          @if (filteredListings().length === 0) {
+            <div class="empty-state">
+              <p>No properties match your active filters or drawn search polygon.</p>
+              @if (hasDrawnArea()) {
+                <button type="button" class="empty-reset-btn" (click)="clearDrawnArea()">
+                  Clear Drawn Area
+                </button>
+              }
+            </div>
+          } @else {
+            @for (listing of filteredListings(); track listing.id) {
+              <article
+                class="property-card"
+                data-testid="property-card"
+                [attr.data-listing-id]="listing.id"
+                [class.is-hovered]="hoveredListingId() === listing.id"
+                (mouseenter)="setHoveredListing(listing.id)"
+                (mouseleave)="setHoveredListing(null)"
+                (click)="selectListing(listing)"
+                tabindex="0"
+                (keyup.enter)="selectListing(listing)"
+              >
+                <div class="card-accent" [style.background]="listing.accentColor">
+                  <span class="card-type-chip">{{ listing.propertyType }}</span>
+                  <span class="card-apn">APN {{ listing.apn }}</span>
+                </div>
+
+                <div class="card-body">
+                  <div class="card-price-row">
+                    <span class="card-price">{{ formatPrice(listing.price) }}</span>
+                    <span class="card-neighborhood">{{ listing.neighborhood }}</span>
+                  </div>
+                  <h3 class="card-address">{{ listing.address }}</h3>
+                  <div class="card-specs">
+                    <span><strong>{{ listing.beds }}</strong> bd</span>
+                    <span>·</span>
+                    <span><strong>{{ listing.baths }}</strong> ba</span>
+                    <span>·</span>
+                    <span><strong>{{ listing.sqft | number }}</strong> sqft</span>
+                    <span>·</span>
+                    <span>Lot {{ listing.lotSqFt | number }} sqft</span>
+                  </div>
+                  <div class="card-highlights">
+                    @for (tag of listing.highlights.slice(0, 2); track tag) {
+                      <span class="mini-tag">{{ tag }}</span>
+                    }
+                  </div>
+                </div>
+              </article>
+            }
+          }
+        </div>
+      }
+    </aside>
+
+    <!-- Right Map Pane -->
+    <section id="map-container" class="map-pane" aria-label="Interactive property map">
+      <!-- Floating Top-Left Map Controls -->
+      <div class="map-controls-bar">
+        <button
+          id="draw-area-btn"
+          type="button"
+          class="map-ctrl-btn"
+          [class.is-active]="isDrawingArea()"
+          [disabled]="!mapsReady()"
+          (click)="startDrawArea()"
+        >
+          {{ isDrawingArea() ? 'Click Map to Draw Polygon...' : 'Draw Search Area' }}
+        </button>
+
+        @if (hasDrawnArea() || isDrawingArea()) {
+          <button
+            id="clear-area-btn"
+            type="button"
+            class="map-ctrl-btn danger"
+            (click)="clearDrawnArea()"
+          >
+            Clear Area
+          </button>
+        }
+
+        <button
+          id="map-type-toggle"
+          type="button"
+          class="map-ctrl-btn"
+          [class.is-active]="mapType() === 'hybrid'"
+          [disabled]="!mapsReady()"
+          (click)="toggleMapType()"
+        >
+          {{ mapType() === 'roadmap' ? 'Satellite' : 'Roadmap' }}
+        </button>
+      </div>
+
+      @if (isDrawingArea()) {
+        <div class="draw-helper-toast">
+          Click points on the map to outline a search polygon, then click the first point to finish.
+        </div>
+      }
+
+      @if (missingApiKey()) {
+        <div class="map-setup-banner">
+          <div class="setup-card">
+            <h2>Google Maps API Key Required</h2>
+            <p>
+              Set <code>GOOGLE_MAPS_API_KEY</code> in your <code>.env</code> file to activate the vector map,
+              cadastral lot outlines, Street View, Places API (New), and Routes API commute calculator.
+            </p>
+            <p class="setup-hint">
+              Need a free prototyping key with no billing setup? Mint a
+              <a
+                href="https://mapsplatform.google.com/maps-demo-key?utm_campaign=gmp_git_agentsamples_v1.0.0"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Maps Demo Key
+              </a>
+              and restart <code>serve-dist.mjs</code>.
+            </p>
+          </div>
+        </div>
+      } @else if (loadError()) {
+        <div class="map-setup-banner">
+          <div class="setup-card">
+            <h2>Unable to Load Google Maps</h2>
+            <p>{{ loadError() }}</p>
+          </div>
+        </div>
+      } @else if (mapsReady()) {
+        <google-map
+          width="100%"
+          height="100%"
+          [options]="mapOptions"
+          [mapTypeId]="googleMapTypeId"
+          (mapInitialized)="onMapInitialized($event)"
+        >
+          <map-marker-clusterer [renderer]="clusterRenderer">
+            @for (listing of filteredListings(); track listing.id) {
+              <map-advanced-marker
+                [position]="{ lat: listing.lat, lng: listing.lng }"
+                [title]="listing.address + ' — ' + formatPrice(listing.price)"
+                [content]="getMarkerContent(listing)"
+                [zIndex]="getMarkerZIndex(listing)"
+              />
+            }
+          </map-marker-clusterer>
+
+          <!-- Selected Listing Cadastral Parcel Polygon -->
+          @if (selectedListing(); as selected) {
+            <map-polygon
+              [paths]="selected.parcelPolygon"
+              [options]="selectedParcelOptions"
+            />
+          }
+
+          <!-- Hovered Listing Cadastral Parcel Preview -->
+          @if (hoveredListing(); as hovered) {
+            <map-polygon
+              [paths]="hovered.parcelPolygon"
+              [options]="hoveredParcelOptions"
+            />
+          }
+
+          <!-- Nearby Amenity Markers (when a listing is selected) -->
+          @if (selectedListing()) {
+            @for (amenity of nearbyAmenities(); track amenity.id) {
+              <map-advanced-marker
+                [position]="{ lat: amenity.lat, lng: amenity.lng }"
+                [title]="amenity.name"
+                [content]="getAmenityMarkerContent(amenity)"
+                [zIndex]="250"
+              />
+            }
+          }
+
+          <!-- Commute Workplace Marker & Route Polyline -->
+          @if (commuteSummary(); as commute) {
+            <map-advanced-marker
+              [position]="commute.workplaceLocation"
+              [title]="commute.workplaceName"
+              [content]="getWorkplaceMarkerContent(commute.workplaceName)"
+              [zIndex]="950"
+            />
+          }
+
+          @if (commuteRoutePath().length > 1) {
+            <map-polyline
+              [path]="commuteRoutePath()"
+              [options]="commutePolylineOptions"
+            />
+          }
+        </google-map>
+      } @else {
+        <div class="map-loading-state">Loading interactive San Francisco vector map...</div>
+      }
+    </section>
+  </main>
+</div>

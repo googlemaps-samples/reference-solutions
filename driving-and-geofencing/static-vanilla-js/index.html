@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Field Workforce Geofenced Attendance &amp; Site Audit Router</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%232563eb'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="/env-config.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "@googlemaps/js-api-loader": "/node_modules/@googlemaps/js-api-loader/dist/index.js",
+          "terra-draw": "/node_modules/terra-draw/dist/terra-draw.modern.js",
+          "terra-draw-google-maps-adapter": "/node_modules/terra-draw-google-maps-adapter/dist/terra-draw-google-maps-adapter.modern.js"
+        }
+      }
+    </script>
+    <script type="module" src="./app.js"></script>
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="header-brand">
+        <div class="brand-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z" />
+            <circle cx="12" cy="10" r="3" />
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>Field Workforce Geofenced Attendance &amp; Site Audit Router</h1>
+        </div>
+        <span class="district-badge">Austin District · TX</span>
+      </div>
+
+      <div class="header-metrics">
+        <div class="metric-pill" id="active-geofence-pill">
+          <span class="dot dot-teal"></span>
+          <span id="active-geofence-count">3 Active Zones</span>
+        </div>
+        <div class="metric-pill status-eligible" id="header-clockin-pill">
+          <span class="dot"></span>
+          <span id="header-clockin-text">Checking Geofence…</span>
+        </div>
+        <div class="metric-pill" id="header-route-pill">
+          <span class="dot dot-blue"></span>
+          <span id="header-route-text">Route: Pending</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <aside class="operations-sidebar" aria-label="Operations Sidebar">
+        <!-- Card 1: Worker GPS & Geofenced Attendance -->
+        <section class="panel-card" aria-labelledby="attendance-card-title">
+          <div class="card-header">
+            <h2 id="attendance-card-title">1. Worker GPS &amp; Attendance</h2>
+            <span id="geofence-status-badge" class="status-badge badge-neutral">Evaluating…</span>
+          </div>
+
+          <div class="field-group">
+            <label for="worker-preset-select" class="field-label">Simulated Worker GPS Position</label>
+            <select id="worker-preset-select" class="control-select">
+              <option value="congress-inside">Inside — Downtown Congress Hub (30.2676, -97.7430)</option>
+              <option value="soco-inside">Inside — South Congress Corridor (30.2496, -97.7495)</option>
+              <option value="domain-inside">Inside — Domain Northside Flagship (30.4021, -97.7253)</option>
+              <option value="zilker-outside">Outside — Zilker Park Approach (30.2669, -97.7729)</option>
+              <option value="mueller-outside">Outside — Mueller Airport Corridor (30.2981, -97.7052)</option>
+            </select>
+          </div>
+
+          <div class="address-box">
+            <div class="address-label">Reverse-Geocoded Street Address</div>
+            <div id="worker-address" class="address-value">Resolving worker coordinates…</div>
+            <div id="worker-coords" class="coords-value">30.26760, -97.74300</div>
+          </div>
+
+          <div class="clockin-footer">
+            <div id="verified-clockin-badge" class="verified-badge locked">
+              <span class="verified-icon" aria-hidden="true">●</span>
+              <span id="verified-clockin-text">Clock-In Locked</span>
+            </div>
+            <button id="clockin-action-btn" type="button" class="btn btn-primary" disabled>
+              Clock In at Site
+            </button>
+          </div>
+        </section>
+
+        <!-- Card 2: Geofence Zones & Terra Draw Controls -->
+        <section class="panel-card" aria-labelledby="geofence-card-title">
+          <div class="card-header">
+            <h2 id="geofence-card-title">2. Geofence Zones (Terra Draw)</h2>
+            <span class="card-subtitle">Polygon Containment</span>
+          </div>
+
+          <div class="draw-controls-row" role="group" aria-label="Sidebar Terra Draw Controls">
+            <button type="button" class="btn btn-secondary btn-sm" data-draw-action="polygon">
+              Draw Polygon
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" data-draw-action="select">
+              Select / Edit
+            </button>
+            <button type="button" class="btn btn-danger-ghost btn-sm" data-draw-action="clear">
+              Clear Drawn
+            </button>
+          </div>
+
+          <p class="helper-note">
+            Click <strong>Draw Polygon</strong>, place vertices on the map, and double-click to close a new supervisor geofence zone.
+          </p>
+
+          <ul id="geofence-list" class="zone-list" aria-label="Active Geofence Zones"></ul>
+        </section>
+
+        <!-- Card 3: Multi-Stop Audit Router -->
+        <section class="panel-card" aria-labelledby="router-card-title">
+          <div class="card-header">
+            <h2 id="router-card-title">3. Multi-Stop Audit Router</h2>
+            <span class="card-subtitle">Routes API v2</span>
+          </div>
+
+          <div class="search-row">
+            <input
+              id="site-search-input"
+              type="text"
+              class="control-input"
+              value="retail stores in Austin, TX"
+              placeholder="Search Austin audit sites…"
+              aria-label="Search Austin audit sites"
+            />
+            <button id="site-search-btn" type="button" class="btn btn-secondary">
+              Search
+            </button>
+          </div>
+
+          <div class="router-actions">
+            <button id="optimize-route-btn" type="button" class="btn btn-accent">
+              Optimize Multi-Stop Route
+            </button>
+          </div>
+
+          <div id="route-summary" class="route-summary">
+            Searching live Austin retail audit sites…
+          </div>
+
+          <ol id="audit-stops-list" class="stops-list" aria-label="Optimized Audit Stops"></ol>
+        </section>
+      </aside>
+
+      <section class="map-stage" aria-label="Interactive Austin Operations Map">
+        <div id="terra-draw-toolbar" class="floating-toolbar" role="toolbar" aria-label="Terra Draw Polygon Toolbar">
+          <span class="toolbar-title">Geofence Draw</span>
+          <button id="draw-polygon-btn" type="button" class="toolbar-btn" data-draw-action="polygon">
+            Draw Polygon
+          </button>
+          <button id="select-mode-btn" type="button" class="toolbar-btn" data-draw-action="select">
+            Select / Edit
+          </button>
+          <button id="clear-drawn-btn" type="button" class="toolbar-btn toolbar-btn-danger" data-draw-action="clear">
+            Clear Drawn
+          </button>
+          <span id="draw-mode-hint" class="toolbar-hint">Ready</span>
+        </div>
+
+        <div id="map-status-banner" class="map-status-banner hidden" role="status"></div>
+        <div id="map-container" class="map-container"></div>
+      </section>
+    </main>
+  </body>
+</html>

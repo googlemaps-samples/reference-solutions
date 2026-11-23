@@ -1,0 +1,34 @@
+{
+  "name": "miami-disaster-heatmap-shelter-router",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Disaster Hazard Heatmap, Civic Incident & Safe Shelter Router built with React, Vite, TypeScript, @vis.gl/react-google-maps, deck.gl, and modern Google Maps Platform APIs.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc -b && vite build",
+    "typecheck": "tsc --noEmit",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@deck.gl/aggregation-layers": "~9.4.1",
+    "@deck.gl/core": "~9.4.1",
+    "@deck.gl/google-maps": "~9.4.1",
+    "@deck.gl/layers": "~9.4.1",
+    "@luma.gl/core": "~9.4.2",
+    "@luma.gl/engine": "~9.4.2",
+    "@luma.gl/webgl": "~9.4.2",
+    "@vis.gl/react-google-maps": "^1.10.2",
+    "lucide-react": "^1.76.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@types/google.maps": "^3.66.10",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "@vitejs/plugin-react": "^4.4.1",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5"
+  }
+}

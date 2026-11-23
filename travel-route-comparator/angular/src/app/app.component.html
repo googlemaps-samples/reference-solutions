@@ -1,0 +1,351 @@
+<div class="app-shell">
+  <!-- Top 64px Header Bar -->
+  <header class="app-header">
+    <div class="brand-cluster">
+      <div class="brand-icon" aria-hidden="true">⛰</div>
+      <div class="brand-text">
+        <h1>Multi-Modal Commute Comparator &amp; Trail Elevation Tracker</h1>
+        <span class="corridor-badge">Denver ↔ Boulder Front Range Corridor</span>
+      </div>
+    </div>
+
+    <div class="header-kpis">
+      @if (selectedRoute(); as route) {
+        <span class="kpi-pill eta">
+          {{ modeIcon(activeMode()) }} {{ route.durationText }}
+        </span>
+        <span class="kpi-pill distance">
+          ↔ {{ route.distanceText }}
+        </span>
+      }
+      @if (elevationProfile(); as elev) {
+        <span class="kpi-pill gain">
+          ↗ +{{ elev.totalGainM }} m gain
+        </span>
+      }
+      @if (showBetaAdvisory()) {
+        <span class="beta-advisory" role="status">
+          ⚠ Beta path advisory: {{ activeMode() === 'BICYCLING' ? 'Cycling' : 'Walking' }} routes may lack dedicated bike lanes or sidewalks.
+        </span>
+      }
+    </div>
+  </header>
+
+  @if (missingApiKey()) {
+    <div class="api-key-banner" role="alert">
+      <strong>GOOGLE_MAPS_API_KEY not configured.</strong>
+      Copy <code>.env.example</code> to <code>.env</code> and set
+      <code>GOOGLE_MAPS_API_KEY</code> (get a free zero-billing Maps Demo Key at
+      <a
+        href="https://mapsplatform.google.com/maps-demo-key?utm_campaign=gmp_git_agentsamples_v1.0.0"
+        target="_blank"
+        rel="noopener noreferrer"
+      >mapsplatform.google.com/maps-demo-key</a>).
+    </div>
+  }
+
+  <!-- Main Split-Screen Workspace -->
+  <div class="main-split">
+    <!-- Left 410px Scrollable Sidebar -->
+    <aside class="sidebar" aria-label="Route controls and comparison">
+      <!-- Origin & Destination Pickers -->
+      <section class="panel-card endpoints-card">
+        <div class="endpoints-header">
+          <h2>Route Endpoints</h2>
+          <button
+            id="swap-locations-btn"
+            data-testid="swap-locations-btn"
+            type="button"
+            class="swap-btn"
+            (click)="swapLocations()"
+            [disabled]="!origin() || !destination()"
+            title="Swap origin and destination"
+          >
+            ⇅ Swap
+          </button>
+        </div>
+
+        <app-place-picker
+          role="origin"
+          label="Origin"
+          inputId="origin-autocomplete-input"
+          placeholder="Search origin (e.g. Denver Union Station)"
+          [mapsReady]="mapsReady()"
+          [activePlace]="origin()"
+          (placeSelected)="onOriginSelected($event)"
+          (pickerError)="onPickerError($event)"
+        />
+
+        <app-place-picker
+          role="destination"
+          label="Destination"
+          inputId="destination-autocomplete-input"
+          placeholder="Search destination (e.g. Chautauqua Park)"
+          [mapsReady]="mapsReady()"
+          [activePlace]="destination()"
+          (placeSelected)="onDestinationSelected($event)"
+          (pickerError)="onPickerError($event)"
+        />
+      </section>
+
+      <!-- 4-Mode Selector Bar -->
+      <section class="panel-card modes-card" aria-label="Travel modes">
+        <div class="section-heading">
+          <h2>Travel Mode</h2>
+          <span class="section-sub">Live Routes API comparison</span>
+        </div>
+        <div class="mode-grid">
+          @for (summary of modeSummaries(); track summary.mode) {
+            <button
+              [id]="modeButtonId(summary.mode)"
+              [attr.data-testid]="modeButtonId(summary.mode)"
+              type="button"
+              class="mode-btn"
+              [class.active]="activeMode() === summary.mode"
+              (click)="setMode(summary.mode)"
+            >
+              <span class="mode-top">
+                <span class="mode-emoji" aria-hidden="true">{{ modeIcon(summary.mode) }}</span>
+                <span class="mode-name">{{ summary.label }}</span>
+              </span>
+              <span class="mode-eta">
+                @if (summary.loading) {
+                  Computing…
+                } @else if (summary.unavailable) {
+                  Unavailable
+                } @else {
+                  {{ summary.durationText }}
+                }
+              </span>
+              @if (summary.distanceText) {
+                <span class="mode-dist">{{ summary.distanceText }}</span>
+              }
+            </button>
+          }
+        </div>
+      </section>
+
+      <!-- Route Modifiers -->
+      <section class="panel-card modifiers-card" aria-label="Route preferences">
+        <div class="section-heading">
+          <h2>Route Modifiers</h2>
+          <span class="section-sub">
+            {{ activeMode() === 'DRIVING' ? 'Active on Driving' : 'Updates Driving options' }}
+          </span>
+        </div>
+        <div class="modifiers-list">
+          <label class="toggle-chip" [class.checked]="modifiers().avoidTolls">
+            <input
+              id="avoid-tolls-toggle"
+              data-testid="avoid-tolls-toggle"
+              type="checkbox"
+              [checked]="modifiers().avoidTolls"
+              (change)="toggleModifier('avoidTolls')"
+            />
+            <span>Avoid Tolls</span>
+          </label>
+
+          <label class="toggle-chip" [class.checked]="modifiers().avoidHighways">
+            <input
+              id="avoid-highways-toggle"
+              data-testid="avoid-highways-toggle"
+              type="checkbox"
+              [checked]="modifiers().avoidHighways"
+              (change)="toggleModifier('avoidHighways')"
+            />
+            <span>Avoid Highways</span>
+          </label>
+
+          <label class="toggle-chip eco" [class.checked]="modifiers().ecoFriendly">
+            <input
+              id="eco-friendly-toggle"
+              data-testid="eco-friendly-toggle"
+              type="checkbox"
+              [checked]="modifiers().ecoFriendly"
+              (change)="toggleModifier('ecoFriendly')"
+            />
+            <span>🌿 Eco-Friendly</span>
+          </label>
+        </div>
+      </section>
+
+      <!-- Comparative Route Cards -->
+      <section class="panel-card routes-card" aria-label="Route options">
+        <div class="section-heading">
+          <h2>{{ activeMode() | titlecase }} Alternatives</h2>
+          <span class="section-sub">{{ activeRoutes().length }} found</span>
+        </div>
+
+        @if (statusMessage()) {
+          <div class="inline-alert">{{ statusMessage() }}</div>
+        }
+
+        @if (activeModeLoading() && !activeRoutes().length) {
+          <div class="routes-empty">Computing live Routes API alternatives…</div>
+        } @else if (activeModeError() && !activeRoutes().length) {
+          <div class="routes-empty error">{{ activeModeError() }}</div>
+        } @else if (!activeRoutes().length) {
+          <div class="routes-empty">Select origin and destination to compare routes.</div>
+        } @else {
+          <div
+            id="route-cards-list"
+            data-testid="route-cards-list"
+            class="route-cards-list"
+          >
+            @for (route of activeRoutes(); track route.index) {
+              <button
+                [id]="'route-card-' + route.index"
+                [attr.data-testid]="'route-card-' + route.index"
+                type="button"
+                class="route-card"
+                [class.selected]="selectedRoute()?.index === route.index"
+                [style.border-left-color]="route.color"
+                (click)="selectRoute(route.index)"
+              >
+                <div class="route-card-top">
+                  <span class="route-label-group">
+                    <span class="color-dot" [style.background]="route.color"></span>
+                    <span class="route-badge" [class.eco-badge]="route.isEcoFriendly">
+                      {{ route.label }}
+                    </span>
+                  </span>
+                  <span class="route-eta">{{ route.durationText }}</span>
+                </div>
+
+                <div class="route-card-mid">
+                  <span class="route-desc">{{ route.description }}</span>
+                  <span class="route-dist">{{ route.distanceText }}</span>
+                </div>
+
+                @if (route.tollEstimateText || route.fuelLitersText || route.transitFareText || route.warnings.length) {
+                  <div class="route-badges-row">
+                    @if (route.tollEstimateText) {
+                      <span class="meta-pill toll">{{ route.tollEstimateText }}</span>
+                    }
+                    @if (route.fuelLitersText) {
+                      <span class="meta-pill fuel">⛽ {{ route.fuelLitersText }}</span>
+                    }
+                    @if (route.transitFareText) {
+                      <span class="meta-pill fare">🎫 {{ route.transitFareText }}</span>
+                    }
+                    @if (route.warnings.length) {
+                      <span class="meta-pill warn">{{ route.warnings[0] }}</span>
+                    }
+                  </div>
+                }
+              </button>
+            }
+          </div>
+        }
+      </section>
+    </aside>
+
+    <!-- Right Workspace: Vector Map + Bottom Elevation Profile -->
+    <main class="workspace">
+      <div
+        id="map-canvas"
+        data-testid="map-canvas"
+        class="map-stage"
+      >
+        @if (mapsReady()) {
+          <google-map
+            width="100%"
+            height="100%"
+            [mapId]="'DEMO_MAP_ID'"
+            [center]="initialCenter"
+            [zoom]="initialZoom"
+            [options]="mapOptions"
+            (mapInitialized)="onMapInitialized($event)"
+          >
+            <!-- Mode-specific base layers -->
+            @if (activeMode() === 'BICYCLING') {
+              <map-bicycling-layer />
+            } @else if (activeMode() === 'TRANSIT') {
+              <map-transit-layer />
+            } @else if (activeMode() === 'DRIVING') {
+              <map-traffic-layer />
+            }
+
+            <!-- Alternative (inactive) route polylines -->
+            @for (route of inactiveRoutes(); track route.index) {
+              <map-polyline
+                [path]="route.path"
+                [options]="inactivePolylineOptions(route)"
+                (polylineClick)="selectRoute(route.index)"
+              />
+            }
+
+            <!-- Active route casing + highlighted polyline -->
+            @if (selectedRoute(); as activeRoute) {
+              <map-polyline
+                [path]="activeRoute.path"
+                [options]="activeCasingOptions()"
+              />
+              <map-polyline
+                [path]="activeRoute.path"
+                [options]="activePolylineOptions(activeRoute)"
+              />
+            }
+
+            <!-- Origin & Destination Advanced Markers -->
+            @if (origin(); as orig) {
+              <map-advanced-marker
+                [position]="orig.location"
+                [content]="originPin"
+                [title]="'Origin: ' + orig.displayName"
+                [zIndex]="50"
+              />
+            }
+
+            @if (destination(); as dest) {
+              <map-advanced-marker
+                [position]="dest.location"
+                [content]="destinationPin"
+                [title]="'Destination: ' + dest.displayName"
+                [zIndex]="50"
+              />
+            }
+
+            <!-- Synchronized Elevation Hover Marker -->
+            @if (hoverSample(); as hp) {
+              <map-advanced-marker
+                [position]="{ lat: hp.lat, lng: hp.lng }"
+                [content]="hoverPin"
+                [title]="hp.elevationM.toFixed(0) + ' m (' + hp.gradePct + '% grade)'"
+                [zIndex]="90"
+              />
+            }
+          </google-map>
+
+          <div class="map-floating-controls">
+            <button
+              type="button"
+              class="fit-bounds-btn"
+              (click)="fitMapToActiveRoute()"
+              title="Fit active route in viewport"
+            >
+              ⌖ Fit Route
+            </button>
+          </div>
+        } @else {
+          <div class="map-loading-state">
+            @if (loadError()) {
+              <p class="map-error-text">{{ loadError() }}</p>
+            } @else {
+              <p>Loading Google Maps JavaScript API…</p>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Bottom 210px Elevation & Slope Profile Panel -->
+      <app-elevation-chart
+        [profile]="elevationProfile()"
+        [loading]="elevationLoading()"
+        [errorMessage]="elevationError()"
+        [activeMode]="activeMode()"
+        (hoverPointChange)="onElevationHover($event)"
+      />
+    </main>
+  </div>
+</div>

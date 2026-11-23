@@ -1,0 +1,450 @@
+<div class="console-shell">
+  <header class="command-bar">
+    <div class="brand-group">
+      <div class="brand-mark">DFW</div>
+      <div class="brand-text">
+        <h1>Dallas Fleet Telematics</h1>
+        <span class="brand-subtitle">Road-Snapped GPS &amp; Multi-Stop Dispatch</span>
+      </div>
+    </div>
+
+    <div class="filter-pills" role="group" aria-label="Fleet status filters">
+      <button
+        type="button"
+        class="filter-pill"
+        [class.active]="statusFilter() === 'ALL'"
+        data-testid="status-filter-all"
+        (click)="setStatusFilter('ALL')"
+      >
+        All <span class="pill-count">{{ statusCounts().all }}</span>
+      </button>
+      <button
+        type="button"
+        class="filter-pill pill-en-route"
+        [class.active]="statusFilter() === 'EN_ROUTE'"
+        data-testid="status-filter-en-route"
+        (click)="setStatusFilter('EN_ROUTE')"
+      >
+        En Route <span class="pill-count">{{ statusCounts().enRoute }}</span>
+      </button>
+      <button
+        type="button"
+        class="filter-pill pill-delayed"
+        [class.active]="statusFilter() === 'DELAYED'"
+        data-testid="status-filter-delayed"
+        (click)="setStatusFilter('DELAYED')"
+      >
+        Delayed <span class="pill-count">{{ statusCounts().delayed }}</span>
+      </button>
+      <button
+        type="button"
+        class="filter-pill pill-idle"
+        [class.active]="statusFilter() === 'IDLE'"
+        data-testid="status-filter-idle"
+        (click)="setStatusFilter('IDLE')"
+      >
+        Idle <span class="pill-count">{{ statusCounts().idle }}</span>
+      </button>
+    </div>
+
+    <div class="toolbar-actions">
+      <button
+        type="button"
+        class="action-toggle"
+        [class.active]="showTrafficLayer()"
+        data-testid="traffic-layer-toggle"
+        (click)="toggleTrafficLayer()"
+      >
+        <span class="dot-indicator"></span>
+        Live Traffic
+      </button>
+
+      <div
+        #autocompleteHost
+        class="autocomplete-host"
+        data-testid="place-autocomplete-container"
+      ></div>
+    </div>
+  </header>
+
+  <main class="workspace-split">
+    <aside class="telemetry-sidebar">
+      @if (mapsLoader.missingApiKey()) {
+        <section class="setup-banner">
+          <h2>Google Maps API Key Required</h2>
+          <p>
+            Configure <code>GOOGLE_MAPS_API_KEY</code> in <code>.env</code> and
+            restart <code>serve-dist.mjs</code> to load live maps, Places hub
+            discovery, Roads snapping, and Routes dispatch matrices.
+          </p>
+        </section>
+      } @else if (mapsLoader.error()) {
+        <section class="setup-banner">
+          <h2>Map Initialization Notice</h2>
+          <p>{{ mapsLoader.error() }}</p>
+        </section>
+      }
+
+      <!-- 1. Active Fleet Telemetry Cards -->
+      <section class="sidebar-section">
+        <div class="section-header">
+          <h2>Active Fleet Telemetry</h2>
+          <span class="section-meta">{{ filteredVehicles().length }} units</span>
+        </div>
+
+        <div class="vehicle-list" data-testid="fleet-vehicle-list">
+          @for (vehicle of filteredVehicles(); track vehicle.id) {
+            <button
+              type="button"
+              class="vehicle-card"
+              [class.selected]="selectedVehicleId() === vehicle.id"
+              (click)="selectVehicle(vehicle)"
+            >
+              <div class="vehicle-card-top">
+                <div class="vehicle-id-row">
+                  <span class="vehicle-id">{{ vehicle.id }}</span>
+                  <span class="vehicle-type">{{ vehicle.unitType }}</span>
+                </div>
+                <span
+                  class="status-badge"
+                  [class.badge-en-route]="vehicle.status === 'EN_ROUTE'"
+                  [class.badge-delayed]="vehicle.status === 'DELAYED'"
+                  [class.badge-idle]="vehicle.status === 'IDLE'"
+                >
+                  {{ formatStatusLabel(vehicle.status) }}
+                </span>
+              </div>
+
+              <div class="vehicle-corridor">{{ vehicle.corridor }}</div>
+
+              <div class="vehicle-metrics">
+                <div>
+                  <span class="metric-label">Speed</span>
+                  <span class="metric-value">{{ vehicle.speedMph }} mph</span>
+                </div>
+                <div>
+                  <span class="metric-label">Next Stop</span>
+                  <span class="metric-value truncate">{{
+                    vehicle.nextStopLabel
+                  }}</span>
+                </div>
+                <div>
+                  <span class="metric-label">ETA</span>
+                  <span class="metric-value">
+                    @if (vehicle.etaMinutes > 0) {
+                      {{ vehicle.etaMinutes }} min
+                    } @else {
+                      Staged
+                    }
+                  </span>
+                </div>
+              </div>
+            </button>
+          }
+        </div>
+      </section>
+
+      <!-- 2. GPS Trace & Roads API Inspector -->
+      <section class="sidebar-section" data-testid="raw-vs-snapped-panel">
+        <div class="section-header">
+          <h2>Roads API Snap Inspector</h2>
+          <button
+            type="button"
+            class="compact-toggle"
+            [class.active]="snapToRoadsEnabled()"
+            data-testid="snap-to-roads-toggle"
+            (click)="toggleSnapToRoads()"
+          >
+            {{ snapToRoadsEnabled() ? 'Snapped On' : 'Raw Only' }}
+          </button>
+        </div>
+
+        @if (selectedVehicle(); as activeVehicle) {
+          <div class="inspector-meta">
+            <span>Inspecting <strong>{{ activeVehicle.id }}</strong></span>
+            @if (snappingInProgress()) {
+              <span class="loading-chip">Snapping...</span>
+            }
+          </div>
+
+          <div class="inspector-grid">
+            <div class="stat-tile">
+              <span class="stat-label">Raw GPS Pts</span>
+              <span class="stat-value">{{
+                activeVehicle.rawGpsTrace.length
+              }}</span>
+            </div>
+            <div class="stat-tile">
+              <span class="stat-label">Snapped Pts</span>
+              <span class="stat-value">
+                {{ roadSnapSummary()?.snappedPath?.length ?? 0 }}
+              </span>
+            </div>
+            <div class="stat-tile">
+              <span class="stat-label">Road Segments</span>
+              <span class="stat-value">
+                {{ roadSnapSummary()?.uniqueRoadSegments ?? 0 }}
+              </span>
+            </div>
+            <div class="stat-tile">
+              <span class="stat-label">Mean Offset</span>
+              <span class="stat-value">
+                {{ roadSnapSummary()?.meanSnapOffsetMeters ?? 0 }} m
+              </span>
+            </div>
+          </div>
+
+          <p class="inspector-note">
+            {{
+              roadSnapSummary()?.statusMessage ||
+                'Select a fleet unit to compare raw GPS breadcrumbs against Roads API geometry.'
+            }}
+          </p>
+        }
+      </section>
+
+      <!-- 3. Multi-Stop Dispatch & Route Matrix Panel -->
+      <section class="sidebar-section" data-testid="dispatch-matrix-panel">
+        <div class="section-header">
+          <h2>Multi-Stop Dispatch &amp; Matrix</h2>
+          <span class="section-meta">{{ selectedHubs().length }} hubs</span>
+        </div>
+
+        <div class="dispatch-controls">
+          <label class="checkbox-label">
+            <input
+              type="checkbox"
+              [checked]="optimizeWaypoints()"
+              data-testid="optimize-waypoints-toggle"
+              (change)="toggleOptimizeWaypoints()"
+            />
+            <span>Optimize stop order</span>
+          </label>
+
+          <button
+            type="button"
+            class="primary-btn"
+            [disabled]="routingInProgress() || selectedHubs().length === 0"
+            data-testid="calculate-dispatch-route-btn"
+            (click)="recalculateDispatch()"
+          >
+            {{ routingInProgress() ? 'Computing...' : 'Compute Dispatch' }}
+          </button>
+        </div>
+
+        @if (dispatchRoute(); as route) {
+          <div class="dispatch-totals">
+            <div>
+              <span class="metric-label">Corridor Total</span>
+              <span class="metric-value">
+                {{ formatDistance(route.totalDistanceMeters) }} ·
+                {{ formatDuration(route.totalDurationMillis) }}
+              </span>
+            </div>
+            <div>
+              <span class="metric-label">Legs</span>
+              <span class="metric-value">{{ route.legs.length }}</span>
+            </div>
+          </div>
+        }
+
+        <div class="hub-list">
+          <div class="hub-row depot-row">
+            <span class="hub-badge depot-badge">D</span>
+            <div class="hub-info">
+              <span class="hub-name">{{ depot.name }}</span>
+              <span class="hub-address">Origin · {{ depot.address }}</span>
+            </div>
+          </div>
+
+          @if (discoveringHubs()) {
+            <p class="inspector-note">
+              Discovering Dallas logistics hubs via Places API (New)...
+            </p>
+          }
+
+          @for (hub of hubs(); track hub.id; let i = $index) {
+            <div class="hub-row" [class.hub-unselected]="!hub.selected">
+              <input
+                type="checkbox"
+                [checked]="hub.selected"
+                [attr.aria-label]="'Include ' + hub.name"
+                (change)="toggleHubSelection(hub.id)"
+              />
+              <div class="hub-info">
+                <span class="hub-name">{{ hub.name }}</span>
+                <span class="hub-address">{{ hub.address }}</span>
+              </div>
+              <div class="hub-eta">
+                @if (getMatrixForHub(hub.id); as matrix) {
+                  <strong>{{ formatDuration(matrix.durationMillis) }}</strong>
+                  <span>{{ formatDistance(matrix.distanceMeters) }}</span>
+                } @else {
+                  <span>—</span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        @if (dispatchRoute()?.legs?.length) {
+          <div class="legs-table-wrap">
+            <table class="legs-table">
+              <thead>
+                <tr>
+                  <th>Leg</th>
+                  <th>Destination Hub</th>
+                  <th>Dist</th>
+                  <th>ETA</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (leg of dispatchRoute()!.legs; track leg.legIndex) {
+                  <tr>
+                    <td>#{{ leg.legIndex }}</td>
+                    <td class="leg-dest">{{ leg.toLabel }}</td>
+                    <td>{{ formatDistance(leg.distanceMeters) }}</td>
+                    <td>{{ formatDuration(leg.durationMillis) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+    </aside>
+
+    <section class="map-stage" data-testid="map-container">
+      @if (mapsLoader.ready()) {
+        <google-map
+          #googleMap="googleMap"
+          width="100%"
+          height="100%"
+          [center]="mapCenter()"
+          [zoom]="mapZoom()"
+          mapId="DEMO_MAP_ID"
+          [options]="mapOptions()"
+          (mapInitialized)="onMapInitialized($event)"
+        >
+          @if (showTrafficLayer()) {
+            <map-traffic-layer />
+          }
+
+          <!-- Multi-stop dispatch corridor polyline -->
+          @if (dispatchPath().length > 1) {
+            <map-polyline
+              [path]="dispatchPath()"
+              [options]="dispatchPolylineOptions()"
+            />
+          }
+
+          <!-- Raw noisy GPS trace (dashed orange) -->
+          @if (rawTracePath().length > 1) {
+            <map-polyline
+              [path]="rawTracePath()"
+              [options]="rawPolylineOptions()"
+            />
+          }
+
+          <!-- Roads API road-snapped trace (solid cyan) -->
+          @if (snappedTracePath().length > 1) {
+            <map-polyline
+              [path]="snappedTracePath()"
+              [options]="snappedPolylineOptions()"
+            />
+          }
+
+          <!-- Central Dispatch Depot Marker -->
+          <map-advanced-marker
+            #depotMarker="mapAdvancedMarker"
+            [position]="depot.location"
+            [title]="depot.name"
+            [content]="depotMarkerContent()"
+            [zIndex]="70"
+            (mapClick)="onDepotMarkerClick(depotMarker)"
+          />
+
+          <!-- Discovered & Searched Drop-off Hub Markers -->
+          @for (entry of hubMarkerEntries(); track entry.hub.id) {
+            <map-advanced-marker
+              #hubMarker="mapAdvancedMarker"
+              [position]="entry.hub.location"
+              [title]="entry.hub.name"
+              [content]="entry.content"
+              [zIndex]="65"
+              (mapClick)="onHubMarkerClick(entry.hub, entry.stopNumber, hubMarker)"
+            />
+          }
+
+          <!-- Status-coded Active Fleet Vehicle Markers -->
+          @for (entry of vehicleMarkerEntries(); track entry.vehicle.id) {
+            <map-advanced-marker
+              #vehicleMarker="mapAdvancedMarker"
+              [position]="entry.vehicle.position"
+              [title]="entry.vehicle.callsign"
+              [content]="entry.content"
+              [zIndex]="entry.zIndex"
+              (mapClick)="onVehicleMarkerClick(entry.vehicle, vehicleMarker)"
+            />
+          }
+
+          <map-info-window #infoWindow="mapInfoWindow">
+            @if (infoState(); as info) {
+              <div class="map-infowindow">
+                <div class="iw-header">
+                  <strong>{{ info.title }}</strong>
+                  <span class="iw-badge" [attr.data-tone]="info.badgeTone">
+                    {{ info.badgeText }}
+                  </span>
+                </div>
+                <p class="iw-subtitle">{{ info.subtitle }}</p>
+                <div class="iw-grid">
+                  @for (row of info.details; track row.label) {
+                    <div class="iw-row">
+                      <span>{{ row.label }}</span>
+                      <strong>{{ row.value }}</strong>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </map-info-window>
+        </google-map>
+      } @else {
+        <div class="map-placeholder">
+          <div class="placeholder-card">
+            <h3>Dallas Corridor Map</h3>
+            <p>
+              @if (mapsLoader.missingApiKey()) {
+                Waiting for <code>GOOGLE_MAPS_API_KEY</code> in <code>.env</code>.
+              } @else {
+                Loading Maps JavaScript API vector tiles &amp; fleet layers...
+              }
+            </p>
+          </div>
+        </div>
+      }
+
+      <div class="map-legend" aria-label="Map legend">
+        <div class="legend-item">
+          <span class="swatch swatch-en-route"></span> En Route
+        </div>
+        <div class="legend-item">
+          <span class="swatch swatch-delayed"></span> Delayed
+        </div>
+        <div class="legend-item">
+          <span class="swatch swatch-idle"></span> Idle
+        </div>
+        <div class="legend-item">
+          <span class="line-swatch line-raw"></span> Raw GPS
+        </div>
+        <div class="legend-item">
+          <span class="line-swatch line-snapped"></span> Road-Snapped
+        </div>
+        <div class="legend-item">
+          <span class="line-swatch line-dispatch"></span> Dispatch Corridor
+        </div>
+      </div>
+    </section>
+  </main>
+</div>

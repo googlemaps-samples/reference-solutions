@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>450 Sutter Dental Specialists — San Francisco Storefront &amp; Directions</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%230f766e'%3E%3Cpath d='M12 21c-1.5 0-2-2.5-2.5-4.5S8 13 6.5 13C4 13 3 10.5 3 7.5 3 4.5 5 2 8 2c1.8 0 3 .8 4 .8s2.2-.8 4-.8c3 0 5 2.5 5 5.5 0 3-1 5.5-3.5 5.5-1.5 0-2.5 1.5-3 3.5S13.5 21 12 21Z'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="clinic-header" data-testid="clinic-header">
+        <div class="brand-group">
+          <div class="brand-mark" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 21c-1.5 0-2-2.5-2.5-4.5S8 13 6.5 13C4 13 3 10.5 3 7.5 3 4.5 5 2 8 2c1.8 0 3 .8 4 .8s2.2-.8 4-.8c3 0 5 2.5 5 5.5 0 3-1 5.5-3.5 5.5-1.5 0-2.5 1.5-3 3.5S13.5 21 12 21Z" />
+            </svg>
+          </div>
+          <div class="brand-text">
+            <div class="brand-title-row">
+              <h1 id="header-clinic-name">450 Sutter Dental Specialists</h1>
+              <span id="header-open-badge" class="status-pill status-pill--loading">Checking hours…</span>
+            </div>
+            <p id="header-clinic-meta" class="brand-subtitle">
+              450 Sutter St, Union Square, San Francisco, CA
+            </p>
+          </div>
+        </div>
+
+        <div class="header-controls">
+          <button
+            type="button"
+            id="coverage-overlay-toggle"
+            class="control-btn control-btn--active"
+            data-testid="coverage-overlay-toggle"
+            aria-pressed="true"
+          >
+            <span class="dot-indicator" aria-hidden="true"></span>
+            Home-Visit Area (3.5 km)
+          </button>
+
+          <button
+            type="button"
+            id="street-view-toggle"
+            class="control-btn"
+            data-testid="street-view-toggle"
+            aria-pressed="false"
+          >
+            Street View Entrance
+          </button>
+
+          <div class="view-mode-group" role="group" aria-label="Map viewport layout">
+            <button type="button" class="mode-pill mode-pill--active" data-view-mode="map">Map</button>
+            <button type="button" class="mode-pill" data-view-mode="split">Split</button>
+            <button type="button" class="mode-pill" data-view-mode="streetview">Street View</button>
+          </div>
+        </div>
+      </header>
+
+      <main class="workspace-grid">
+        <aside class="sidebar-column" aria-label="Clinic details, directions, and booking">
+          <section class="panel-card" data-testid="venue-details-panel" id="venue-details-panel">
+            <div class="card-header-row">
+              <div>
+                <span class="eyebrow">Live Google Places Storefront</span>
+                <h2 id="venue-name" class="card-title">450 Sutter Dental Specialists</h2>
+              </div>
+              <a
+                id="venue-maps-link"
+                class="maps-attribution-link"
+                href="https://www.google.com/maps/search/?api=1&query=450+Sutter+St+San+Francisco+CA"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Open in Google Maps
+              </a>
+            </div>
+
+            <div id="venue-status-banner" class="info-banner hidden" role="status"></div>
+
+            <div id="venue-photos-strip" class="photos-strip" aria-label="Clinic photos">
+              <div class="photo-skeleton">Loading clinic photos…</div>
+            </div>
+
+            <div class="rating-status-row">
+              <div id="venue-rating-badge" class="rating-pill">
+                <span class="star-icon" aria-hidden="true">&#9733;</span>
+                <span id="venue-rating-value">--</span>
+                <span id="venue-rating-count" class="muted-text">(loading reviews)</span>
+              </div>
+              <span id="venue-open-status" class="status-pill status-pill--loading">Loading status…</span>
+            </div>
+
+            <dl class="venue-meta-list">
+              <div class="venue-meta-item">
+                <dt>Address</dt>
+                <dd id="venue-address">Fetching live address from Places API…</dd>
+              </div>
+              <div class="venue-meta-item">
+                <dt>Phone</dt>
+                <dd id="venue-phone">--</dd>
+              </div>
+              <div class="venue-meta-item">
+                <dt>Website</dt>
+                <dd id="venue-website">--</dd>
+              </div>
+            </dl>
+
+            <details class="hours-accordion" id="venue-hours-accordion">
+              <summary>Weekly Opening Hours</summary>
+              <ul id="venue-hours-list" class="hours-list">
+                <li class="muted-text">Loading clinic schedule…</li>
+              </ul>
+            </details>
+
+            <div class="reviews-section">
+              <div class="reviews-header">
+                <h3>Patient Reviews</h3>
+                <span class="attribution-tag">Powered by Google</span>
+              </div>
+              <div id="venue-reviews-list" class="reviews-list" data-testid="venue-reviews-list">
+                <p class="muted-text">Loading verified reviews from Google Places…</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel-card" aria-labelledby="directions-heading">
+            <div class="card-header-row">
+              <div>
+                <span class="eyebrow">Routes API v2 &amp; Autocomplete</span>
+                <h2 id="directions-heading" class="card-title">Get Directions to Clinic</h2>
+              </div>
+              <button type="button" id="reset-origin-btn" class="text-action-btn">
+                Reset Origin
+              </button>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label" for="origin-autocomplete-container">
+                Starting Address (San Francisco)
+              </label>
+              <div
+                id="origin-autocomplete-container"
+                class="autocomplete-host"
+                data-testid="origin-autocomplete-container"
+              ></div>
+              <p id="origin-active-caption" class="field-caption">
+                Origin: Ferry Building, San Francisco, CA
+              </p>
+            </div>
+
+            <div class="travel-modes" role="group" aria-label="Travel mode">
+              <button
+                type="button"
+                id="travel-mode-driving"
+                class="mode-btn mode-btn--active"
+                data-testid="travel-mode-driving"
+                data-mode="DRIVE"
+                aria-pressed="true"
+              >
+                Driving
+              </button>
+              <button
+                type="button"
+                id="travel-mode-transit"
+                class="mode-btn"
+                data-testid="travel-mode-transit"
+                data-mode="TRANSIT"
+                aria-pressed="false"
+              >
+                Transit
+              </button>
+              <button
+                type="button"
+                id="travel-mode-walking"
+                class="mode-btn"
+                data-testid="travel-mode-walking"
+                data-mode="WALK"
+                aria-pressed="false"
+              >
+                Walking
+              </button>
+            </div>
+
+            <div class="route-summary-card" data-testid="route-summary-card" id="route-summary-card">
+              <div class="route-metrics">
+                <div class="route-metric">
+                  <span class="route-metric-label">Travel Time</span>
+                  <strong id="route-duration-value" class="route-metric-value">--</strong>
+                </div>
+                <div class="route-metric">
+                  <span class="route-metric-label">Distance</span>
+                  <strong id="route-distance-value" class="route-metric-value">--</strong>
+                </div>
+                <div class="route-metric">
+                  <span class="route-metric-label">Mode</span>
+                  <strong id="route-mode-label" class="route-metric-value">Driving</strong>
+                </div>
+              </div>
+              <p id="route-status-note" class="route-note">
+                Calculating route from Ferry Building, San Francisco, CA…
+              </p>
+            </div>
+          </section>
+
+          <section class="panel-card" aria-labelledby="booking-heading">
+            <div class="card-header-row">
+              <div>
+                <span class="eyebrow">Appointment Request</span>
+                <h2 id="booking-heading" class="card-title">Book a Consultation</h2>
+              </div>
+              <span class="badge-subtle">In-Clinic or Home Visit</span>
+            </div>
+
+            <div
+              id="booking-confirmation"
+              class="confirmation-banner hidden"
+              data-testid="booking-confirmation"
+              role="status"
+            ></div>
+
+            <form id="booking-form" class="booking-form" data-testid="booking-form">
+              <div class="form-row">
+                <div class="field-group">
+                  <label class="field-label" for="patient-name">Full Name</label>
+                  <input
+                    id="patient-name"
+                    name="patientName"
+                    type="text"
+                    required
+                    minlength="2"
+                    placeholder="Alex Rivera"
+                  />
+                </div>
+              </div>
+
+              <div class="form-row form-row--two">
+                <div class="field-group">
+                  <label class="field-label" for="contact-email">Email</label>
+                  <input
+                    id="contact-email"
+                    name="contactEmail"
+                    type="email"
+                    required
+                    placeholder="alex@example.com"
+                  />
+                </div>
+                <div class="field-group">
+                  <label class="field-label" for="contact-phone">Phone</label>
+                  <input
+                    id="contact-phone"
+                    name="contactPhone"
+                    type="tel"
+                    required
+                    minlength="7"
+                    placeholder="(415) 555-0148"
+                  />
+                </div>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label" for="dental-specialty">Dental Specialty</label>
+                <select id="dental-specialty" name="specialty" required>
+                  <option value="General &amp; Preventive Dentistry">General &amp; Preventive Dentistry</option>
+                  <option value="Cosmetic &amp; Veneers">Cosmetic &amp; Veneers</option>
+                  <option value="Endodontics &amp; Root Canal">Endodontics &amp; Root Canal</option>
+                  <option value="Implantology &amp; Oral Surgery">Implantology &amp; Oral Surgery</option>
+                  <option value="Orthodontics &amp; Aligners">Orthodontics &amp; Aligners</option>
+                  <option value="Periodontics">Periodontics</option>
+                </select>
+              </div>
+
+              <fieldset class="visit-type-fieldset">
+                <legend class="field-label">Visit Type</legend>
+                <div class="visit-type-options">
+                  <label class="radio-card">
+                    <input
+                      type="radio"
+                      name="visitType"
+                      value="In-Clinic Visit (450 Sutter)"
+                      checked
+                    />
+                    <span>In-Clinic Visit (450 Sutter)</span>
+                  </label>
+                  <label class="radio-card">
+                    <input
+                      type="radio"
+                      name="visitType"
+                      value="Home Visit (SF Service Area)"
+                    />
+                    <span>Home Visit (3.5 km SF Area)</span>
+                  </label>
+                </div>
+              </fieldset>
+
+              <div class="form-row form-row--two">
+                <div class="field-group">
+                  <label class="field-label" for="preferred-date">Preferred Date</label>
+                  <input id="preferred-date" name="preferredDate" type="date" required />
+                </div>
+                <div class="field-group">
+                  <label class="field-label" for="preferred-time">Time Slot</label>
+                  <select id="preferred-time" name="preferredTime" required>
+                    <option value="09:00 AM">09:00 AM</option>
+                    <option value="10:30 AM" selected>10:30 AM</option>
+                    <option value="01:00 PM">01:00 PM</option>
+                    <option value="02:30 PM">02:30 PM</option>
+                    <option value="04:00 PM">04:00 PM</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label" for="booking-notes">Scheduling Notes (Optional)</label>
+                <textarea
+                  id="booking-notes"
+                  name="notes"
+                  rows="2"
+                  maxlength="300"
+                  placeholder="Preferred entrance access, parking questions, or callback window..."
+                ></textarea>
+                <p class="compliance-hint">
+                  Scheduling metadata only — please do not include medical history or clinical records.
+                </p>
+              </div>
+
+              <button type="submit" id="booking-submit-btn" class="primary-submit-btn">
+                Request Appointment
+              </button>
+            </form>
+          </section>
+        </aside>
+
+        <section class="viewport-column viewport-column--map" id="viewport-column" aria-label="Interactive Clinic Map and Street View">
+          <div class="map-wrapper" id="map-wrapper">
+            <div
+              id="map-container"
+              class="map-canvas"
+              data-testid="map-container"
+              aria-label="Interactive Google Map centered on 450 Sutter Dental Clinic"
+            ></div>
+            <div id="map-legend" class="map-legend">
+              <div class="legend-item">
+                <span class="legend-swatch legend-swatch--clinic"></span>
+                <span>Clinic (450 Sutter)</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-swatch legend-swatch--origin"></span>
+                <span>Visitor Origin</span>
+              </div>
+              <div class="legend-item" id="legend-coverage-item">
+                <span class="legend-swatch legend-swatch--coverage"></span>
+                <span>3.5 km Home-Visit Radius</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="street-view-wrapper hidden" id="street-view-wrapper">
+            <div class="street-view-header">
+              <span class="street-view-title">Building Entrance Street View</span>
+              <span id="street-view-status" class="street-view-caption">Loading street-level imagery…</span>
+            </div>
+            <div
+              id="street-view-container"
+              class="street-view-canvas"
+              data-testid="street-view-container"
+              aria-label="Google Street View panorama of clinic entrance"
+            ></div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="/static/app.js"></script>
+  </body>
+</html>

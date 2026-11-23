@@ -1,0 +1,42 @@
+{
+  "solution_id": "driving-and-geofencing",
+  "id": "driving-and-geofencing",
+  "title": "Field Workforce Geofenced Attendance & Site Audit Router",
+  "name": "Field Workforce Geofenced Attendance & Site Audit Router",
+  "category": "Logistics, Dispatch & Tracking",
+  "user_prompt": "Create a field workforce geofenced attendance check-in and multi-site store audit planner centered in Austin. Render an interactive Google Map showing pre-seeded client site geofence polygons and a drawing toolbar (using Terra Draw) allowing supervisors to draw new polygon geofence zones. Provide a simulated worker GPS position selector (with presets inside and outside an active geofence) that detects polygon entry/exit states, reverse-geocodes the worker's current street address, and enables or locks the 'Verified Clock-In' badge accordingly. Also compute and render an optimized multi-stop driving route connecting the day's assigned audit sites using the Routes API with waypoint optimization.",
+  "prompt": "Create a field workforce geofenced attendance check-in and multi-site store audit planner centered in Austin. Render an interactive Google Map showing pre-seeded client site geofence polygons and a drawing toolbar (using Terra Draw) allowing supervisors to draw new polygon geofence zones. Provide a simulated worker GPS position selector (with presets inside and outside an active geofence) that detects polygon entry/exit states, reverse-geocodes the worker's current street address, and enables or locks the 'Verified Clock-In' badge accordingly. Also compute and render an optimized multi-stop driving route connecting the day's assigned audit sites using the Routes API with waypoint optimization.",
+  "expectations": [
+    "Site geofence polygons and interactive polygon drawing toolbar are visible and functional",
+    "Geofence entry/exit status and clock-in eligibility update accurately when testing inside vs. outside coordinates",
+    "Worker coordinates are reverse-geocoded into a human-readable site address",
+    "Optimized multi-stop driving route polyline and ordered audit stop markers are displayed",
+    "No console errors"
+  ],
+  "test_interactions": [
+    {
+      "description": "Site geofence polygons and interactive polygon drawing toolbar are visible and functional",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Geofence entry/exit status and clock-in eligibility update accurately when testing inside vs. outside coordinates",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Worker coordinates are reverse-geocoded into a human-readable site address",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    },
+    {
+      "description": "Optimized multi-stop driving route polyline and ordered audit stop markers are displayed",
+      "action": "assert_visible",
+      "selector": null,
+      "value": null
+    }
+  ]
+}

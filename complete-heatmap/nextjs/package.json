@@ -1,0 +1,33 @@
+{
+  "name": "complete-heatmap-nextjs",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Disaster Hazard Heatmap, Civic Incident & Safe Shelter Router built with Next.js App Router, @vis.gl/react-google-maps, deck.gl HeatmapLayer, and modern Google Maps Platform APIs.",
+  "scripts": {
+    "dev": "next dev --hostname 127.0.0.1 --port 3000",
+    "build": "next build",
+    "start": "next start --hostname 127.0.0.1 --port 3000",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@deck.gl/aggregation-layers": "^9.4.1",
+    "@deck.gl/core": "^9.4.1",
+    "@deck.gl/google-maps": "^9.4.1",
+    "@deck.gl/layers": "^9.4.1",
+    "@luma.gl/core": "^9.4.1",
+    "@luma.gl/engine": "^9.4.1",
+    "@luma.gl/webgl": "^9.4.1",
+    "@vis.gl/react-google-maps": "^1.10.2",
+    "lucide-react": "^0.511.0",
+    "next": "^15.3.2",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@types/google.maps": "^3.58.1",
+    "@types/node": "^22.15.18",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "typescript": "^5.8.3"
+  }
+}

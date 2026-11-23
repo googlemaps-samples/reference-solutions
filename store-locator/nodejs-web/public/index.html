@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MetroGrid NYC — Multi-Branch Store, ATM &amp; Inventory Locator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="app-header" data-testid="app-header">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">M</div>
+          <div class="brand-text">
+            <h1 class="brand-title">MetroGrid NYC</h1>
+            <p class="brand-subtitle">Store, Kiosk &amp; 24/7 ATM Locator</p>
+          </div>
+        </div>
+
+        <div class="search-cluster">
+          <div class="search-input-wrap">
+            <label class="sr-only" for="origin-search-input">Starting location in New York City</label>
+            <input
+              id="origin-search-input"
+              data-testid="origin-search-input"
+              type="text"
+              placeholder="Search NYC starting address or landmark..."
+              autocomplete="off"
+              aria-autocomplete="list"
+              aria-controls="autocomplete-dropdown"
+            />
+            <button
+              id="preset-origin-button"
+              type="button"
+              class="preset-btn"
+              title="Reset to Midtown / Penn Station"
+            >
+              Penn Station
+            </button>
+            <ul
+              id="autocomplete-dropdown"
+              data-testid="autocomplete-dropdown"
+              class="autocomplete-dropdown"
+              role="listbox"
+              hidden
+            ></ul>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <div class="mode-wrap">
+            <label class="sr-only" for="travel-mode-select">Travel mode</label>
+            <select
+              id="travel-mode-select"
+              data-testid="travel-mode-select"
+              class="travel-mode-select"
+            >
+              <option value="DRIVE">Drive</option>
+              <option value="WALK">Walk</option>
+              <option value="TRANSIT">Transit</option>
+            </select>
+          </div>
+          <button
+            id="route-fastest-button"
+            data-testid="route-fastest-button"
+            type="button"
+            class="primary-cta"
+          >
+            Route to Fastest
+          </button>
+        </div>
+      </header>
+
+      <div id="status-banner" class="status-banner" role="status" hidden></div>
+
+      <main class="workspace">
+        <aside class="sidebar" aria-label="Branch directory and filters">
+          <section class="filters-panel">
+            <div class="filter-group">
+              <span class="filter-label">Branch Type</span>
+              <div class="chip-row">
+                <button
+                  type="button"
+                  class="filter-chip is-active"
+                  data-testid="filter-type-all"
+                  data-type-filter="all"
+                >
+                  All
+                </button>
+                <button
+                  type="button"
+                  class="filter-chip"
+                  data-testid="filter-type-flagship"
+                  data-type-filter="flagship"
+                >
+                  <span class="dot dot-flagship"></span>
+                  Flagship Store
+                </button>
+                <button
+                  type="button"
+                  class="filter-chip"
+                  data-testid="filter-type-kiosk"
+                  data-type-filter="kiosk"
+                >
+                  <span class="dot dot-kiosk"></span>
+                  Express Kiosk
+                </button>
+                <button
+                  type="button"
+                  class="filter-chip"
+                  data-testid="filter-type-atm"
+                  data-type-filter="atm"
+                >
+                  <span class="dot dot-atm"></span>
+                  24/7 ATM
+                </button>
+              </div>
+            </div>
+
+            <div class="filter-group">
+              <span class="filter-label">Product &amp; Service Availability</span>
+              <div class="chip-row">
+                <button
+                  type="button"
+                  class="service-toggle"
+                  data-testid="filter-service-pickup"
+                  data-service-filter="pickup"
+                >
+                  Click &amp; Collect
+                </button>
+                <button
+                  type="button"
+                  class="service-toggle"
+                  data-testid="filter-service-coffee"
+                  data-service-filter="coffee"
+                >
+                  Express Espresso
+                </button>
+                <button
+                  type="button"
+                  class="service-toggle"
+                  data-testid="filter-service-cash"
+                  data-service-filter="cash"
+                >
+                  Cash Deposit
+                </button>
+                <button
+                  type="button"
+                  class="service-toggle"
+                  data-testid="filter-service-open24"
+                  data-service-filter="open24"
+                >
+                  Open 24h
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <section
+            id="route-summary-banner"
+            data-testid="route-summary-banner"
+            class="route-summary-banner"
+            aria-live="polite"
+          >
+            <div class="route-summary-header">
+              <span class="route-summary-kicker">Origin &amp; Active Route</span>
+              <span id="route-summary-mode" class="route-mode-pill">DRIVE</span>
+            </div>
+            <p id="route-summary-origin" class="route-summary-origin">
+              From: Midtown / Penn Station
+            </p>
+            <p id="route-summary-detail" class="route-summary-detail">
+              Loading live NYC branches and travel times...
+            </p>
+          </section>
+
+          <div class="results-bar">
+            <span id="results-count" class="results-count">0 locations</span>
+            <button id="refresh-branches-btn" type="button" class="link-btn">
+              Refresh NYC Grid
+            </button>
+          </div>
+
+          <div
+            id="branch-list"
+            data-testid="branch-list"
+            class="branch-list"
+            role="list"
+          ></div>
+        </aside>
+
+        <section class="map-stage" aria-label="Interactive NYC branch map">
+          <div id="map-container" data-testid="map-container" class="map-canvas"></div>
+
+          <div class="map-floating-widget" aria-label="Quick Places Autocomplete">
+            <span class="floating-widget-label">Quick NYC Jump (Places Widget)</span>
+            <div id="places-widget-host" class="places-widget-host"></div>
+          </div>
+
+          <div class="map-legend" data-testid="map-legend">
+            <div class="legend-title">NYC Network Legend</div>
+            <div class="legend-items">
+              <span class="legend-item">
+                <span class="dot dot-flagship"></span>Flagship Store
+              </span>
+              <span class="legend-item">
+                <span class="dot dot-kiosk"></span>Express Kiosk
+              </span>
+              <span class="legend-item">
+                <span class="dot dot-atm"></span>24/7 ATM
+              </span>
+              <span class="legend-item">
+                <span class="dot dot-origin"></span>Your Origin
+              </span>
+              <span class="legend-item">
+                <span class="line-swatch"></span>Active Route
+              </span>
+            </div>
+            <div id="zoom-hint" class="zoom-hint">
+              Zoom 12 · Click a cluster or zoom in (z14+) for branch pins
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/vendor/markerclusterer.min.js"></script>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

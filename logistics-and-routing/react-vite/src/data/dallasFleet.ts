@@ -1,0 +1,131 @@
+import type { FleetVehicle, LatLngPoint } from '../types/logistics';
+
+export const DALLAS_CENTER: LatLngPoint = {
+  lat: 32.7767,
+  lng: -96.797,
+};
+
+export const SEED_HUB_QUERY = 'distribution center logistics hub Dallas TX';
+
+/**
+ * Active Dallas fleet units operating along major freight corridors.
+ * Raw GPS breadcrumbs intentionally include realistic +/-20-40m urban multipath
+ * jitter around Dallas highway segments so Roads API snapToRoads alignment is
+ * clearly visible on the map.
+ */
+export const INITIAL_FLEET_VEHICLES: FleetVehicle[] = [
+  {
+    id: 'DAL-104',
+    label: 'DAL-104',
+    unitType: "53' Dry Van Tractor",
+    driver: 'M. Alvarez',
+    corridor: 'I-35E Stemmons Corridor',
+    status: 'en-route',
+    speedMph: 58,
+    position: { lat: 32.8012, lng: -96.8355 },
+    nextStop: 'Hub #1 (Discovering...)',
+    etaText: '12 min',
+    rawBreadcrumbs: [
+      { lat: 32.7851, lng: -96.8142 },
+      { lat: 32.7873, lng: -96.8161 },
+      { lat: 32.7891, lng: -96.8195 },
+      { lat: 32.7916, lng: -96.8211 },
+      { lat: 32.7932, lng: -96.8246 },
+      { lat: 32.7955, lng: -96.8261 },
+      { lat: 32.7971, lng: -96.8299 },
+      { lat: 32.7994, lng: -96.8318 },
+      { lat: 32.8007, lng: -96.8344 },
+      { lat: 32.8029, lng: -96.8371 },
+      { lat: 32.8045, lng: -96.8398 },
+      { lat: 32.8068, lng: -96.8421 },
+    ],
+  },
+  {
+    id: 'DAL-208',
+    label: 'DAL-208',
+    unitType: 'Sprinter Express Shuttle',
+    driver: 'R. Chen',
+    corridor: 'I-30 Westbound / Mixmaster',
+    status: 'delayed',
+    speedMph: 14,
+    position: { lat: 32.7689, lng: -96.8124 },
+    nextStop: 'Hub #2 (Discovering...)',
+    etaText: '24 min',
+    rawBreadcrumbs: [
+      { lat: 32.7712, lng: -96.7834 },
+      { lat: 32.7704, lng: -96.7872 },
+      { lat: 32.7715, lng: -96.7911 },
+      { lat: 32.7699, lng: -96.7954 },
+      { lat: 32.7711, lng: -96.7992 },
+      { lat: 32.7694, lng: -96.8031 },
+      { lat: 32.7703, lng: -96.8074 },
+      { lat: 32.7686, lng: -96.8118 },
+      { lat: 32.7695, lng: -96.8162 },
+      { lat: 32.7681, lng: -96.8204 },
+    ],
+  },
+  {
+    id: 'DAL-315',
+    label: 'DAL-315',
+    unitType: "26' Box Freight",
+    driver: 'T. Brooks',
+    corridor: 'US-75 Central Expy',
+    status: 'en-route',
+    speedMph: 51,
+    position: { lat: 32.8152, lng: -96.7848 },
+    nextStop: 'Hub #3 (Discovering...)',
+    etaText: '16 min',
+    rawBreadcrumbs: [
+      { lat: 32.7902, lng: -96.7896 },
+      { lat: 32.7938, lng: -96.7881 },
+      { lat: 32.7975, lng: -96.7889 },
+      { lat: 32.8011, lng: -96.7871 },
+      { lat: 32.8049, lng: -96.7877 },
+      { lat: 32.8086, lng: -96.7859 },
+      { lat: 32.8124, lng: -96.7864 },
+      { lat: 32.8161, lng: -96.7841 },
+      { lat: 32.8199, lng: -96.7837 },
+    ],
+  },
+  {
+    id: 'DAL-422',
+    label: 'DAL-422',
+    unitType: 'Reefer Carrier',
+    driver: 'K. Patel',
+    corridor: 'I-45 South / Lamar St',
+    status: 'delayed',
+    speedMph: 11,
+    position: { lat: 32.7534, lng: -96.7745 },
+    nextStop: 'South Dallas Corridor',
+    etaText: '29 min',
+    rawBreadcrumbs: [
+      { lat: 32.7682, lng: -96.7824 },
+      { lat: 32.7651, lng: -96.7801 },
+      { lat: 32.7623, lng: -96.7794 },
+      { lat: 32.7591, lng: -96.7771 },
+      { lat: 32.7564, lng: -96.7766 },
+      { lat: 32.7532, lng: -96.7742 },
+      { lat: 32.7501, lng: -96.7731 },
+      { lat: 32.7474, lng: -96.7709 },
+    ],
+  },
+  {
+    id: 'DAL-509',
+    label: 'DAL-509',
+    unitType: 'Cargo Van Shuttle',
+    driver: 'D. Morales',
+    corridor: 'Woodall Rodgers Staging',
+    status: 'idle',
+    speedMph: 0,
+    position: { lat: 32.7891, lng: -96.8012 },
+    nextStop: 'Awaiting Dispatch',
+    etaText: 'Staged',
+    rawBreadcrumbs: [
+      { lat: 32.7852, lng: -96.8089 },
+      { lat: 32.7864, lng: -96.8068 },
+      { lat: 32.7873, lng: -96.8049 },
+      { lat: 32.7885, lng: -96.8027 },
+      { lat: 32.7894, lng: -96.8008 },
+    ],
+  },
+];
